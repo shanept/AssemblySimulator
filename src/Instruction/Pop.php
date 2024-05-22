@@ -44,7 +44,7 @@ class Pop extends AssemblyInstruction
      * @see https://www.felixcloutier.com/x86/pop
      * @see https://pdos.csail.mit.edu/6.828/2005/readings/i386/POP.htm
      *
-     * @return void
+     * @return bool
      */
     public function executeOperand5x()
     {

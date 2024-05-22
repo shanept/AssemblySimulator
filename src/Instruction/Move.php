@@ -46,7 +46,7 @@ class Move extends AssemblyInstruction
      * @see https://www.felixcloutier.com/x86/mov
      * @see https://pdos.csail.mit.edu/6.828/2005/readings/i386/MOV.htm
      *
-     * @return void
+     * @return bool
      */
     public function executeOperandBx()
     {
@@ -82,7 +82,7 @@ class Move extends AssemblyInstruction
      * @see https://www.felixcloutier.com/x86/mov
      * @see https://pdos.csail.mit.edu/6.828/2005/readings/i386/MOV.htm
      *
-     * @return void
+     * @return bool
      */
     public function executeOperand89()
     {
@@ -116,7 +116,7 @@ class Move extends AssemblyInstruction
      * @see https://www.felixcloutier.com/x86/mov
      * @see https://pdos.csail.mit.edu/6.828/2005/readings/i386/MOV.htm
      *
-     * @return void
+     * @return bool
      */
     public function executeOperand8b()
     {

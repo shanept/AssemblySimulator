@@ -37,7 +37,7 @@ class LoadEffectiveAddress extends AssemblyInstruction
      * @see https://www.felixcloutier.com/x86/lea
      * @see https://pdos.csail.mit.edu/6.828/2005/readings/i386/LEA.htm
      *
-     * @return void
+     * @return bool
      */
     public function executeOperand8d()
     {

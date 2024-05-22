@@ -43,7 +43,7 @@ class Push extends AssemblyInstruction
      *
      * Implements PUSH register for the push opcode range 0x50 - 0x57.
      *
-     * @return void
+     * @return bool
      */
     public function executeOperand5x()
     {
@@ -76,7 +76,7 @@ class Push extends AssemblyInstruction
      *
      * Performs PUSH imm16/32/64 for opcode 0x68.
      *
-     * @return void
+     * @return bool
      */
     public function executeOperand68()
     {
@@ -103,7 +103,7 @@ class Push extends AssemblyInstruction
      *
      * Performs PUSH imm8 for opcode 0x6a.
      *
-     * @return void
+     * @return bool
      */
     public function executeOperand6a()
     {

@@ -69,7 +69,7 @@ class ExclusiveOr extends AssemblyInstruction
      *
      * Implements XOR source,dest for the xor opcode \x31. Result stored in rm.
      *
-     * @return void
+     * @return bool
      */
     public function executeOperand31()
     {
@@ -96,7 +96,7 @@ class ExclusiveOr extends AssemblyInstruction
      *
      * Implements XOR source,dest for the xor opcode \x33. Result stored in reg.
      *
-     * @return void
+     * @return bool
      */
     public function executeOperand33()
     {
