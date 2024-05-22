@@ -28,8 +28,15 @@ class SimulatorFactory
         $simulatorMode = Simulator::REAL_MODE,
         array $additionalInstructions = [],
     ) {
+        /**
+         * We will register additional instructions from lowest to highest
+         * priority. This is because the Simulator will reverse the order as
+         * we are registering the instructions with it.
+         */
+        $additionalInstructions = array_reverse($additionalInstructions);
+
         $instructionSet = self::getDefaultInstructionSet();
-        $instructionSet = array_merge($additionalInstructions, $instructionSet);
+        $instructionSet = array_merge($instructionSet, $additionalInstructions);
 
         $simulator = new Simulator($simulatorMode);
 
