@@ -128,7 +128,7 @@ class SimulatorTest extends \PHPUnit\Framework\TestCase
         return [
             [ [ 0 => 3, 4 => 2 ] ],
             [ [ 1 => 2] ],
-            [ [ PHP_INT_MAX => PHP_INT_MAX, 0 => 3 ] ]
+            [ [ PHP_INT_MAX => PHP_INT_MAX, 0 => 3 ] ],
         ];
     }
 
@@ -178,7 +178,7 @@ class SimulatorTest extends \PHPUnit\Framework\TestCase
                     0 => 432,
                     1 => 321,
                     2 => 654,
-                ]
+                ],
             ],
             [
                 [
@@ -192,7 +192,7 @@ class SimulatorTest extends \PHPUnit\Framework\TestCase
                     0 => 432,
                     1 => 321,
                     3 => 789,
-                ]
+                ],
             ],
             [
                 [
@@ -206,7 +206,7 @@ class SimulatorTest extends \PHPUnit\Framework\TestCase
                     0 => 432,
                     2 => 654,
                     3 => 789,
-                ]
+                ],
             ],
             [
                 [
@@ -220,8 +220,8 @@ class SimulatorTest extends \PHPUnit\Framework\TestCase
                     1 => 321,
                     2 => 654,
                     3 => 789,
-                ]
-            ]
+                ],
+            ],
         ];
     }
 
@@ -315,14 +315,14 @@ class SimulatorTest extends \PHPUnit\Framework\TestCase
         $simulator = new Simulator(Simulator::LONG_MODE);
 
         $mockInstruction = $this->createMock(AssemblyInstruction::class);
-        $mockFunction = function() use ($simulator) {
+        $mockFunction = function () use ($simulator) {
             $simulator->advanceInstructionPointer(1);
             $this->assertTrue(true);
             return true;
         };
 
         $simulator->registerInstructions($mockInstruction, [
-            0x01 => $mockFunction
+            0x01 => $mockFunction,
         ]);
 
         $simulator->setCodeBuffer("\x01");
@@ -334,12 +334,12 @@ class SimulatorTest extends \PHPUnit\Framework\TestCase
         $simulator = new Simulator(Simulator::LONG_MODE);
 
         $mockInstructionOld = $this->createMock(AssemblyInstruction::class);
-        $mockFunctionOld = function() use ($simulator) {
+        $mockFunctionOld = function () use ($simulator) {
             return false;
         };
 
         $simulator->registerInstructions($mockInstructionOld, [
-            0x01 => $mockFunctionOld
+            0x01 => $mockFunctionOld,
         ]);
 
         $simulator->setCodeBuffer("\x01");
@@ -353,14 +353,14 @@ class SimulatorTest extends \PHPUnit\Framework\TestCase
         $simulator = new Simulator(Simulator::LONG_MODE);
 
         $mockInstructionOld = $this->createMock(AssemblyInstruction::class);
-        $mockFunctionOld = function() use ($simulator) {
+        $mockFunctionOld = function () use ($simulator) {
             $simulator->advanceInstructionPointer(1);
             $this->assertTrue(true);
             return true;
         };
 
         $simulator->registerInstructions($mockInstructionOld, [
-            0x01 => $mockFunctionOld
+            0x01 => $mockFunctionOld,
         ]);
 
         $mockInstructionNew = $this->getMockBuilder(TestAssemblyInstruction::class)
@@ -372,7 +372,7 @@ class SimulatorTest extends \PHPUnit\Framework\TestCase
                            ->willReturn(false);
 
         $simulator->registerInstructions($mockInstructionNew, [
-            0x03 => [$mockInstructionNew, 'executeOperand3']
+            0x03 => [$mockInstructionNew, 'executeOperand3'],
         ]);
 
         $simulator->setCodeBuffer("\x01");
@@ -384,12 +384,12 @@ class SimulatorTest extends \PHPUnit\Framework\TestCase
         $simulator = new Simulator(Simulator::LONG_MODE);
 
         $mockInstruction = $this->createMock(AssemblyInstruction::class);
-        $mockFunction = function() use ($simulator) {
+        $mockFunction = function () use ($simulator) {
             $simulator->advanceInstructionPointer(1);
         };
 
         $simulator->registerInstructions($mockInstruction, [
-            0x01 => $mockFunction
+            0x01 => $mockFunction,
         ]);
 
         $simulator->setCodeBuffer("\x01");
@@ -411,37 +411,37 @@ class SimulatorTest extends \PHPUnit\Framework\TestCase
                            ->willReturn(false);
 
         $simulator->registerInstructions($mockInstructionOld, [
-            0x01 => [$mockInstructionOld, 'executeOperand1']
+            0x01 => [$mockInstructionOld, 'executeOperand1'],
         ]);
 
         $mockInstructionNew = $this->createMock(AssemblyInstruction::class);
-        $mockFunctionNew = function() use ($simulator) {
+        $mockFunctionNew = function () use ($simulator) {
             $simulator->advanceInstructionPointer(1);
             $this->assertTrue(true);
             return true;
         };
 
         $simulator->registerInstructions($mockInstructionNew, [
-            0x01 => $mockFunctionNew
+            0x01 => $mockFunctionNew,
         ]);
 
         $simulator->setCodeBuffer("\x01");
         $simulator->simulate();
     }
 
-    public function testNewerRegisteredFunctionCanDelegateToOldFunction()
+    public function testNewerRegisteredFunctionCanDelegateToOldfunction()
     {
         $simulator = new Simulator(Simulator::LONG_MODE);
 
         $mockInstructionOld = $this->createMock(AssemblyInstruction::class);
-        $mockFunctionOld = function() use ($simulator) {
+        $mockFunctionOld = function () use ($simulator) {
             $simulator->advanceInstructionPointer(1);
             $this->assertTrue(true);
             return true;
         };
 
         $simulator->registerInstructions($mockInstructionOld, [
-            0x01 => $mockFunctionOld
+            0x01 => $mockFunctionOld,
         ]);
 
         $mockInstructionNew = $this->getMockBuilder(TestAssemblyInstruction::class)
@@ -453,7 +453,7 @@ class SimulatorTest extends \PHPUnit\Framework\TestCase
                            ->willReturn(false);
 
         $simulator->registerInstructions($mockInstructionNew, [
-            0x01 => [$mockInstructionNew, 'executeOperand1']
+            0x01 => [$mockInstructionNew, 'executeOperand1'],
         ]);
 
         $simulator->setCodeBuffer("\x01");
@@ -508,7 +508,7 @@ class SimulatorTest extends \PHPUnit\Framework\TestCase
     {
         $simulator = new Simulator(Simulator::LONG_MODE);
 
-        $mockFunction = function() use($simulator) {
+        $mockFunction = function () use ($simulator) {
             $simulator->advanceInstructionPointer(1);
             $this->assertEquals(0x66, $simulator->getPrefix());
             return true;
@@ -516,7 +516,7 @@ class SimulatorTest extends \PHPUnit\Framework\TestCase
 
         $instruction = $this->createMock(AssemblyInstruction::class);
         $simulator->registerInstructions($instruction, [
-            0x01 => $mockFunction
+            0x01 => $mockFunction,
         ]);
 
         $simulator->setCodeBuffer("\x66\x01");
@@ -556,7 +556,7 @@ class SimulatorTest extends \PHPUnit\Framework\TestCase
     {
         $simulator = new Simulator(Simulator::LONG_MODE);
 
-        $mockFunction = function() use($simulator) {
+        $mockFunction = function () use ($simulator) {
             $simulator->advanceInstructionPointer(1);
             $this->assertEquals(0x67, $simulator->getPrefix());
             return true;
@@ -564,7 +564,7 @@ class SimulatorTest extends \PHPUnit\Framework\TestCase
 
         $instruction = $this->createMock(AssemblyInstruction::class);
         $simulator->registerInstructions($instruction, [
-            0x01 => $mockFunction
+            0x01 => $mockFunction,
         ]);
 
         $simulator->setCodeBuffer("\x67\x01");
@@ -578,7 +578,7 @@ class SimulatorTest extends \PHPUnit\Framework\TestCase
     {
         $simulator = new Simulator(Simulator::PROTECTED_MODE);
 
-        $mockFunction = function() use($simulator) {
+        $mockFunction = function () use ($simulator) {
             $simulator->advanceInstructionPointer(1);
             $this->assertEquals(0x67, $simulator->getPrefix());
             return true;
@@ -586,7 +586,7 @@ class SimulatorTest extends \PHPUnit\Framework\TestCase
 
         $instruction = $this->createMock(AssemblyInstruction::class);
         $simulator->registerInstructions($instruction, [
-            0x01 => $mockFunction
+            0x01 => $mockFunction,
         ]);
 
         $simulator->setCodeBuffer("\x67\x01");

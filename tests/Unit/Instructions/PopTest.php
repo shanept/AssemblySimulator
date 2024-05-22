@@ -55,7 +55,7 @@ class PopTest extends \PHPUnit\Framework\TestCase
         $stackPointerRegister,
         $destinationRegister,
         $expected,
-        $opcode
+        $opcode,
     ) {
         $simulator = $this->getMockSimulator($simulatorMode);
 
@@ -76,15 +76,15 @@ class PopTest extends \PHPUnit\Framework\TestCase
 
         // This is where our value is saved, thus asserted for.
         $simulator->method('writeRegister')
-                  ->willReturnCallback(function($register, $value) use (
+                  ->willReturnCallback(function ($register, $value) use (
                       $expected,
                       $stackPointerRegister,
-                      $destinationRegister
+                      $destinationRegister,
                   ) {
                       if (4 === $register['offset']) {
                           // Ensure we are using the correct stack pointer
                           $this->assertEquals($stackPointerRegister, $register);
-                      } else if ($register === $destinationRegister) {
+                      } elseif ($register === $destinationRegister) {
                           // Ensure we have popped the correct value into the register
                           $this->assertEquals($expected, $value);
                       }

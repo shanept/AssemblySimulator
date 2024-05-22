@@ -55,13 +55,13 @@ class LoadEffectiveAddress extends AssemblyInstruction
         $reg = Register::getByCode($byte["reg"], $opSize, $rexSet, $regExt);
 
         if (0b11 === $byte["mod"]) {
-            throw new \RuntimeException(
-                sprintf(
-                    "LEA expected modrm mod byte to be a memory operand, " .
-                        "register operand 0x%x received instead.",
-                    $byte["mod"]
-                )
+            $message = sprintf(
+                "LEA expected modrm mod byte to be a memory operand, " .
+                    "register operand 0x%x received instead.",
+                $byte["mod"],
             );
+
+            throw new \RuntimeException($message);
         }
 
         $effectiveAddress = $this->parseAddress($byte);

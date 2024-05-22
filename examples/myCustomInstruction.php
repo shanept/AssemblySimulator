@@ -34,7 +34,7 @@ class myCustomInstruction extends AssemblyInstruction
     public function register()
     {
         return [
-            0x01 => [&$this, 'executeOperand1']
+            0x01 => [&$this, 'executeOperand1'],
         ];
     }
 
@@ -74,8 +74,8 @@ class myCustomInstruction extends AssemblyInstruction
          * The parameter '1' refers to the amount of bytes to read.
          * Then, we convert the binary character to an integer.
          */
-         $byte = $sim->getCodeAtInstruction(1);
-         $byte = ord($byte);
+        $byte = $sim->getCodeAtInstruction(1);
+        $byte = ord($byte);
 
         /**
          * For demonstration, this instruction will refuse to process this
@@ -131,7 +131,7 @@ class myCustomInstruction extends AssemblyInstruction
             0 => null,              // Mode 0 refers to nothing.
             1 => Register::SP,      // Mode 1 refers to REAL_MODE.
             2 => Register::ESP,     // Mode 2 refers to PROTECTED_MODE.
-            3 => Register::RSP      // Mode 3 refers to LONG_MODE.
+            3 => Register::RSP,     // Mode 3 refers to LONG_MODE.
         ];
 
         return $pointers[$mode];

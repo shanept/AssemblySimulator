@@ -15,13 +15,13 @@ class SimulatorFactoryTest extends \PHPUnit\Framework\TestCase
         $files = glob($instructionDir . '/*.php');
 
         // Remove AssemblyInstruction
-        $files = array_filter($files, function($filename) {
+        $files = array_filter($files, function ($filename) {
             return false === strpos($filename, 'AssemblyInstruction.php');
         });
 
         $fqcnFormat = 'shanept\AssemblySimulator\Instruction\%s';
 
-        $expected = array_map(function($filepath) use ($instructionDir, $fqcnFormat) {
+        $expected = array_map(function ($filepath) use ($instructionDir, $fqcnFormat) {
             // Remove filesystem artifacts
             $filepath = basename($filepath);
             $filepath = explode('.', $filepath)[0];
@@ -64,7 +64,7 @@ class SimulatorFactoryTest extends \PHPUnit\Framework\TestCase
     public function testFactoryRegistersCustomInstructionWithSimulator()
     {
         $simulator = SimulatorFactory::createSimulator(Simulator::LONG_MODE, [
-            TestFactoryCustomInstruction::class
+            TestFactoryCustomInstruction::class,
         ]);
 
         // Extract the registered instructions from the instantiated simulator.

@@ -7,7 +7,7 @@ use shanept\AssemblySimulator\Register;
 use shanept\AssemblySimulator\Simulator;
 use shanept\AssemblySimulator\Instruction\ExclusiveOr;
 
-class XorTest extends \PHPUnit\Framework\TestCase
+class ExclusiveOrTest extends \PHPUnit\Framework\TestCase
 {
     use MockSimulatorTrait;
 
@@ -37,7 +37,7 @@ class XorTest extends \PHPUnit\Framework\TestCase
         $prefixValue,
         $register,
         $regValue,
-        $instruction
+        $instruction,
     ) {
         $simulator = $this->getMockSimulator($simulatorMode);
 
@@ -58,7 +58,7 @@ class XorTest extends \PHPUnit\Framework\TestCase
         $simulator->method('getCodeAtInstruction')
                   ->willReturn($instruction);
 
-        $xor = new ExclusiveOr;
+        $xor = new ExclusiveOr();
         $xor->setSimulator($simulator);
 
         $xor->executeOperand31();
@@ -73,7 +73,7 @@ class XorTest extends \PHPUnit\Framework\TestCase
         $prefixValue,
         $register,
         $regValue,
-        $instruction
+        $instruction,
     ) {
         $simulator = $this->getMockSimulator($simulatorMode);
 
@@ -94,7 +94,7 @@ class XorTest extends \PHPUnit\Framework\TestCase
         $simulator->method('getCodeAtInstruction')
                   ->willReturn($instruction);
 
-        $xor = new ExclusiveOr;
+        $xor = new ExclusiveOr();
         $xor->setSimulator($simulator);
 
         $xor->executeOperand33();
@@ -128,7 +128,7 @@ class XorTest extends \PHPUnit\Framework\TestCase
         $firstRegValue,
         $secondRegister,
         $secondRegValue,
-        $instruction
+        $instruction,
     ) {
         $simulator = $this->getMockSimulator($simulatorMode);
         $simulator = $this->mockSimulatorRegisters($simulator, [
@@ -145,7 +145,7 @@ class XorTest extends \PHPUnit\Framework\TestCase
         $simulator->method('getCodeAtInstruction')
                   ->willReturn($instruction);
 
-        $xor = new ExclusiveOr;
+        $xor = new ExclusiveOr();
         $xor->setSimulator($simulator);
 
         $xor->executeOperand31();
@@ -165,7 +165,7 @@ class XorTest extends \PHPUnit\Framework\TestCase
         $firstRegValue,
         $secondRegister,
         $secondRegValue,
-        $instruction
+        $instruction,
     ) {
         $simulator = $this->getMockSimulator($simulatorMode);
         $simulator = $this->mockSimulatorRegisters($simulator, [
@@ -182,7 +182,7 @@ class XorTest extends \PHPUnit\Framework\TestCase
         $simulator->method('getCodeAtInstruction')
                   ->willReturn($instruction);
 
-        $xor = new ExclusiveOr;
+        $xor = new ExclusiveOr();
         $xor->setSimulator($simulator);
 
         $xor->executeOperand33();
@@ -206,13 +206,13 @@ class XorTest extends \PHPUnit\Framework\TestCase
          * setFlags(Flags::ZF, 1)
          * setFlags(Flags::FF, 1)
          */
-        $flagVerifier = function($flag, $value) {
+        $flagVerifier = function ($flag, $value) {
             $expected = [
                 Flags::OF => 0,
                 Flags::CF => 0,
                 Flags::SF => 0,
                 Flags::ZF => 1,
-                Flags::PF => 1
+                Flags::PF => 1,
             ];
 
             switch ($flag) {
@@ -252,7 +252,7 @@ class XorTest extends \PHPUnit\Framework\TestCase
         $simulator->method('getCodeAtInstruction')
                   ->willReturn("\xC9");
 
-        $xor = new ExclusiveOr;
+        $xor = new ExclusiveOr();
         $xor->setSimulator($simulator);
 
         $xor->executeOperand31();
@@ -263,7 +263,7 @@ class XorTest extends \PHPUnit\Framework\TestCase
         $simulator = $this->getMockSimulator(Simulator::LONG_MODE);
         $simulator = $this->mockSimulatorRegisters($simulator, [
             Register::R9D['offset'] => 1234,
-            Register::R8D['offset'] => 4321
+            Register::R8D['offset'] => 4321,
         ]);
 
         // REX.RB xor r9d,r9d, (mod 2 - incorrect)
@@ -277,7 +277,7 @@ class XorTest extends \PHPUnit\Framework\TestCase
         $simulator->method('getCodeAtInstruction')
                   ->willReturn("\x89");
 
-        $xor = new ExclusiveOr;
+        $xor = new ExclusiveOr();
         $xor->setSimulator($simulator);
 
         $this->expectException(\RuntimeException::class);

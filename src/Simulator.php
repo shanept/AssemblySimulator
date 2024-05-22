@@ -189,7 +189,7 @@ class Simulator
      */
     public function registerInstructions(
         AssemblyInstruction $reference,
-        array $mappings
+        array $mappings,
     ) {
         $record = compact('reference', 'mappings');
         array_unshift($this->registeredInstructions, $record);
@@ -389,13 +389,13 @@ class Simulator
         $mask = $register["mask"];
 
         if ($width > $largestWidth) {
-            throw new \RuntimeException(
-                sprintf(
-                    'Register "%s" too large for mode "%s".',
-                    $register["name"],
-                    $this->getModeName()
-                )
+            $message = sprintf(
+                'Register "%s" too large for mode "%s".',
+                $register["name"],
+                $this->getModeName(),
             );
+
+            throw new \RuntimeException($message);
         }
 
         $value = $this->registers[$offset];
@@ -418,13 +418,13 @@ class Simulator
         $mask = $register["mask"];
 
         if ($width > $largestWidth) {
-            throw new \RuntimeException(
-                sprintf(
-                    'Register "%s" too large for mode "%s".',
-                    $register["name"],
-                    $this->getModeName()
-                )
+            $message = sprintf(
+                'Register "%s" too large for mode "%s".',
+                $register["name"],
+                $this->getModeName(),
             );
+
+            throw new \RuntimeException($message);
         }
 
         /**
@@ -604,11 +604,11 @@ class Simulator
      */
     private function taintProtection()
     {
+        $message = 'Attempted to operate a tainted environment. Did you ' .
+            'change modes and forget to reset?';
+
         if ($this->tainted) {
-            throw new Exception\TaintException(
-                "Attempted to operate a tainted environment. Did you change " .
-                    "modes and forget to reset?"
-            );
+            throw new Exception\TaintException($message);
         }
     }
 
@@ -653,17 +653,16 @@ class Simulator
 
             if (is_array($callback)) {
                 $instructionName = get_class($callback[0]) . '::' . $callback[1];
-            } else if ($callback instanceof \Closure) {
+            } elseif ($callback instanceof \Closure) {
                 $instructionName = '[closure]';
             }
 
             if (! is_bool($response)) {
-
                 throw new \LogicException(sprintf(
                     'Expected boolean return value from Instruction %s, ' .
                     'but received "%s" instead.',
                     $instructionName,
-                    var_export($response, true)
+                    var_export($response, true),
                 ));
             }
 
@@ -694,7 +693,7 @@ class Simulator
         $this->iPointer = 0;
 
         // Set up our instruction pointer then loop through until the end.
-        for (; $this->iPointer < $assembly_length; ) {
+        for (; $this->iPointer < $assembly_length;) {
             $op = ord($this->buffer[$this->iPointer]);
 
             // Go through our supported instructions.
@@ -720,16 +719,17 @@ class Simulator
                     // prefix and REX bit.
                     continue 2;
 
-                // Call our opcode method. If it doesn't process automatically,
-                // we continue the switch statement.
-                case $this->hasRegisteredInstruction($op) &&
-                     $this->processOpcodeWithRegisteredInstruction($op):
+                case ($this->hasRegisteredInstruction($op) &&
+                      $this->processOpcodeWithRegisteredInstruction($op)):
 
-                    // Looks like we successfully processed the instruction.
+                    /**
+                     * We have identified that we are passing a registered
+                     * instruction. If the instruction processor returns true,
+                     * we enter this case and break the switch.
+                     */
                     break;
 
-                // NOP
-                case $op == 0x90:
+                case $op == 0x90: // NOP
                     $this->iPointer++;
                     break;
 
@@ -737,7 +737,7 @@ class Simulator
                     $errorMessage = sprintf(
                         'Encountered unknown opcode 0x%x at offset %d.',
                         $op,
-                        $this->iPointer
+                        $this->iPointer,
                     );
 
                     throw new \OutOfBoundsException($errorMessage, $op);

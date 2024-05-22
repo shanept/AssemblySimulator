@@ -6,7 +6,8 @@ use shanept\AssemblySimulator\Instruction\AssemblyInstruction;
 
 class TestAssemblyInstruction extends AssemblyInstruction
 {
-    public function register() {
+    public function register()
+    {
         return [];
     }
 }

@@ -41,12 +41,12 @@ class ExclusiveOr extends AssemblyInstruction
 
         $byte = $this->parseModRmByte($byte);
         if (0b11 !== $byte["mod"]) {
-            throw new \RuntimeException(
-                sprintf(
-                    "XOR expected modrm mod byte to be 0x3, 0x%x received.",
-                    $byte["mod"]
-                )
+            $message = sprintf(
+                "XOR expected modrm mod byte to be 0x3, 0x%x received.",
+                $byte["mod"],
             );
+
+            throw new \RuntimeException($message);
         }
 
         $rex = $sim->getRex();

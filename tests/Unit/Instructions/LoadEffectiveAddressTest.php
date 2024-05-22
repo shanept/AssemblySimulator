@@ -2,12 +2,11 @@
 
 namespace shanept\AssemblySimulatorTests\Unit\Instructions;
 
-use shanept\AssemblySimulator\Flags;
 use shanept\AssemblySimulator\Register;
 use shanept\AssemblySimulator\Simulator;
 use shanept\AssemblySimulator\Instruction\LoadEffectiveAddress;
 
-class LeaTest extends \PHPUnit\Framework\TestCase
+class LoadEffectiveAddressTest extends \PHPUnit\Framework\TestCase
 {
     use MockSimulatorTrait;
 
@@ -25,10 +24,10 @@ class LeaTest extends \PHPUnit\Framework\TestCase
                   ->willReturn(0);
 
         $simulator->method('getCodeAtInstruction')
-                  ->willReturnCallback(function($length) {
+                  ->willReturnCallback(function ($length) {
                       $values = [
                           1 => "\x3D",
-                          4 => "\xE0\x17\x19\x0F"
+                          4 => "\xE0\x17\x19\x0F",
                       ];
                       return $values[$length];
                   });
@@ -36,7 +35,7 @@ class LeaTest extends \PHPUnit\Framework\TestCase
         $simulator->method('getInstructionPointer')
                   ->willReturn(3);
 
-        $lea = new LoadEffectiveAddress;
+        $lea = new LoadEffectiveAddress();
         $lea->setSimulator($simulator);
 
         $lea->executeOperand8d();
@@ -61,7 +60,7 @@ class LeaTest extends \PHPUnit\Framework\TestCase
                   ->method('getCodeAtInstruction')
                   ->willReturn("\xFD");
 
-        $lea = new LoadEffectiveAddress;
+        $lea = new LoadEffectiveAddress();
         $lea->setSimulator($simulator);
 
         $this->expectException(\RuntimeException::class);

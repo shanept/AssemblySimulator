@@ -78,7 +78,7 @@ class Pop extends AssemblyInstruction
             null,
             Register::SP,
             Register::ESP,
-            Register::RSP
+            Register::RSP,
         ];
 
         return $pointers[$mode];

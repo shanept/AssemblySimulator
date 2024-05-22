@@ -21,7 +21,7 @@ use shanept\AssemblySimulator\SimulatorFactory;
  * myCustomInstruction instruction processor.
  */
 $simulator = SimulatorFactory::createSimulator(Simulator::LONG_MODE, [
-    myCustomInstruction::class
+    myCustomInstruction::class,
 ]);
 
 // My custom instruction will push 0x42 onto the stack.

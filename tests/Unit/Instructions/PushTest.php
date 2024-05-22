@@ -56,7 +56,7 @@ class PushTest extends \PHPUnit\Framework\TestCase
         $stackPosition,
         $expectedRegister,
         $regValue,
-        $opcode
+        $opcode,
     ) {
         $simulator = $this->getMockSimulator($simulatorMode);
 
@@ -70,7 +70,7 @@ class PushTest extends \PHPUnit\Framework\TestCase
                   ->willReturn($opcode);
 
         $simulator->method('readRegister')
-                  ->willReturnCallback(function($register, $size) use (
+                  ->willReturnCallback(function ($register, $size) use (
                       $stackPointer,
                       $stackPosition,
                       $expectedRegister,
@@ -114,7 +114,7 @@ class PushTest extends \PHPUnit\Framework\TestCase
         $stackPointer,
         $stackPosition,
         $immediate,
-        $expected
+        $expected,
     ) {
         $simulator = $this->getMockSimulator($simulatorMode);
 
@@ -160,7 +160,7 @@ class PushTest extends \PHPUnit\Framework\TestCase
         $stackPointer,
         $stackPosition,
         $immediate,
-        $expected
+        $expected,
     ) {
         $simulator = $this->getMockSimulator($simulatorMode);
 

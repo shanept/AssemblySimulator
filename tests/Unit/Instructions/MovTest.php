@@ -42,7 +42,7 @@ class MovTest extends \PHPUnit\Framework\TestCase
         $opcode,
         $address,
         $register,
-        $expected
+        $expected,
     ) {
         $simulator = $this->getMockSimulator($simulatorMode);
 
@@ -57,7 +57,7 @@ class MovTest extends \PHPUnit\Framework\TestCase
         $values = [$address, $opcode];
 
         $simulator->method('getCodeAtInstruction')
-                  ->willReturnCallback(function($length) use(&$values) {
+                  ->willReturnCallback(function ($length) use (&$values) {
                       return array_pop($values);
                   });
 
@@ -84,7 +84,7 @@ class MovTest extends \PHPUnit\Framework\TestCase
                   ->willReturn(0);
 
         $simulator->method('getCodeAtInstruction')
-                  ->willReturnCallback(function($length) {
+                  ->willReturnCallback(function ($length) {
                       $values = [
                           1 => "\x15",
                           4 => "\x62\x8D\x2B\x00",

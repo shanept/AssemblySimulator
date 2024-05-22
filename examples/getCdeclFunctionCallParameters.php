@@ -36,11 +36,11 @@ $simulator = new Simulator(Simulator::PROTECTED_MODE);
  * You should only use this method to register your own instructions, or if you
  * do not wish to use the default instruction set.
  */
-$exclusiveOr = new ExclusiveOr;
-$lea = new LoadEffectiveAddress;
-$mov = new Move;
-$pop = new Pop;
-$push = new Push;
+$exclusiveOr = new ExclusiveOr();
+$lea = new LoadEffectiveAddress();
+$mov = new Move();
+$pop = new Pop();
+$push = new Push();
 
 /**
  * Link our instruction set with the simulator. This is typically handled by the

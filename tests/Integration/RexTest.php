@@ -1,8 +1,7 @@
 <?php
 
-namespace shanept\AssemblySimulatorTests\Unit;
+namespace shanept\AssemblySimulatorTests\Integration;
 
-use shanept\AssemblySimulator\Flags;
 use shanept\AssemblySimulator\Register;
 use shanept\AssemblySimulator\Simulator;
 use shanept\AssemblySimulator\Instruction\ExclusiveOr;
@@ -12,7 +11,7 @@ class RexTest extends \PHPUnit\Framework\TestCase
     public function testNonRexOpAfterRexOp()
     {
         $simulator = new Simulator(Simulator::LONG_MODE);
-        $xor = new ExclusiveOr;
+        $xor = new ExclusiveOr();
         $xor->setSimulator($simulator);
 
         $simulator->writeRegister(Register::R8, PHP_INT_MAX);

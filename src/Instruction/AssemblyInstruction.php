@@ -155,7 +155,7 @@ abstract class AssemblyInstruction
                 $sim->getRawRegisters(),
                 $sibByte,
                 $disp,
-                0
+                0,
             );
 
             return $address;
@@ -178,12 +178,14 @@ abstract class AssemblyInstruction
             return $address;
         }
 
-        throw new \OutOfRangeException(
-            sprintf(
-                "Invalid addressing mode. Expected %s, got 0x%x.",
-                Simulator::LONG_MODE === $sim->getMode() ? "0x4 or 0x5" : "0x4",
-                $byte["rm"]
-            )
+        $modes = Simulator::LONG_MODE === $sim->getMode() ? "0x4 or 0x5" : "0x4";
+
+        $message = sprintf(
+            "Invalid addressing mode. Expected %s, got 0x%x.",
+            $modes,
+            $byte["rm"],
         );
+
+        throw new \OutOfRangeException($message);
     }
 }

@@ -7,7 +7,8 @@ use shanept\AssemblySimulator\Simulator;
 /**
  * NOTE: This trait must be inherited by a PHPUnit TestCase.
  */
-trait MockSimulatorTrait {
+trait MockSimulatorTrait
+{
     public function getMockSimulator($mode = Simulator::REAL_MODE)
     {
         $mock = $this->createMock(Simulator::class);
@@ -21,17 +22,17 @@ trait MockSimulatorTrait {
         return $mock;
     }
 
-    public function mockSimulatorRegisters($simulator, $initialRegisters=[])
+    public function mockSimulatorRegisters($simulator, $initialRegisters = [])
     {
         static $registers;
 
         $registers = $initialRegisters;
 
-        $readRegisterCb = function($reg) use(&$registers) {
+        $readRegisterCb = function ($reg) use (&$registers) {
             return $registers[$reg['offset']];
         };
 
-        $writeRegisterCb = function($reg, $value) use(&$registers) {
+        $writeRegisterCb = function ($reg, $value) use (&$registers) {
             $registers[$reg['offset']] = $value;
         };
 

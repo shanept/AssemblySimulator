@@ -4,7 +4,6 @@ namespace shanept\AssemblySimulatorTests\Unit\Instructions;
 
 use ReflectionMethod;
 use shanept\AssemblySimulator\Simulator;
-use shanept\AssemblySimulator\Instruction\AssemblyInstruction;
 use shanept\AssemblySimulatorTests\Fakes\TestAssemblyInstruction;
 
 class AssemblyInstructionTest extends \PHPUnit\Framework\TestCase
@@ -14,7 +13,7 @@ class AssemblyInstructionTest extends \PHPUnit\Framework\TestCase
     public function testSetSimulatorAttemptsToRegisterInstruction()
     {
         $simulator = $this->getMockSimulator();
-        $instruction = new TestAssemblyInstruction;
+        $instruction = new TestAssemblyInstruction();
 
         $simulator->expects($this->once())
                   ->method('registerInstructions')
@@ -25,7 +24,7 @@ class AssemblyInstructionTest extends \PHPUnit\Framework\TestCase
 
     public function testParseAddressThrowsExceptionOnInvalidRmByte()
     {
-        $instruction = new TestAssemblyInstruction;
+        $instruction = new TestAssemblyInstruction();
         $instruction->setSimulator($this->getMockSimulator());
 
         $method = new ReflectionMethod($instruction, "parseAddress");
@@ -36,7 +35,7 @@ class AssemblyInstructionTest extends \PHPUnit\Framework\TestCase
 
     public function testParseAddressThrowsExceptionOnRealModeRipAddress()
     {
-        $instruction = new TestAssemblyInstruction;
+        $instruction = new TestAssemblyInstruction();
         $instruction->setSimulator($this->getMockSimulator());
 
         $parseAddress = new ReflectionMethod($instruction, "parseAddress");
@@ -58,7 +57,7 @@ class AssemblyInstructionTest extends \PHPUnit\Framework\TestCase
         $simulator->method('getInstructionPointer')
                   ->willReturn(1);
 
-        $instruction = new TestAssemblyInstruction;
+        $instruction = new TestAssemblyInstruction();
         $instruction->setSimulator($simulator);
 
         $parseAddress = new ReflectionMethod($instruction, "parseAddress");
@@ -91,7 +90,7 @@ class AssemblyInstructionTest extends \PHPUnit\Framework\TestCase
         $simulator->method('getRawRegisters')
                   ->willReturn(array_fill(0, 8, 0));
 
-        $instruction = new TestAssemblyInstruction;
+        $instruction = new TestAssemblyInstruction();
         $instruction->setSimulator($simulator);
 
         $parseAddress = new ReflectionMethod($instruction, "parseAddress");

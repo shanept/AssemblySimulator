@@ -48,7 +48,7 @@ class RegistersTest extends \PHPUnit\Framework\TestCase
             [Register::CX, 0],
             [Register::DX, 100],
             [Register::DX, 50],
-            [Register::DX, 0]
+            [Register::DX, 0],
         ];
     }
 
@@ -100,7 +100,7 @@ class RegistersTest extends \PHPUnit\Framework\TestCase
                 65535,
                 Register::AL,
                 0,
-                65280
+                65280,
             ],
             [   // Set EAX then zero AX in Protected mode.
                 Simulator::PROTECTED_MODE,
@@ -108,7 +108,7 @@ class RegistersTest extends \PHPUnit\Framework\TestCase
                 4294967295,
                 Register::AX,
                 0,
-                4294901760
+                4294901760,
             ],
             [   // Set RAX then zero AX in Long mode.
                 Simulator::LONG_MODE,
@@ -116,7 +116,7 @@ class RegistersTest extends \PHPUnit\Framework\TestCase
                 PHP_INT_MAX,
                 Register::AX,
                 0,
-                PHP_INT_MAX - 65535
+                PHP_INT_MAX - 65535,
             ],
             [   // Set RAX then EAX in Long mode. We should be left with the EAX
                 // set value.
@@ -125,7 +125,7 @@ class RegistersTest extends \PHPUnit\Framework\TestCase
                 PHP_INT_MAX,
                 Register::EAX,
                 4294967295,
-                4294967295
+                4294967295,
             ],
         ];
     }
@@ -140,7 +140,7 @@ class RegistersTest extends \PHPUnit\Framework\TestCase
         $largerRegisterValue,
         $smallerRegister,
         $smallerRegisterValue,
-        $expectedValue
+        $expectedValue,
     ) {
         $simulator = new Simulator($simulatorMode);
 
@@ -180,7 +180,7 @@ class RegistersTest extends \PHPUnit\Framework\TestCase
             Register::SPL['code'],
             Simulator::TYPE_BYTE,
             true,
-            false
+            false,
         );
 
         $this->assertEquals('%spl', $register['name']);
@@ -193,7 +193,7 @@ class RegistersTest extends \PHPUnit\Framework\TestCase
             Register::SPL['code'],
             Simulator::TYPE_BYTE,
             true,
-            true
+            true,
         );
 
         $this->assertEquals('%r12b', $register['name']);

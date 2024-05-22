@@ -31,7 +31,7 @@ class Register
         'code' => 0,
         'name' => '%rax',
         'width' => 64,
-        'mask' => self::MASK_WIDTH[64]
+        'mask' => self::MASK_WIDTH[64],
     ];
 
     const EAX = [       // r32(/r)
@@ -39,7 +39,7 @@ class Register
         'code' => 0,
         'name' => '%eax',
         'width' => 32,
-        'mask' => self::MASK_WIDTH[32]
+        'mask' => self::MASK_WIDTH[32],
     ];
 
     const AX  = [       // r16(/r)
@@ -47,7 +47,7 @@ class Register
         'code' => 0,
         'name' => '%ax',
         'width' => 16,
-        'mask' => self::MASK_WIDTH[16]
+        'mask' => self::MASK_WIDTH[16],
     ];
 
     const AL  = [       //  r8(/r) with/out REX prefix
@@ -55,7 +55,7 @@ class Register
         'code' => 0,
         'name' => '%al',
         'width' => 8,
-        'mask' => self::MASK_WIDTH[8]
+        'mask' => self::MASK_WIDTH[8],
     ];
 
     // Fourth function argument
@@ -64,7 +64,7 @@ class Register
         'code' => 1,
         'name' => '%rcx',
         'width' => 64,
-        'mask' => self::MASK_WIDTH[64]
+        'mask' => self::MASK_WIDTH[64],
     ];
 
     const ECX = [       // r32(/r)
@@ -72,7 +72,7 @@ class Register
         'code' => 1,
         'name' => '%ecx',
         'width' => 32,
-        'mask' => self::MASK_WIDTH[32]
+        'mask' => self::MASK_WIDTH[32],
     ];
 
     const CX  = [       // r16(/r)
@@ -80,7 +80,7 @@ class Register
         'code' => 1,
         'name' => '%cx',
         'width' => 16,
-        'mask' => self::MASK_WIDTH[16]
+        'mask' => self::MASK_WIDTH[16],
     ];
 
     const CL  = [       //  r8(/r) with/out REX prefix
@@ -88,7 +88,7 @@ class Register
         'code' => 1,
         'name' => '%cl',
         'width' => 8,
-        'mask' => self::MASK_WIDTH[8]
+        'mask' => self::MASK_WIDTH[8],
     ];
 
 
@@ -98,7 +98,7 @@ class Register
         'code' => 2,
         'name' => '%rdx',
         'width' => 64,
-        'mask' => self::MASK_WIDTH[64]
+        'mask' => self::MASK_WIDTH[64],
     ];
 
     const EDX = [       // r32(/r)
@@ -106,7 +106,7 @@ class Register
         'code' => 2,
         'name' => '%edx',
         'width' => 32,
-        'mask' => self::MASK_WIDTH[32]
+        'mask' => self::MASK_WIDTH[32],
     ];
 
     const  DX = [       // r16(/r)
@@ -114,7 +114,7 @@ class Register
         'code' => 2,
         'name' => '%dx',
         'width' => 16,
-        'mask' => self::MASK_WIDTH[16]
+        'mask' => self::MASK_WIDTH[16],
     ];
 
     const  DL = [       //  r8(/r) with/out REX prefix
@@ -122,7 +122,7 @@ class Register
         'code' => 2,
         'name' => '%dl',
         'width' => 8,
-        'mask' => self::MASK_WIDTH[8]
+        'mask' => self::MASK_WIDTH[8],
     ];
 
 
@@ -131,7 +131,7 @@ class Register
         'code' => 3,
         'name' => '%rbx',
         'width' => 64,
-        'mask' => self::MASK_WIDTH[64]
+        'mask' => self::MASK_WIDTH[64],
     ];
 
     const EBX = [       // r32(/r)
@@ -139,7 +139,7 @@ class Register
         'code' => 3,
         'name' => '%ebx',
         'width' => 32,
-        'mask' => self::MASK_WIDTH[32]
+        'mask' => self::MASK_WIDTH[32],
     ];
 
     const  BX = [       // r16(/r)
@@ -147,7 +147,7 @@ class Register
         'code' => 3,
         'name' => '%bx',
         'width' => 16,
-        'mask' => self::MASK_WIDTH[16]
+        'mask' => self::MASK_WIDTH[16],
     ];
 
     const  BL = [       //  r8(/r) with/out REX prefix
@@ -155,7 +155,7 @@ class Register
         'code' => 3,
         'name' => '%bl',
         'width' => 8,
-        'mask' => self::MASK_WIDTH[8]
+        'mask' => self::MASK_WIDTH[8],
     ];
 
     // Second function argument
@@ -164,7 +164,7 @@ class Register
         'code' => 6,
         'name' => '%rsi',
         'width' => 64,
-        'mask' => self::MASK_WIDTH[64]
+        'mask' => self::MASK_WIDTH[64],
     ];
 
     const ESI = [       // r32(/r)
@@ -172,7 +172,7 @@ class Register
         'code' => 6,
         'name' => '%esi',
         'width' => 32,
-        'mask' => self::MASK_WIDTH[32]
+        'mask' => self::MASK_WIDTH[32],
     ];
 
     const  SI = [       // r16(/r)
@@ -180,7 +180,7 @@ class Register
         'code' => 6,
         'name' => '% si',
         'width' => 16,
-        'mask' => self::MASK_WIDTH[16]
+        'mask' => self::MASK_WIDTH[16],
     ];
 
     const SIL = [       //  r8(/r) with REX prefix
@@ -188,7 +188,7 @@ class Register
         'code' => 6,
         'name' => '%sil',
         'width' => 8,
-        'mask' => self::MASK_WIDTH[8]
+        'mask' => self::MASK_WIDTH[8],
     ];
 
     const  DH = [       //  r8(/r) without REX prefix
@@ -196,7 +196,7 @@ class Register
         'code' => 6,
         'name' => '% dh',
         'width' => 8,
-        'mask' => self::MASK_WIDTH[8]
+        'mask' => self::MASK_WIDTH[8],
     ];
 
 
@@ -206,7 +206,7 @@ class Register
         'code' => 7,
         'name' => '%rdi',
         'width' => 64,
-        'mask' => self::MASK_WIDTH[64]
+        'mask' => self::MASK_WIDTH[64],
     ];
 
     const EDI = [       // r32(/r)
@@ -214,7 +214,7 @@ class Register
         'code' => 7,
         'name' => '%edi',
         'width' => 32,
-        'mask' => self::MASK_WIDTH[32]
+        'mask' => self::MASK_WIDTH[32],
     ];
 
     const  DI = [       // r16(/r)
@@ -222,7 +222,7 @@ class Register
         'code' => 7,
         'name' => '% di',
         'width' => 16,
-        'mask' => self::MASK_WIDTH[16]
+        'mask' => self::MASK_WIDTH[16],
     ];
 
     const DIL = [       //  r8(/r) with REX prefix
@@ -230,7 +230,7 @@ class Register
         'code' => 7,
         'name' => '%dil',
         'width' => 8,
-        'mask' => self::MASK_WIDTH[8]
+        'mask' => self::MASK_WIDTH[8],
     ];
 
     const  BH = [       //  r8(/r) without REX prefix
@@ -238,7 +238,7 @@ class Register
         'code' => 7,
         'name' => '% bh',
         'width' => 8,
-        'mask' => self::MASK_WIDTH[8]
+        'mask' => self::MASK_WIDTH[8],
     ];
 
 
@@ -249,7 +249,7 @@ class Register
         'code' => 0,
         'name' => '%r8',
         'width' => 64,
-        'mask' => self::MASK_WIDTH[64]
+        'mask' => self::MASK_WIDTH[64],
     ];
 
     const R8D = [       // r32(/r)
@@ -257,7 +257,7 @@ class Register
         'code' => 0,
         'name' => '%r8d',
         'width' => 32,
-        'mask' => self::MASK_WIDTH[32]
+        'mask' => self::MASK_WIDTH[32],
     ];
 
     const R8W = [       // r16(/r)
@@ -265,7 +265,7 @@ class Register
         'code' => 0,
         'name' => '%r8w',
         'width' => 16,
-        'mask' => self::MASK_WIDTH[16]
+        'mask' => self::MASK_WIDTH[16],
     ];
 
     const R8B = [       //  r8(/r)
@@ -273,7 +273,7 @@ class Register
         'code' => 0,
         'name' => '%r8b',
         'width' => 8,
-        'mask' => self::MASK_WIDTH[8]
+        'mask' => self::MASK_WIDTH[8],
     ];
 
 
@@ -283,7 +283,7 @@ class Register
         'code' => 1,
         'name' => '%r9',
         'width' => 64,
-        'mask' => self::MASK_WIDTH[64]
+        'mask' => self::MASK_WIDTH[64],
     ];
 
     const R9D = [       // r32(/r)
@@ -291,7 +291,7 @@ class Register
         'code' => 1,
         'name' => '%r9d',
         'width' => 32,
-        'mask' => self::MASK_WIDTH[32]
+        'mask' => self::MASK_WIDTH[32],
     ];
 
     const R9W = [       // r16(/r)
@@ -299,7 +299,7 @@ class Register
         'code' => 1,
         'name' => '%r9w',
         'width' => 16,
-        'mask' => self::MASK_WIDTH[16]
+        'mask' => self::MASK_WIDTH[16],
     ];
 
     const R9B = [       //  r8(/r)
@@ -307,7 +307,7 @@ class Register
         'code' => 1,
         'name' => '%r9b',
         'width' => 8,
-        'mask' => self::MASK_WIDTH[8]
+        'mask' => self::MASK_WIDTH[8],
     ];
 
 
@@ -316,7 +316,7 @@ class Register
         'code' => 2,
         'name' => '%r10',
         'width' => 64,
-        'mask' => self::MASK_WIDTH[64]
+        'mask' => self::MASK_WIDTH[64],
     ];
 
     const R10D = [      // r32(/r)
@@ -324,7 +324,7 @@ class Register
         'code' => 2,
         'name' => '%r10d',
         'width' => 32,
-        'mask' => self::MASK_WIDTH[32]
+        'mask' => self::MASK_WIDTH[32],
     ];
 
     const R10W = [      // r16(/r)
@@ -332,7 +332,7 @@ class Register
         'code' => 2,
         'name' => '%r10w',
         'width' => 16,
-        'mask' => self::MASK_WIDTH[16]
+        'mask' => self::MASK_WIDTH[16],
     ];
 
     const R10B = [      //  r8(/r)
@@ -340,7 +340,7 @@ class Register
         'code' => 2,
         'name' => '%r10b',
         'width' => 8,
-        'mask' => self::MASK_WIDTH[8]
+        'mask' => self::MASK_WIDTH[8],
     ];
 
 
@@ -349,7 +349,7 @@ class Register
         'code' => 3,
         'name' => '%r11',
         'width' => 64,
-        'mask' => self::MASK_WIDTH[64]
+        'mask' => self::MASK_WIDTH[64],
     ];
 
     const R11D = [      // r32(/r)
@@ -357,7 +357,7 @@ class Register
         'code' => 3,
         'name' => '%r11d',
         'width' => 32,
-        'mask' => self::MASK_WIDTH[32]
+        'mask' => self::MASK_WIDTH[32],
     ];
 
     const R11W = [      // r16(/r)
@@ -365,7 +365,7 @@ class Register
         'code' => 3,
         'name' => '%r11w',
         'width' => 16,
-        'mask' => self::MASK_WIDTH[16]
+        'mask' => self::MASK_WIDTH[16],
     ];
 
     const R11B = [      //  r8(/r)
@@ -373,7 +373,7 @@ class Register
         'code' => 3,
         'name' => '%r11b',
         'width' => 8,
-        'mask' => self::MASK_WIDTH[8]
+        'mask' => self::MASK_WIDTH[8],
     ];
 
 
@@ -382,7 +382,7 @@ class Register
         'code' => 4,
         'name' => '%r12',
         'width' => 64,
-        'mask' => self::MASK_WIDTH[64]
+        'mask' => self::MASK_WIDTH[64],
     ];
 
     const R12D = [      // r32(/r)
@@ -390,7 +390,7 @@ class Register
         'code' => 4,
         'name' => '%r12d',
         'width' => 32,
-        'mask' => self::MASK_WIDTH[32]
+        'mask' => self::MASK_WIDTH[32],
     ];
 
     const R12W = [      // r16(/r)
@@ -398,7 +398,7 @@ class Register
         'code' => 4,
         'name' => '%r12w',
         'width' => 16,
-        'mask' => self::MASK_WIDTH[16]
+        'mask' => self::MASK_WIDTH[16],
     ];
 
     const R12B = [      //  r8(/r)
@@ -406,7 +406,7 @@ class Register
         'code' => 4,
         'name' => '%r12b',
         'width' => 8,
-        'mask' => self::MASK_WIDTH[8]
+        'mask' => self::MASK_WIDTH[8],
     ];
 
 
@@ -415,7 +415,7 @@ class Register
         'code' => 5,
         'name' => '%r13',
         'width' => 64,
-        'mask' => self::MASK_WIDTH[64]
+        'mask' => self::MASK_WIDTH[64],
     ];
 
     const R13D = [      // r32(/r)
@@ -423,7 +423,7 @@ class Register
         'code' => 5,
         'name' => '%r13d',
         'width' => 32,
-        'mask' => self::MASK_WIDTH[32]
+        'mask' => self::MASK_WIDTH[32],
     ];
 
     const R13W = [      // r16(/r)
@@ -431,7 +431,7 @@ class Register
         'code' => 5,
         'name' => '%r13w',
         'width' => 16,
-        'mask' => self::MASK_WIDTH[16]
+        'mask' => self::MASK_WIDTH[16],
     ];
 
     const R13B = [      //  r8(/r)
@@ -439,7 +439,7 @@ class Register
         'code' => 5,
         'name' => '%r13b',
         'width' => 8,
-        'mask' => self::MASK_WIDTH[8]
+        'mask' => self::MASK_WIDTH[8],
     ];
 
 
@@ -448,7 +448,7 @@ class Register
         'code' => 6,
         'name' => '%r14',
         'width' => 64,
-        'mask' => self::MASK_WIDTH[64]
+        'mask' => self::MASK_WIDTH[64],
     ];
 
     const R14D = [      // r32(/r)
@@ -456,7 +456,7 @@ class Register
         'code' => 6,
         'name' => '%r14d',
         'width' => 32,
-        'mask' => self::MASK_WIDTH[32]
+        'mask' => self::MASK_WIDTH[32],
     ];
 
     const R14W = [      // r16(/r)
@@ -464,7 +464,7 @@ class Register
         'code' => 6,
         'name' => '%r14w',
         'width' => 16,
-        'mask' => self::MASK_WIDTH[16]
+        'mask' => self::MASK_WIDTH[16],
     ];
 
     const R14B = [      //  r8(/r)
@@ -472,7 +472,7 @@ class Register
         'code' => 6,
         'name' => '%r14b',
         'width' => 8,
-        'mask' => self::MASK_WIDTH[8]
+        'mask' => self::MASK_WIDTH[8],
     ];
 
 
@@ -481,7 +481,7 @@ class Register
         'code' => 7,
         'name' => '%r15',
         'width' => 64,
-        'mask' => self::MASK_WIDTH[64]
+        'mask' => self::MASK_WIDTH[64],
     ];
 
     const R15D = [      // r32(/r)
@@ -489,7 +489,7 @@ class Register
         'code' => 7,
         'name' => '%r15d',
         'width' => 32,
-        'mask' => self::MASK_WIDTH[32]
+        'mask' => self::MASK_WIDTH[32],
     ];
 
     const R15W = [      // r16(/r)
@@ -497,7 +497,7 @@ class Register
         'code' => 7,
         'name' => '%r15w',
         'width' => 16,
-        'mask' => self::MASK_WIDTH[16]
+        'mask' => self::MASK_WIDTH[16],
     ];
 
     const R15B = [      //  r8(/r)
@@ -505,7 +505,7 @@ class Register
         'code' => 7,
         'name' => '%r15b',
         'width' => 8,
-        'mask' => self::MASK_WIDTH[8]
+        'mask' => self::MASK_WIDTH[8],
     ];
 
 
@@ -516,7 +516,7 @@ class Register
         'code' => 4,
         'name' => '%rsp',
         'width' => 64,
-        'mask' => self::MASK_WIDTH[64]
+        'mask' => self::MASK_WIDTH[64],
     ];
 
     const ESP = [       // r32(/r)
@@ -524,7 +524,7 @@ class Register
         'code' => 4,
         'name' => '%esp',
         'width' => 32,
-        'mask' => self::MASK_WIDTH[32]
+        'mask' => self::MASK_WIDTH[32],
     ];
 
     const  SP = [       // r16(/r)
@@ -532,7 +532,7 @@ class Register
         'code' => 4,
         'name' => '% sp',
         'width' => 16,
-        'mask' => self::MASK_WIDTH[16]
+        'mask' => self::MASK_WIDTH[16],
     ];
 
     const SPL = [       //  r8(/r) with REX prefix
@@ -540,7 +540,7 @@ class Register
         'code' => 4,
         'name' => '%spl',
         'width' => 8,
-        'mask' => self::MASK_WIDTH[8]
+        'mask' => self::MASK_WIDTH[8],
     ];
 
     const  AH = [       //  r8(/r) without REX prefix
@@ -548,7 +548,7 @@ class Register
         'code' => 4,
         'name' => '% ah',
         'width' => 8,
-        'mask' => self::MASK_WIDTH[8]
+        'mask' => self::MASK_WIDTH[8],
     ];
 
     // Base Pointer (General-purpose in some compiler modes)
@@ -557,7 +557,7 @@ class Register
         'code' => 5,
         'name' => '%rbp',
         'width' => 64,
-        'mask' => self::MASK_WIDTH[64]
+        'mask' => self::MASK_WIDTH[64],
     ];
 
     const EBP = [       // r32(/r)
@@ -565,7 +565,7 @@ class Register
         'code' => 5,
         'name' => '%ebp',
         'width' => 32,
-        'mask' => self::MASK_WIDTH[32]
+        'mask' => self::MASK_WIDTH[32],
     ];
 
     const  BP = [       // r16(/r)
@@ -573,7 +573,7 @@ class Register
         'code' => 5,
         'name' => '% bp',
         'width' => 16,
-        'mask' => self::MASK_WIDTH[16]
+        'mask' => self::MASK_WIDTH[16],
     ];
 
     const BPL = [       //  r8(/r) with REX prefix
@@ -581,7 +581,7 @@ class Register
         'code' => 5,
         'name' => '%bpl',
         'width' => 8,
-        'mask' => self::MASK_WIDTH[8]
+        'mask' => self::MASK_WIDTH[8],
     ];
 
     const  CH = [       //  r8(/r) without REX prefix
@@ -589,7 +589,7 @@ class Register
         'code' => 5,
         'name' => '% ch',
         'width' => 8,
-        'mask' => self::MASK_WIDTH[8]
+        'mask' => self::MASK_WIDTH[8],
     ];
 
     const ID_MAP = [

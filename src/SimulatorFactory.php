@@ -26,7 +26,7 @@ class SimulatorFactory
 {
     public static function createSimulator(
         $simulatorMode = Simulator::REAL_MODE,
-        array $additionalInstructions = []
+        array $additionalInstructions = [],
     ) {
         $instructionSet = self::getDefaultInstructionSet();
         $instructionSet = array_merge($additionalInstructions, $instructionSet);
@@ -34,7 +34,7 @@ class SimulatorFactory
         $simulator = new Simulator($simulatorMode);
 
         foreach ($instructionSet as $instructionClass) {
-            $instructionInstance = new $instructionClass;
+            $instructionInstance = new $instructionClass();
             $instructionInstance->setSimulator($simulator);
         }
 

@@ -11,7 +11,7 @@ class LongModeTest extends \PHPUnit\Framework\TestCase
     public function testOp66Uses16bitRegister()
     {
         $simulator = new Simulator(Simulator::LONG_MODE);
-        $operation = new ExclusiveOr;
+        $operation = new ExclusiveOr();
         $operation->setSimulator($simulator);
 
         $simulator->writeRegister(Register::RAX, PHP_INT_MAX);
@@ -19,7 +19,7 @@ class LongModeTest extends \PHPUnit\Framework\TestCase
         $simulator->setCodeBuffer("\x66\x31\xc0");
         $simulator->simulate();
 
-        $actual = simulator->readRegister(Register::RAX);
+        $actual = $simulator->readRegister(Register::RAX);
         $this->assertEquals(PHP_INT_MAX - 65535, $actual);
     }
 }
