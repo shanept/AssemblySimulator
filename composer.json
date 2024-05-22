@@ -1,0 +1,32 @@
+{
+    "name": "shanept/assembly-simulator",
+    "description": "Allows stepping through compiled assembly code. Provides access to registers and the stack for easy querying of values.",
+    "type": "library",
+    "require": {},
+    "require-dev": {
+        "phpunit/phpunit": "^10",
+        "friendsofphp/php-cs-fixer": "^3.5"
+    },
+    "license": "MIT",
+    "autoload": {
+        "psr-4": {
+            "shanept\\AssemblySimulator\\": "src/"
+        }
+    },
+    "autoload-dev": {
+        "psr-4": {
+            "shanept\\AssemblySimulatorTests\\": "tests/"
+        }
+    },
+    "authors": [
+        {
+            "name": "Shane Thompson"
+        }
+    ],
+    "minimum-stability": "stable",
+    "scripts": {
+        "test": "vendor/bin/phpunit",
+        "format": "vendor/bin/php-cs-fixer fix",
+        "check-format": "vendor/bin/php-cs-fixer check"
+    }
+}
