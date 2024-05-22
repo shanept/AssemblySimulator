@@ -98,12 +98,20 @@ class Move extends AssemblyInstruction
         $rmExt = (bool) ($rex & Simulator::REX_B);
 
         $opSize = $this->getOperandSize();
-        $rm = Register::getByCode($byte["rm"], $opSize, $rexSet, $rmExt);
 
         $reg = Register::getByCode($byte["reg"], $opSize, $rexSet, $regExt);
         $value = $sim->readRegister($reg);
 
-        $sim->writeRegister($rm, $value);
+        // We have a SIB byte.
+        if ($byte['rm'] & 0x4) {
+            $address = $this->parseAddress($byte);
+            $sim->advanceInstructionPointer($address->getDisplacement());
+            // This would write to a memory location. We will not be doing that.
+        } else {
+            $rm = Register::getByCode($byte["rm"], $opSize, $rexSet, $rmExt);
+
+            $sim->writeRegister($rm, $value);
+        }
 
         return true;
     }

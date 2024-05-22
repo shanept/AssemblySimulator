@@ -134,6 +134,47 @@ class MovTest extends \PHPUnit\Framework\TestCase
         $move->executeOperand89();
     }
 
+    /**
+     * We aren't looking for much here as we don't actually handle the value.
+     * We just want to ensure we move past the SIB value without error and
+     * return true.
+     */
+    public function testMov89OnSibValue()
+    {
+        $simulator = $this->getMockSimulator(Simulator::LONG_MODE);
+
+        // mov [rsp+0x10],rsi
+        // 0x48 0x89 0x74 0x24 0x10
+        $simulator->method('getRex')
+                  ->willReturn(0x48);
+
+        $simulator->method('getPrefix')
+                  ->willReturn(0);
+
+        $values = [
+            "\x10",
+            "\x24",
+            "\x74",
+        ];
+
+        $simulator->method('getCodeAtInstruction')
+                  ->willReturnCallback(function () use (&$values) {
+                      return array_pop($values);
+                  });
+
+        $simulator->method('readRegister')
+                  ->with(Register::RSI)
+                  ->willReturn(690);
+
+        $simulator->expects($this->exactly(3))
+                  ->method('advanceInstructionPointer');
+
+        $move = new Move();
+        $move->setSimulator($simulator);
+
+        $this->assertTrue($move->executeOperand89());
+    }
+
     public function testMov89OnRexRegisterValue()
     {
         $simulator = $this->getMockSimulator(Simulator::LONG_MODE);

@@ -14,19 +14,31 @@ class RipAddressTest extends \PHPUnit\Framework\TestCase
         $this->assertInstanceOf(AddressInterface::class, $rip);
     }
 
-    public function testRipAddressResolvesCorrectly()
+    public static function ripAddressResolvesCorrectly()
     {
-        $rip = new RipAddress(100, 30, 8);
+        return [
+            // positive numbers
+            [100, 30, 8, 142],
+            [32, 50, 2, 88],
 
-        $this->assertEquals(142, $rip->getAddress());
+            // negative numbers
+            [95, 0xFFFFFFE2, 7, 76],
+            [17, 0xFFFFFFF0, 3, 8],
+        ];
     }
 
+    /**
+     * @dataProvider ripAddressResolvesCorrectly
+     */
+    public function testRipAddressResolvesCorrectly(
+        $ripPointer,
+        $address,
+        $offset,
+        $expected,
+    ) {
+        $rip = new RipAddress($ripPointer, $address, $offset);
 
-    public function testRipAddressResolvesCorrectlyWithOffset()
-    {
-        $rip = new RipAddress(200, 50, 6);
-
-        $this->assertEquals(300, $rip->getAddress(40));
+        $this->assertEquals($expected, $rip->getAddress());
     }
 
     public function testRipDisplacementIs32bit()

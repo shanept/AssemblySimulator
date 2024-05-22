@@ -8,8 +8,6 @@ declare(strict_types=1);
 
 namespace shanept\AssemblySimulator\Address;
 
-use shanept\AssemblySimulator\Simulator;
-
 /**
  * Resolves SIB addresses.
  *
@@ -18,105 +16,74 @@ use shanept\AssemblySimulator\Simulator;
 class SibAddress implements AddressInterface
 {
     /**
-     * Stores the status of the REX bit when we got to this location, or empty
-     * on non-LONG modes.
+     * Stores the offset to the end of the instruction.
      *
      * @var int
      */
-    private $rex;
+    private $offset;
 
     /**
-     * Stores the opcode prefix for the current operation.
-     *
-     * @var int
-     */
-    private $prefix;
-
-    /**
-     * Stores a copy of the registers when the SIB byte was encountered.
+     * Stores the SIB byte.
      *
      * @var int[]
      */
-    private $registers;
+    private $sib;
 
     /**
-     * Stores the unparsed SIB byte.
-     *
-     * @var int
-     */
-    private $sibByte;
-
-    /**
-     * The displacement of the address in bytes.
+     * The displacement of the address from the SIB formula.
      *
      * @var int
      */
     private $displacement;
 
     /**
-     * Stores the offset to the end of the instruction.
+     * The size of the SIB byte address in bytes.
      *
      * @var int
      */
-    private $instructionOffset;
+    private $sibSize;
 
     /**
-     * @param int    $rex    The current REX bit.
-     * @param int    $pref   Current opcode prefixes.
-     * @param int[]  $regs   A copy of the registers.
-     * @param string $sib    The unparsed SIB byte.
-     * @param int    $disp   The displacement of the address.
-     * @param int    $offset The offset to the end of this instruction.
+     * @param int    $offset  The offset to the end of this instruction.
+     * @param int[]  $sib     The parsed SIB byte.
+     * @param int    $disp    The displacement of the address.
+     * @param int    $sibSize How many bytes the SIB address consumes.
      */
-    public function __construct($rex, $pref, $regs, $sib, $disp, $offset)
+    public function __construct($offset, $sib, $disp, $sibSize)
     {
-        $this->rex = $rex;
-        $this->prefix = $pref;
-        $this->registers = $regs;
-        $this->sibByte = ord($sib);
+        $this->offset = $offset;
+        $this->sib = $sib;
         $this->displacement = $disp;
-        $this->instructionOffset = $offset;
+        $this->sibSize = $sibSize;
     }
 
     public function getAddress($offset = 0)
     {
-        $scale = ($this->sibByte & 0b11000000) >> 6;
-        $index = ($this->sibByte & 0b00111000) >> 3;
-        $base = $this->sibByte & 0b00000111;
+        $scale = $this->sib['s'];
+        $index = $this->sib['i'];
+        $base = $this->sib['b'];
 
-        // Switch to LONG operands if specified by REX.
-        if ($this->rex & Simulator::REX_X) {
-            $index += 8;
+        $dispSize = $this->sibSize - 1;
+
+        // Handle two's compliment addresses.
+        if ($dispSize) {
+            $disp = $this->displacement;
+
+            // This will generate the appropriate sized mask for the operation size.
+            $dispMask = (256 ** $dispSize) - 1;
+            $dispShift = (8 * $dispSize) - 1;
+
+            // If the most significant bit is set, we have a 2's complement.
+            if (($disp >> $dispShift) & 1) {
+                $disp = -(((~$disp) & $dispMask) + 1);
+            }
         }
 
-        if ($this->rex & Simulator::REX_B) {
-            $base += 8;
-        }
-
-        /**
-         * Scale represents the multiplier for the index.
-         *
-         * If scale bit == 0b00, scale is 1.
-         * If scale bit == 0b01, scale is 2.
-         * If scale bit == 0b10, scale is 4.
-         * If scale bit == 0b11, scale is 8.
-         *
-         * Index and Base both refer to registers, in the same fashion as
-         * ModRM bytes.
-         */
-        $scale = 2 ** $scale;
-        $index = $this->registers[$index];
-        $base = $this->registers[$base];
-
-        return $scale * $index +
-            $base +
-            $this->displacement +
-            $offset +
-            $this->instructionOffset;
+        return ($scale * $index) + $base + $disp + $this->sibSize + $this->offset;
     }
 
     public function getDisplacement()
     {
-        return $this->displacement;
+        return $this->sibSize;
     }
 }
