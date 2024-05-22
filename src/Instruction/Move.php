@@ -43,9 +43,6 @@ class Move extends AssemblyInstruction
      *
      * Implements MOV reg,imm for the opcode range \xB8-\xBF.
      *
-     * @see https://www.felixcloutier.com/x86/mov
-     * @see https://pdos.csail.mit.edu/6.828/2005/readings/i386/MOV.htm
-     *
      * @return bool
      */
     public function executeOperandBx()
@@ -78,9 +75,6 @@ class Move extends AssemblyInstruction
      *
      * Implements MOV r/m,reg for the opcode range \x89.
      * This is the alternate encoding of MOV \x8b.
-     *
-     * @see https://www.felixcloutier.com/x86/mov
-     * @see https://pdos.csail.mit.edu/6.828/2005/readings/i386/MOV.htm
      *
      * @return bool
      */
@@ -120,9 +114,6 @@ class Move extends AssemblyInstruction
      * Performs a MOV for a non-8-bit registry to ModRM byte.
      *
      * Implements MOV reg,r/m for the opcode range \x8b.
-     *
-     * @see https://www.felixcloutier.com/x86/mov
-     * @see https://pdos.csail.mit.edu/6.828/2005/readings/i386/MOV.htm
      *
      * @return bool
      */

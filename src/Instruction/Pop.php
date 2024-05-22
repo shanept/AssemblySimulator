@@ -41,9 +41,6 @@ class Pop extends AssemblyInstruction
      *
      * Implements POP register for the pop opcode range 0x58 - 0x5F.
      *
-     * @see https://www.felixcloutier.com/x86/pop
-     * @see https://pdos.csail.mit.edu/6.828/2005/readings/i386/POP.htm
-     *
      * @return bool
      */
     public function executeOperand5x()

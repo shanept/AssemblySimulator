@@ -34,9 +34,6 @@ class LoadEffectiveAddress extends AssemblyInstruction
      *
      * Implements LEA reg,address for the LEA opcode \x8D.
      *
-     * @see https://www.felixcloutier.com/x86/lea
-     * @see https://pdos.csail.mit.edu/6.828/2005/readings/i386/LEA.htm
-     *
      * @return bool
      */
     public function executeOperand8d()
