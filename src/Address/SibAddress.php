@@ -49,15 +49,34 @@ class SibAddress implements AddressInterface
      * @param int    $disp    The displacement of the address.
      * @param int    $sibSize How many bytes the SIB address consumes.
      */
-    public function __construct($offset, $sib, $disp, $sibSize)
+    public function __construct(int $offset, array $sib, int $disp, int $sibSize)
     {
+        if (! in_array($sib['s'], [1, 2, 4, 8])) {
+            $message = sprintf(
+                'Invalid SIB scale value %d. Expected 1, 2, 4 or 8.',
+                $sib['s'],
+            );
+
+            throw new \UnexpectedValueException($message);
+        }
+
+        if (! in_array($sibSize, [1, 2, 5])) {
+            $message = sprintf(
+                'Invalid SIB address length %d. Expected 1 (no displacement), ' .
+                '2 (8-bit displacement) or 5 (32-bit displacement).',
+                $sibSize,
+            );
+
+            throw new \UnexpectedValueException($message);
+        }
+
         $this->offset = $offset;
         $this->sib = $sib;
         $this->displacement = $disp;
         $this->sibSize = $sibSize;
     }
 
-    public function getAddress($offset = 0)
+    public function getAddress(int $offset = 0): int
     {
         $scale = $this->sib['s'];
         $index = $this->sib['i'];
@@ -82,7 +101,7 @@ class SibAddress implements AddressInterface
         return ($scale * $index) + $base + $disp + $this->sibSize + $this->offset;
     }
 
-    public function getDisplacement()
+    public function getDisplacement(): int
     {
         return $this->sibSize;
     }

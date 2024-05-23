@@ -23,12 +23,12 @@ interface AddressInterface
      *
      * @return int
      */
-    public function getAddress($offset = 0);
+    public function getAddress(int $offset = 0): int;
 
     /**
      * Returns the displacement (in bytes) of the memory address.
      *
      * @return int
      */
-    public function getDisplacement();
+    public function getDisplacement(): int;
 }

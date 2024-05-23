@@ -22,7 +22,7 @@ use shanept\AssemblySimulator\Simulator;
  */
 class Pop extends AssemblyInstruction
 {
-    public function register()
+    public function register(): array
     {
         return [
             0x58 => [&$this, 'executeOperand5x'],
@@ -40,10 +40,8 @@ class Pop extends AssemblyInstruction
      * Performs a stack pop operation.
      *
      * Implements POP register for the pop opcode range 0x58 - 0x5F.
-     *
-     * @return bool
      */
-    public function executeOperand5x()
+    public function executeOperand5x(): bool
     {
         $sim = $this->getSimulator();
 
@@ -69,6 +67,9 @@ class Pop extends AssemblyInstruction
         return true;
     }
 
+    /**
+     * Returns the correct stack pointer for the Simulator mode.
+     */
     protected function getStackPointerRegister($mode)
     {
         $pointers = [

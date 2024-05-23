@@ -151,6 +151,9 @@ class MovTest extends \PHPUnit\Framework\TestCase
         $simulator->method('getPrefix')
                   ->willReturn(0);
 
+        $simulator->method('getInstructionPointer')
+                  ->willReturn(1);
+
         $values = [
             "\x24",
             "\x74",

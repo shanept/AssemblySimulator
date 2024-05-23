@@ -42,13 +42,13 @@ class RipAddress implements AddressInterface
      * @param int $address     The 32-bit RIP-relative address.
      * @param int $offset      The offset to the end of this instruction.
      */
-    public function __construct($ripRegister, $address, $offset)
+    public function __construct(int $ripRegister, int $address, int $offset)
     {
         $this->rip = $ripRegister;
         $this->address = $address + $offset;
     }
 
-    public function getAddress($offset = 0)
+    public function getAddress(int $offset = 0): int
     {
         // Handle two's compliment addresses.
         $address = $this->address;
@@ -61,7 +61,7 @@ class RipAddress implements AddressInterface
         return $this->rip + $address + $this->displacement + $offset;
     }
 
-    public function getDisplacement()
+    public function getDisplacement(): int
     {
         return $this->displacement;
     }

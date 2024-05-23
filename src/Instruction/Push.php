@@ -22,7 +22,7 @@ use shanept\AssemblySimulator\Simulator;
  */
 class Push extends AssemblyInstruction
 {
-    public function register()
+    public function register(): array
     {
         return [
             0x50 => [&$this, 'executeOperand5x'],
@@ -42,10 +42,8 @@ class Push extends AssemblyInstruction
      * Performs a stack push operation.
      *
      * Implements PUSH register for the push opcode range 0x50 - 0x57.
-     *
-     * @return bool
      */
-    public function executeOperand5x()
+    public function executeOperand5x(): bool
     {
         $sim = $this->getSimulator();
 
@@ -75,10 +73,8 @@ class Push extends AssemblyInstruction
      * Performs a push operation.
      *
      * Performs PUSH imm16/32/64 for opcode 0x68.
-     *
-     * @return bool
      */
-    public function executeOperand68()
+    public function executeOperand68(): bool
     {
         $sim = $this->getSimulator();
         $sim->advanceInstructionPointer(1);
@@ -102,10 +98,8 @@ class Push extends AssemblyInstruction
      * Performs a push operation.
      *
      * Performs PUSH imm8 for opcode 0x6a.
-     *
-     * @return bool
      */
-    public function executeOperand6a()
+    public function executeOperand6a(): bool
     {
         $sim = $this->getSimulator();
         $sim->advanceInstructionPointer(1);
@@ -123,6 +117,9 @@ class Push extends AssemblyInstruction
         return true;
     }
 
+    /**
+     * Returns the correct stack pointer for the Simulator mode.
+     */
     protected function getStackPointerRegister($mode)
     {
         $pointers = [

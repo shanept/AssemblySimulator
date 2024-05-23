@@ -9,7 +9,9 @@ class SibAddressTest extends \PHPUnit\Framework\TestCase
 {
     public function testImplements()
     {
-        $sib = new SibAddress(0, [], 0, 0);
+        $sibByte = ['s' => 1,'i' => 0,'b' => 0];
+
+        $sib = new SibAddress(0, $sibByte, 0, 1);
 
         $this->assertInstanceOf(AddressInterface::class, $sib);
     }
@@ -89,12 +91,46 @@ class SibAddressTest extends \PHPUnit\Framework\TestCase
 
     public function testDisplacementReturnsIntFromConstruct()
     {
-        $sib0 = new SibAddress(0, [], 0, 1);
-        $sib8 = new SibAddress(0, [], 0, 2);
-        $sib32 = new SibAddress(0, [], 0, 5);
+        $sibByte = ['s' => 1,'i' => 0,'b' => 0];
+
+        $sib0 = new SibAddress(0, $sibByte, 0, 1);
+        $sib8 = new SibAddress(0, $sibByte, 0, 2);
+        $sib32 = new SibAddress(0, $sibByte, 0, 5);
 
         $this->assertEquals(1, $sib0->getDisplacement());
         $this->assertEquals(2, $sib8->getDisplacement());
         $this->assertEquals(5, $sib32->getDisplacement());
+    }
+
+    public static function invalidDisplacementThrowsExceptionDataProvider()
+    {
+        return [[-5], [-4], [-3], [-2], [-1], [0], [3], [4], [6], [7], [8], [9], [10]];
+    }
+
+    /**
+     * @dataProvider invalidDisplacementThrowsExceptionDataProvider
+     */
+    public function testInvalidDisplacementThrowsException($displacementSize)
+    {
+        $sibByte = ['s' => 1,'i' => 0,'b' => 0];
+
+        $this->expectException(\UnexpectedValueException::class);
+        $sib0 = new SibAddress(0, $sibByte, 0, $displacementSize);
+    }
+
+    public static function invalidScaleThrowsExceptionDataProvider()
+    {
+        return [[-5], [-4], [-3], [-2], [-1], [0], [3], [5], [6], [7], [9], [10]];
+    }
+
+    /**
+     * @dataProvider invalidScaleThrowsExceptionDataProvider
+     */
+    public function testInvalidScaleThrowsException($scale)
+    {
+        $sibByte = ['s' => $scale,'i' => 0,'b' => 0];
+
+        $this->expectException(\UnexpectedValueException::class);
+        $sib0 = new SibAddress(0, $sibByte, 0, 1);
     }
 }

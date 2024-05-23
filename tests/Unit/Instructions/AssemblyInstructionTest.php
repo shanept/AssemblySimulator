@@ -77,27 +77,39 @@ class AssemblyInstructionTest extends \PHPUnit\Framework\TestCase
 
         $simulator = $this->getMockSimulator(Simulator::PROTECTED_MODE);
 
-        $simulator->method('getCodeAtInstruction')
-                  ->willReturn("\x0c")
-                  ->with(1);
-
+        // mov [eax+ebx*4],ecx
+        // 0x89 0x0C 0x98
         $simulator->method('getRex')
                   ->willReturn(0);
 
         $simulator->method('getPrefix')
-                  ->willReturn(false);
+                  ->willReturn(0);
+
+        $simulator->method('getInstructionPointer')
+                  ->willReturn(1);
 
         $simulator->method('getRawRegisters')
                   ->willReturn(array_fill(0, 8, 0));
+
+        $values = [
+            "\x98",
+            "\x0C",
+        ];
+
+        $simulator->method('getCodeAtInstruction')
+                  ->with(1)
+                  ->willReturnCallback(function ($length) use (&$values) {
+                      return array_pop($values);
+                  });
+
+        $simulator->method('getCodeBuffer')
+                  ->willReturn("")
+                  ->with(1, 0);
 
         $instruction = new TestAssemblyInstruction();
         $instruction->setSimulator($simulator);
 
         $parseAddress = new ReflectionMethod($instruction, "parseAddress");
-
-        // mov [eax+ebx*4],ecx
-        $simulator->setCodeBuffer("\x89\x0c\x98");
-        $simulator->setInstructionPointer(2);
 
         $byte = [
             "mod" => 0,

@@ -6,7 +6,7 @@ use shanept\AssemblySimulator\Instruction\AssemblyInstruction;
 
 class TestVoidInstruction extends AssemblyInstruction
 {
-    public function register()
+    public function register(): array
     {
         return [];
     }

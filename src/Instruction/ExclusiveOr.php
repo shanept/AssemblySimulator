@@ -23,7 +23,7 @@ use shanept\AssemblySimulator\Simulator;
  */
 class ExclusiveOr extends AssemblyInstruction
 {
-    public function register()
+    public function register(): array
     {
         return [
             0x31 => [&$this, 'executeOperand31'],
@@ -31,7 +31,7 @@ class ExclusiveOr extends AssemblyInstruction
         ];
     }
 
-    private function preExecXorModRM()
+    private function preExecXorModRM(): array
     {
         $sim = $this->getSimulator();
         $sim->advanceInstructionPointer(1);
@@ -68,10 +68,8 @@ class ExclusiveOr extends AssemblyInstruction
      * Performs an xor operation on two registers.
      *
      * Implements XOR source,dest for the xor opcode \x31. Result stored in rm.
-     *
-     * @return bool
      */
-    public function executeOperand31()
+    public function executeOperand31(): bool
     {
         $sim = $this->getSimulator();
 
@@ -95,10 +93,8 @@ class ExclusiveOr extends AssemblyInstruction
      * Performs an xor operation on two registers.
      *
      * Implements XOR source,dest for the xor opcode \x33. Result stored in reg.
-     *
-     * @return bool
      */
-    public function executeOperand33()
+    public function executeOperand33(): bool
     {
         $sim = $this->getSimulator();
 

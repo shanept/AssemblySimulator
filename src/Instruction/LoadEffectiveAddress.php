@@ -22,7 +22,7 @@ use shanept\AssemblySimulator\Simulator;
  */
 class LoadEffectiveAddress extends AssemblyInstruction
 {
-    public function register()
+    public function register(): array
     {
         return [
             0x8D => [&$this, 'executeOperand8d'],
@@ -33,10 +33,8 @@ class LoadEffectiveAddress extends AssemblyInstruction
      * Performs a Load Effective Address operation.
      *
      * Implements LEA reg,address for the LEA opcode \x8D.
-     *
-     * @return bool
      */
-    public function executeOperand8d()
+    public function executeOperand8d(): bool
     {
         $sim = $this->getSimulator();
         $sim->advanceInstructionPointer(1);

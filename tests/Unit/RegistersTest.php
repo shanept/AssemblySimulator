@@ -158,7 +158,7 @@ class RegistersTest extends \PHPUnit\Framework\TestCase
     {
         $simulator = new Simulator(Simulator::REAL_MODE);
 
-        $this->expectException(\RuntimeException::class);
+        $this->expectException(\LogicException::class);
         $simulator->writeRegister(Register::EAX, 0, Simulator::TYPE_DWRD);
     }
 
@@ -169,7 +169,7 @@ class RegistersTest extends \PHPUnit\Framework\TestCase
     {
         $simulator = new Simulator(Simulator::PROTECTED_MODE);
 
-        $this->expectException(\RuntimeException::class);
+        $this->expectException(\LogicException::class);
         $simulator->writeRegister(Register::RAX, 0, Simulator::TYPE_QUAD);
     }
 

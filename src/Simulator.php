@@ -138,7 +138,7 @@ class Simulator
      *
      * @var int
      */
-    private $prefix = false;
+    private $prefix = 0;
 
     /**
      * Stores the currently simulated assembly code.
@@ -205,7 +205,7 @@ class Simulator
         $this->tainted = false;
 
         $this->rex = 0;
-        $this->prefix = false;
+        $this->prefix = 0;
         $this->buffer = false;
 
 
@@ -242,7 +242,7 @@ class Simulator
      *
      * @param int $mode The machine mode to operate in.
      */
-    public function setMode($mode)
+    public function setMode(int $mode)
     {
         $this->tainted = true;
 
@@ -252,9 +252,9 @@ class Simulator
     /**
      * Returns the value for a given flag.
      *
-     * @return int
+     * @param int $flag The flag to retreive.
      */
-    public function getFlag($flag)
+    public function getFlag(int $flag): int
     {
         $factor = $flag & -$flag;
         return ($this->eFlags & $flag) / $factor;
@@ -262,10 +262,8 @@ class Simulator
 
     /**
      * Returns all flags.
-     *
-     * @return int
      */
-    public function getFlags()
+    public function getFlags(): int
     {
         return $this->eFlags;
     }
@@ -273,9 +271,12 @@ class Simulator
     /**
      * Set the value of a flag.
      *
-     * @return int
+     * @param int $flag  The flag to be set.
+     * @param int $value The value to set the flag to.
+     *
+     * @return void
      */
-    public function setFlag($flag, $value)
+    public function setFlag(int $flag, int $value)
     {
         $factor = $flag & -$flag;
 
@@ -288,30 +289,24 @@ class Simulator
 
     /**
      * Gets the current REX value (if applicable).
-     *
-     * @return int
      */
-    public function getRex()
+    public function getRex(): int
     {
         return $this->rex;
     }
 
     /**
      * Gets the current instruction prefix under which we are operating.
-     *
-     * @return int
      */
-    public function getPrefix()
+    public function getPrefix(): int
     {
         return $this->prefix;
     }
 
     /**
      * Gets the memory address base.
-     *
-     * @return int The base of the effective memory offset.
      */
-    public function getAddressBase()
+    public function getAddressBase(): int
     {
         return $this->addressBase;
     }
@@ -319,19 +314,19 @@ class Simulator
     /**
     * Sets the base memory address.
      *
-     * @param int $base The LEA base address.
+     * @param int $base The address base.
+     *
+     * @return void
      */
-    public function setAddressBase($base)
+    public function setAddressBase(int $base)
     {
         $this->addressBase = $base;
     }
 
     /**
      * Returns the largest allowable instruction size on this mode.
-     *
-     * @return int
      */
-    public function getLargestInstructionWidth()
+    public function getLargestInstructionWidth(): int
     {
         // Returns the bit-width of our architecture.
         return 8 << $this->mode;
@@ -342,7 +337,7 @@ class Simulator
      *
      * @return int[]
      */
-    public function getRawRegisters()
+    public function getRawRegisters(): array
     {
         return $this->registers;
     }
@@ -352,7 +347,7 @@ class Simulator
      *
      * @return int[]
      */
-    public function getIndexedRegisters()
+    public function getIndexedRegisters(): array
     {
         $size = $this->getLargestInstructionWidth();
         $numRegisters = count($this->registers);
@@ -380,7 +375,7 @@ class Simulator
      *
      * @return int
      */
-    public function readRegister(array $register, $size = null)
+    public function readRegister(array $register, $size = null): int
     {
         $largestWidth = $this->getLargestInstructionWidth();
 
@@ -407,7 +402,19 @@ class Simulator
         return $value;
     }
 
-    public function writeRegister(array $register, $value)
+    /**
+     * Writes a value to the specified register.
+     *
+     * @param array $register The register we are going to write to.
+     * @param int   $value    The value to write to be written.
+     *
+     * @throws LogicException if we are attempting to write to a register too
+     *                        large for our simulation mode. (i.e. writing to
+     *                        64-bit register in 16-bit REAL mode).
+     *
+     * @return void
+     */
+    public function writeRegister(array $register, int $value)
     {
         $this->taintProtection();
 
@@ -424,7 +431,7 @@ class Simulator
                 $this->getModeName(),
             );
 
-            throw new \RuntimeException($message);
+            throw new \LogicException($message);
         }
 
         /**
@@ -461,7 +468,7 @@ class Simulator
      *
      * @return int[]
      */
-    public function getStack()
+    public function getStack(): array
     {
         return $this->stack;
     }
@@ -469,9 +476,9 @@ class Simulator
     /**
      * Returns the value of the stack at a specified offset.
      *
-     * @return int
+     * @param int $offset The offset from the start of the stack. (array index)
      */
-    public function readStackAt($offset)
+    public function readStackAt(int $offset): int
     {
         return $this->stack[$offset];
     }
@@ -481,8 +488,10 @@ class Simulator
      *
      * @param int $offset The stack offset at which to write the value.
      * @param int $value  The value to write to the stack.
+     *
+     * @return void
      */
-    public function setStackAt($offset, $value)
+    public function setStackAt(int $offset, int $value)
     {
         $this->stack[$offset] = $value;
     }
@@ -492,8 +501,10 @@ class Simulator
      * the stack offset.
      *
      * @param int $offset The offset to clear.
+     *
+     * @return void
      */
-    public function clearStackAt($offset)
+    public function clearStackAt(int $offset)
     {
         unset($this->stack[$offset]);
     }
@@ -507,10 +518,8 @@ class Simulator
      * @param int $length Optional. Specifies the string should return at most
      *                    $length number of charactrs. See PHP strpos $length
      *                    for more information.
-     *
-     * @return string
      */
-    public function getCodeBuffer($offset = null, $length = null)
+    public function getCodeBuffer($offset = null, $length = null): string
     {
         if (is_null($offset)) {
             $offset = 0;
@@ -530,10 +539,8 @@ class Simulator
      * @see getCodeBuffer()
      *
      * @param int $length Optional. As per getCodeBuffer().
-     *
-     * @return string
      */
-    public function getCodeAtInstruction($length = null)
+    public function getCodeAtInstruction($length = null): string
     {
         return $this->getCodeBuffer($this->iPointer, $length);
     }
@@ -546,27 +553,23 @@ class Simulator
      *
      * @return void
      */
-    public function setCodeBuffer($buffer)
+    public function setCodeBuffer(string $buffer)
     {
         $this->buffer = $buffer;
     }
 
     /**
      * Returns the size of the code buffer in bytes.
-     *
-     * @return int
      */
-    public function getCodeBufferSize()
+    public function getCodeBufferSize(): int
     {
         return strlen($this->buffer);
     }
 
     /**
      * Returns the current position of the instruction pointer.
-     *
-     * @return int
      */
-    public function getInstructionPointer()
+    public function getInstructionPointer(): int
     {
         return $this->iPointer;
     }
@@ -578,7 +581,7 @@ class Simulator
      *
      * @return void
      */
-    public function setInstructionPointer($instructionPointer)
+    public function setInstructionPointer(int $instructionPointer)
     {
         $this->iPointer = $instructionPointer;
     }
@@ -586,19 +589,19 @@ class Simulator
     /**
      * Advances the instruction pointer, relative to its current position.
      *
-     * @param int $advancePointer The amount of bytes to advance the pointer by.
+     * @param int $amount The amount of bytes to advance the pointer by.
      *
      * @return void
      */
-    public function advanceInstructionPointer($advancePointer)
+    public function advanceInstructionPointer(int $amount)
     {
-        $this->iPointer += $advancePointer;
+        $this->iPointer += $amount;
     }
 
     /**
      * Throws an exception if we are trying to operate a tainted environment.
      *
-     * @throws \RuntimeException
+     * @throws shanept\AssemblySimulator\Exception\TaintException
      *
      * @return void
      */
@@ -616,10 +619,8 @@ class Simulator
      * Determines whether an instruction has been registered to handle an opcode.
      *
      * @param int $opcode The opcode to check for the existance of an instruction.
-     *
-     * @return bool If an instruction is regisered for the provided opcode.
      */
-    private function hasRegisteredInstruction($opcode)
+    private function hasRegisteredInstruction(int $opcode): bool
     {
         foreach ($this->registeredInstructions as $record) {
             if (array_key_exists($opcode, $record['mappings'])) {
@@ -641,7 +642,7 @@ class Simulator
      *
      * @return bool Whether or not an instruction processed the opcode.
      */
-    private function processOpcodeWithRegisteredInstruction($opcode)
+    private function processOpcodeWithRegisteredInstruction(int $opcode): bool
     {
         foreach ($this->registeredInstructions as $record) {
             // If this Instruction class doesn't handle this opcode, skip it.
@@ -668,6 +669,16 @@ class Simulator
         return false;
     }
 
+    /**
+     * Handles generating and throwing the exception for registered instruction
+     * processors that do not return a boolean value.
+     *
+     * @internal
+     *
+     * @see processOpcodeWithRegisteredInstruction()
+     *
+     * @throws \LogicException
+     */
     private function triggerInstructionHandlerException($callback, $response)
     {
         // Default for string functions. Will most likely be overwritten.
@@ -695,8 +706,6 @@ class Simulator
 
     /**
      * Parses a binary string of assembly to move values around in registers.
-     *
-     * NOTE: Only supports LEA, MOV and XOR commands on registers.
      *
      * @see http://ref.x86asm.net/coder64.html#gen_note_90_NOP
      *
@@ -763,7 +772,7 @@ class Simulator
 
             // Reset our REX bit.
             $this->rex = 0;
-            $this->prefix = false;
+            $this->prefix = 0;
         }
     }
 }

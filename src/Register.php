@@ -705,15 +705,19 @@ class Register
     /**
      * Translates a request for an opcode into a register object.
      *
-     * @param int $id      The opcode for this register.
-     * @param int $size    The width of the register to return.
-     * @param int $rexSet  Is REX set for this operation.
-     * @param int $rExtend Is this opcode field being extended.
+     * @param int  $id      The opcode for this register.
+     * @param int  $size    The width of the register to return.
+     * @param bool $rexSet  Is REX set for this operation.
+     * @param bool $rExtend Is this opcode field being extended.
      *
      * @return array
      */
-    public static function getByCode($id, $size, $rexSet = false, $rExtend = false)
-    {
+    public static function getByCode(
+        int $id,
+        int $size,
+        bool $rexSet = false,
+        bool $rExtend = false,
+    ) {
         if ($rexSet & $rExtend) {
             return self::REX_ID_MAP[$id][$size];
         }

@@ -22,7 +22,7 @@ use shanept\AssemblySimulator\Simulator;
  */
 class Move extends AssemblyInstruction
 {
-    public function register()
+    public function register(): array
     {
         return [
             0x89 => [&$this, 'executeOperand89'],
@@ -42,10 +42,8 @@ class Move extends AssemblyInstruction
      * Performs a MOV for a non-8-bit memory address.
      *
      * Implements MOV reg,imm for the opcode range \xB8-\xBF.
-     *
-     * @return bool
      */
-    public function executeOperandBx()
+    public function executeOperandBx(): bool
     {
         $sim = $this->getSimulator();
 
@@ -75,10 +73,8 @@ class Move extends AssemblyInstruction
      *
      * Implements MOV r/m,reg for the opcode range \x89.
      * This is the alternate encoding of MOV \x8b.
-     *
-     * @return bool
      */
-    public function executeOperand89()
+    public function executeOperand89(): bool
     {
         $sim = $this->getSimulator();
         $sim->advanceInstructionPointer(1);
@@ -114,10 +110,8 @@ class Move extends AssemblyInstruction
      * Performs a MOV for a non-8-bit registry to ModRM byte.
      *
      * Implements MOV reg,r/m for the opcode \x8b.
-     *
-     * @return bool
      */
-    public function executeOperand8b()
+    public function executeOperand8b(): bool
     {
         $sim = $this->getSimulator();
         $sim->advanceInstructionPointer(1);

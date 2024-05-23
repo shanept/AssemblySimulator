@@ -25,9 +25,9 @@ use shanept\AssemblySimulator\Instruction\Push;
 class SimulatorFactory
 {
     public static function createSimulator(
-        $simulatorMode = Simulator::REAL_MODE,
+        int $simulatorMode = Simulator::REAL_MODE,
         array $additionalInstructions = [],
-    ) {
+    ): Simulator {
         /**
          * We will register additional instructions from lowest to highest
          * priority. This is because the Simulator will reverse the order as
@@ -48,7 +48,7 @@ class SimulatorFactory
         return $simulator;
     }
 
-    public static function getDefaultInstructionSet()
+    public static function getDefaultInstructionSet(): array
     {
         return [
             ExclusiveOr::class,
