@@ -64,10 +64,10 @@ class SibAddress implements AddressInterface
         $base = $this->sib['b'];
 
         $dispSize = $this->sibSize - 1;
+        $disp = $this->displacement;
 
         // Handle two's compliment addresses.
         if ($dispSize) {
-            $disp = $this->displacement;
 
             // This will generate the appropriate sized mask for the operation size.
             $dispMask = (256 ** $dispSize) - 1;
