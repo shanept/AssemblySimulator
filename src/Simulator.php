@@ -752,9 +752,10 @@ class Simulator
 
                 default:
                     $errorMessage = sprintf(
-                        'Encountered unknown opcode 0x%x at offset %d.',
+                        'Encountered unknown opcode 0x%x at offset %d (0x%x).',
                         $op,
                         $this->iPointer,
+                        $this->addressBase + $this->iPointer,
                     );
 
                     throw new \OutOfBoundsException($errorMessage, $op);
