@@ -97,7 +97,7 @@ class Move extends AssemblyInstruction
         $value = $sim->readRegister($reg);
 
         // We have a SIB byte.
-        if ($byte['rm'] & 0x4) {
+        if ($byte['rm'] === 0x4) {
             $address = $this->parseAddress($byte);
             $sim->advanceInstructionPointer($address->getDisplacement());
             // This would write to a memory location. We will not be doing that.
@@ -113,7 +113,7 @@ class Move extends AssemblyInstruction
     /**
      * Performs a MOV for a non-8-bit registry to ModRM byte.
      *
-     * Implements MOV reg,r/m for the opcode range \x8b.
+     * Implements MOV reg,r/m for the opcode \x8b.
      *
      * @return bool
      */

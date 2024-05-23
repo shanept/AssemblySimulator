@@ -186,6 +186,30 @@ class MovTest extends \PHPUnit\Framework\TestCase
         $this->assertTrue($move->executeOperand89());
     }
 
+    public function testMov89OnNonSibValue()
+    {
+        $simulator = $this->getMockSimulator(Simulator::LONG_MODE);
+
+        $simulator->method('getRex')
+                  ->willReturn(0x49);
+
+        $simulator->method('getCodeAtInstruction')
+                  ->willReturn("\xFD");
+
+        $simulator->method('readRegister')
+                  ->with(Register::RDI)
+                  ->willReturn(133);
+
+        $simulator->expects($this->once())
+                  ->method('writeRegister')
+                  ->with(Register::R13, 133);
+
+        $move = new Move();
+        $move->setSimulator($simulator);
+
+        $move->executeOperand89();
+    }
+
     public function testMov89OnRexRegisterValue()
     {
         $simulator = $this->getMockSimulator(Simulator::LONG_MODE);
