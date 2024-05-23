@@ -9,6 +9,7 @@ declare(strict_types=1);
 
 namespace shanept\AssemblySimulator\Instruction;
 
+use shanept\AssemblySimulator\Register;
 use shanept\AssemblySimulator\Simulator;
 use shanept\AssemblySimulator\Address\SibAddress;
 use shanept\AssemblySimulator\Address\RipAddress;
@@ -109,6 +110,58 @@ abstract class AssemblyInstruction
         ];
     }
 
+    protected function parseSibByte($byte)
+    {
+        $sim = $this->getSimulator();
+
+        $byte = ord($byte);
+        $sib = [
+            's' => ($byte & 0b11000000) >> 6,
+            'i' => ($byte & 0b00111000) >> 3,
+            'b' => $byte & 0b00000111,
+        ];
+
+        $opSize = $this->getOperandSize();
+
+        $rex = $sim->getRex();
+        $rexSet = (bool) ($rex & Simulator::REX);
+        $idxExt = (bool) ($rex & Simulator::REX_X);
+        $bseExt = (bool) ($rex & Simulator::REX_B);
+
+        /**
+         * Scale represents the multiplier for the index.
+         *
+         * If scale bit == 0b00, scale is 1.
+         * If scale bit == 0b01, scale is 2.
+         * If scale bit == 0b10, scale is 4.
+         * If scale bit == 0b11, scale is 8.
+         */
+        $scale = 2 ** $sib['s'];
+
+        /**
+         * Index and Base both refer to registers, in the same fashion as
+         * ModRM bytes.
+         *
+         * If the value of Index is 4, we do not apply a scaled index. Thus we
+         * will override the index to 0, making the index scale to 0 as well.
+         */
+        $index = 0;
+
+        if (0x4 !== $sib['i']) {
+            $reg = Register::getByCode($sib['i'], $opSize, $rexSet, $idxExt);
+            $index = $sim->readRegister($reg);
+        }
+
+        $reg = Register::getByCode($sib['b'], $opSize, $rexSet, $bseExt);
+        $base = $sim->readRegister($reg);
+
+        return [
+            's' => $scale,
+            'i' => $index,
+            'b' => $base,
+        ];
+    }
+
     protected function unpackImmediate($immediate, $size)
     {
         $packs = [
@@ -137,6 +190,9 @@ abstract class AssemblyInstruction
          * If the r/m byte is 0x5, we have RIP addressing.
          */
         if (0x4 === $byte["rm"]) {
+            $sibByte = $sim->getCodeAtInstruction(1);
+            $sib = $this->parseSibByte($sibByte);
+
             /**
              * Calculate the displacement of the SIB operation. The offset
              * is specified by the ModRM mod byte:
@@ -145,17 +201,16 @@ abstract class AssemblyInstruction
              * If mod = 0b01, displacement is 1.
              * If mod = 0b10, displacement is 4.
              */
-            $disp = 2 == $byte["mod"] ? 4 : $byte["mod"];
+            $dispSize = 2 == $byte["mod"] ? 4 : $byte["mod"];
+            $displacement = $sim->getCodeBuffer(1, $dispSize);
 
-            $sibByte = $sim->getCodeAtInstruction(1);
+            $instructionPointer = $sim->getInstructionPointer();
 
             $address = new SibAddress(
-                $sim->getRex(),
-                $sim->getPrefix(),
-                $sim->getRawRegisters(),
-                $sibByte,
-                $disp,
-                0,
+                $instructionPointer,
+                $sib,
+                $displacement,
+                $dispSize + 1,
             );
 
             return $address;

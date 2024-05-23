@@ -152,7 +152,6 @@ class MovTest extends \PHPUnit\Framework\TestCase
                   ->willReturn(0);
 
         $values = [
-            "\x10",
             "\x24",
             "\x74",
         ];
@@ -162,9 +161,21 @@ class MovTest extends \PHPUnit\Framework\TestCase
                       return array_pop($values);
                   });
 
+        $simulator->method('getCodeBuffer')
+                  ->with(1, 1)
+                  ->willReturn("\x10");
+
         $simulator->method('readRegister')
-                  ->with(Register::RSI)
-                  ->willReturn(690);
+                  ->willReturnCallback(function ($register) {
+                      switch ($register) {
+                          case Register::RSI:
+                              return 690;
+                          case Register::RSP:
+                              return 0;
+                      }
+
+                      $this->fail(sprintf('Unexpected register %s.', $register['name']));
+                  });
 
         $simulator->expects($this->exactly(3))
                   ->method('advanceInstructionPointer');
