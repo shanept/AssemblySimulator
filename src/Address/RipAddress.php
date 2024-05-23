@@ -50,20 +50,12 @@ class RipAddress implements AddressInterface
 
     public function getAddress($offset = 0)
     {
-        $dispSize = $this->displacement;
-
         // Handle two's compliment addresses.
-        if ($dispSize) {
-            $address = $this->address;
+        $address = $this->address;
 
-            // This will generate the appropriate sized mask for the operation size.
-            $addrMask = (256 ** $dispSize) - 1;
-            $addrShift = (8 * $dispSize) - 1;
-
-            // If the most significant bit is set, we have a 2's complement.
-            if (($address >> $addrShift) & 1) {
-                $address = -(((~$address) & $addrMask) + 1);
-            }
+        // If the most significant bit is set, we have a 2's complement.
+        if (($address >> 31) & 1) {
+            $address = -(((~$address) & 0xFFFFFFFF) + 1);
         }
 
         return $this->rip + $address + $this->displacement + $offset;
