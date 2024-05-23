@@ -7,6 +7,7 @@ use shanept\AssemblySimulator\Register;
 use shanept\AssemblySimulator\Simulator;
 use shanept\AssemblySimulator\Exception;
 use shanept\AssemblySimulator\Instruction\AssemblyInstruction;
+use shanept\AssemblySimulatorTests\Fakes\TestVoidInstruction;
 use shanept\AssemblySimulatorTests\Fakes\TestAssemblyInstruction;
 
 class SimulatorTest extends \PHPUnit\Framework\TestCase
@@ -379,7 +380,7 @@ class SimulatorTest extends \PHPUnit\Framework\TestCase
         $simulator->simulate();
     }
 
-    public function testSimulatorThrowsExceptionIfRegisteredInstructionDoesntReturnBool()
+    public function testSimulatorThrowsExceptionIfRegisteredClosureDoesntReturnBool()
     {
         $simulator = new Simulator(Simulator::LONG_MODE);
 
@@ -390,6 +391,40 @@ class SimulatorTest extends \PHPUnit\Framework\TestCase
 
         $simulator->registerInstructions($mockInstruction, [
             0x01 => $mockFunction,
+        ]);
+
+        $simulator->setCodeBuffer("\x01");
+
+        $this->expectException(\LogicException::class);
+        $simulator->simulate();
+    }
+
+    public function testSimulatorThrowsExceptionIfRegisteredInstantiatedClassDoesntReturnBool()
+    {
+        $simulator = new Simulator(Simulator::LONG_MODE);
+
+        $mockInstruction = $this->getMockBuilder(TestVoidInstruction::class)
+                                ->onlyMethods(['setSimulator'])
+                                ->getMock();
+
+        $simulator->registerInstructions($mockInstruction, [
+            0x01 => [$mockInstruction, 'returnVoid'],
+        ]);
+
+        $simulator->setCodeBuffer("\x01");
+
+        $this->expectException(\LogicException::class);
+        $simulator->simulate();
+    }
+
+    public function testSimulatorThrowsExceptionIfRegisteredClassStringDoesntReturnBool()
+    {
+        $simulator = new Simulator(Simulator::LONG_MODE);
+
+        $mockInstruction = $this->createMock(TestVoidInstruction::class);
+
+        $simulator->registerInstructions($mockInstruction, [
+            0x01 => TestVoidInstruction::class . '::returnVoidStatic',
         ]);
 
         $simulator->setCodeBuffer("\x01");

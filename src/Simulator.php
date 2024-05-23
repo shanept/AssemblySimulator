@@ -13,7 +13,7 @@ use shanept\AssemblySimulator\Instruction\AssemblyInstruction;
 
 /**
  * Implements an assembly simulator, capable of operating in both x86 and x64
- * modes. Really only implements LEA, MOV and XOR commands.
+ * modes.
  *
  * @author Shane Thompson
  */
@@ -644,26 +644,18 @@ class Simulator
     private function processOpcodeWithRegisteredInstruction($opcode)
     {
         foreach ($this->registeredInstructions as $record) {
+            // If this Instruction class doesn't handle this opcode, skip it.
             if (! array_key_exists($opcode, $record['mappings'])) {
                 continue;
             }
 
+            // This instruction class handles this opcode. Give it a go.
             $callback = $record['mappings'][$opcode];
             $response = call_user_func($callback);
 
-            if (is_array($callback)) {
-                $instructionName = get_class($callback[0]) . '::' . $callback[1];
-            } elseif ($callback instanceof \Closure) {
-                $instructionName = '[closure]';
-            }
-
+            // If we don't get a boolean response, throw an exception.
             if (! is_bool($response)) {
-                throw new \LogicException(sprintf(
-                    'Expected boolean return value from Instruction %s, ' .
-                    'but received "%s" instead.',
-                    $instructionName,
-                    var_export($response, true),
-                ));
+                $this->triggerInstructionHandlerException($callback, $response);
             }
 
             // If our mapping returns true, so do we. Otherwise, we continue.
@@ -674,6 +666,31 @@ class Simulator
 
         // We could not process the opcode, so we return false.
         return false;
+    }
+
+    private function triggerInstructionHandlerException($callback, $response)
+    {
+        // Default for string functions. Will most likely be overwritten.
+        $instructionName = $callback;
+
+        if (is_array($callback)) {
+            $instructionName = sprintf(
+                '%s::%s',
+                get_class($callback[0]),
+                $callback[1],
+            );
+        } elseif (is_object($callback)) {
+            $instructionName = get_class($callback);
+        }
+
+        $message = sprintf(
+            'Expected boolean return value from Instruction %s, ' .
+            'but received "%s" instead.',
+            $instructionName,
+            var_export($response, true),
+        );
+
+        throw new \LogicException($message);
     }
 
     /**
