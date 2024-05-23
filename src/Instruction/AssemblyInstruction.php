@@ -116,13 +116,14 @@ abstract class AssemblyInstruction
      * Parses a specific SIB byte, resolving values from the registers, and
      * returning the values as an array,
      *
-     * @see
+     * @see https://wiki.osdev.org/X86-64_Instruction_Encoding#SIB
      *
-     * @param string $byte The byte to parse.
+     * @param string $byte  The byte to parse.
+     * @param array  $modrm The ModRM byte (optional).
      *
      * @return int[] The SIB byte values.
      */
-    protected function parseSibByte(string $byte): array
+    protected function parseSibByte(string $byte, array $modrm): array
     {
         $sim = $this->simulator;
 
@@ -133,6 +134,7 @@ abstract class AssemblyInstruction
             'b' => $byte & 0b00000111,
         ];
 
+        $mode = $sim->getMode();
         $opSize = $this->getOperandSize();
 
         $rex = $sim->getRex();
@@ -154,23 +156,55 @@ abstract class AssemblyInstruction
          * Index and Base both refer to registers, in the same fashion as
          * ModRM bytes.
          *
-         * If the value of Index is 4, we do not apply a scaled index. Thus we
-         * will override the index to 0, making the index scale to 0 as well.
+         * If the value of Index is 4 and the REX.X extended index bit is unset,
+         * we do not apply a scaled index. Thus we will override the index to 0,
+         * making the index scale to 0 as well. If the REX.X bit is set, the
+         * above no longer applies.
          */
         $index = 0;
 
-        if (0x4 !== $sib['i']) {
+        if (0x4 !== $sib['i'] || $idxExt) {
             $reg = Register::getByCode($sib['i'], $opSize, $rexSet, $idxExt);
             $index = $sim->readRegister($reg);
         }
 
-        $reg = Register::getByCode($sib['b'], $opSize, $rexSet, $bseExt);
-        $base = $sim->readRegister($reg);
+        // Default to the ModRM displacement.
+        $displacement = 2 == $modrm["mod"] ? 4 : $modrm["mod"];
+
+        /**
+         * If the SIB base is 5, we are handling a special case displacement.
+         * Otherwise, we simply read from the registers.
+         *
+         * @see http://ref.x86asm.net/coder64.html#sib64_base_101
+         * @see http://www.c-jump.com/CIS77/CPU/x86/X77_0090_addressing_modes.htm
+         */
+        if (
+            0x5 === $sib['b'] &&
+            0b00 === $modrm['mod'] &&
+            Simulator::REAL_MODE !== $mode
+        ) {
+            // Override displacement (disp32 only).
+            $base = 0;
+            $displacement = 4;
+        } elseif (
+            0x5 === $sib['b'] &&
+            0b01 === $modrm['mod'] &&
+            Simulator::REAL_MODE !== $mode
+        ) {
+            // Override displacement - EBP + disp8 (however we do not actually displace 8 bits)
+            $displacement = 0;
+            $reg = Register::getByCode($sib['b'], $opSize, $rexSet, $bseExt);
+            $base = $sim->readRegister($reg);
+        } else {
+            $reg = Register::getByCode($sib['b'], $opSize, $rexSet, $bseExt);
+            $base = $sim->readRegister($reg);
+        }
 
         return [
             's' => $scale,
             'i' => $index,
             'b' => $base,
+            'displacement' => $displacement,
         ];
     }
 
@@ -237,7 +271,7 @@ abstract class AssemblyInstruction
         $sim = $this->simulator;
 
         $sibByte = $sim->getCodeAtInstruction(1);
-        $sib = $this->parseSibByte($sibByte);
+        $sib = $this->parseSibByte($sibByte, $byte);
 
         /**
          * Calculate the displacement of the SIB operation. The offset
@@ -247,16 +281,16 @@ abstract class AssemblyInstruction
          * If mod = 0b01, displacement is 1.
          * If mod = 0b10, displacement is 4.
          */
-        $dispSize = 2 == $byte["mod"] ? 4 : $byte["mod"];
-        $displacement = $sim->getCodeBuffer(1, $dispSize);
+        $dispSize = $sib['displacement'];
+        $instructionPointer = $sim->getInstructionPointer();
 
         if ($dispSize) {
+            $dispOffset = $instructionPointer + 1;
+            $displacement = $sim->getCodeBuffer($dispOffset, $dispSize);
             $displacement = $this->unpackImmediate($displacement, $dispSize * 8);
         } else {
             $displacement = 0;
         }
-
-        $instructionPointer = $sim->getInstructionPointer();
 
         $address = new SibAddress(
             $instructionPointer,

@@ -165,7 +165,7 @@ class MovTest extends \PHPUnit\Framework\TestCase
                   });
 
         $simulator->method('getCodeBuffer')
-                  ->with(1, 1)
+                  ->with(2, 1)
                   ->willReturn("\x10");
 
         $simulator->method('readRegister')
