@@ -1,6 +1,6 @@
 <?php
 
-namespace shanept\AssemblySimulatorTests\Unit\Instructions;
+namespace shanept\AssemblySimulatorTests\Unit\Instruction;
 
 use shanept\AssemblySimulator\Simulator;
 
