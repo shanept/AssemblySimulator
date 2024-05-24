@@ -13,6 +13,7 @@ use shanept\AssemblySimulator\Register;
 use shanept\AssemblySimulator\Simulator;
 use shanept\AssemblySimulator\Address\SibAddress;
 use shanept\AssemblySimulator\Address\RipAddress;
+use shanept\AssemblySimulator\Address\ModRmAddress;
 use shanept\AssemblySimulator\Address\AddressInterface;
 
 /**
@@ -55,11 +56,10 @@ abstract class AssemblyInstruction
         $size = min($maxWidth, Simulator::TYPE_DWRD);
 
         $mode = $this->simulator->getMode();
-        $prefix = $this->simulator->getPrefix();
         $rex = $this->simulator->getRex();
 
         // On x64, prefix 0x66 specifies the 16-bit register.
-        if (Simulator::LONG_MODE === $mode && 0x66 === $prefix) {
+        if (Simulator::LONG_MODE === $mode && $this->simulator->hasPrefix(0x66)) {
             return Simulator::TYPE_WORD;
         }
 
@@ -81,11 +81,10 @@ abstract class AssemblyInstruction
         $maxWidth = $this->getLargestInstructionWidth();
 
         $mode = $this->simulator->getMode();
-        $prefix = $this->simulator->getPrefix();
 
         // On x64, prefix 0x67 specifies a 32-bit address.
         // On x32, prefix 0x67 specifies a 16-bit address.
-        if (0x67 === $prefix && Simulator::REAL_MODE !== $mode) {
+        if ($this->simulator->hasPrefix(0x67) && Simulator::REAL_MODE !== $mode) {
             return $maxWidth / 2;
         }
 
@@ -125,8 +124,6 @@ abstract class AssemblyInstruction
      */
     protected function parseSibByte(string $byte, array $modrm): array
     {
-        $sim = $this->simulator;
-
         $byte = ord($byte);
         $sib = [
             's' => ($byte & 0b11000000) >> 6,
@@ -134,10 +131,10 @@ abstract class AssemblyInstruction
             'b' => $byte & 0b00000111,
         ];
 
-        $mode = $sim->getMode();
+        $mode = $this->simulator->getMode();
         $opSize = $this->getOperandSize();
 
-        $rex = $sim->getRex();
+        $rex = $this->simulator->getRex();
         $rexSet = (bool) ($rex & Simulator::REX);
         $idxExt = (bool) ($rex & Simulator::REX_X);
         $bseExt = (bool) ($rex & Simulator::REX_B);
@@ -165,7 +162,7 @@ abstract class AssemblyInstruction
 
         if (0x4 !== $sib['i'] || $idxExt) {
             $reg = Register::getByCode($sib['i'], $opSize, $rexSet, $idxExt);
-            $index = $sim->readRegister($reg);
+            $index = $this->simulator->readRegister($reg);
         }
 
         // Default to the ModRM displacement.
@@ -194,10 +191,10 @@ abstract class AssemblyInstruction
             // Override displacement - EBP + disp8 (however we do not actually displace 8 bits)
             $displacement = 0;
             $reg = Register::getByCode($sib['b'], $opSize, $rexSet, $bseExt);
-            $base = $sim->readRegister($reg);
+            $base = $this->simulator->readRegister($reg);
         } else {
             $reg = Register::getByCode($sib['b'], $opSize, $rexSet, $bseExt);
-            $base = $sim->readRegister($reg);
+            $base = $this->simulator->readRegister($reg);
         }
 
         return [
@@ -236,27 +233,21 @@ abstract class AssemblyInstruction
      */
     protected function parseAddress(array $byte): AddressInterface
     {
-        $mode = $this->simulator->getMode();
+        $isLong = Simulator::LONG_MODE === $this->simulator->getMode();
 
         /**
          * If the r/m byte is 0x4, we have SIB addressing.
          * If the r/m byte is 0x5, we have RIP addressing.
+         * Otherwise the address is in the register referenced by r/m,
+         * offset determined by mod.
          */
-        if (0x4 === $byte["rm"]) {
+        if (0x4 === $byte['rm']) {
             return $this->parseSibAddress($byte);
-        } elseif (0x5 === $byte["rm"] && Simulator::LONG_MODE === $mode) {
+        } elseif (0x5 === $byte['rm'] && 0 === $byte['mod'] && $isLong) {
             return $this->parseRipAddress($byte);
+        } else {
+            return $this->parseMemoryOffset($byte);
         }
-
-        $modes = (Simulator::LONG_MODE === $mode ? "0x4 or 0x5" : "0x4");
-
-        $message = sprintf(
-            "Invalid addressing mode. Expected %s, got 0x%x.",
-            $modes,
-            $byte["rm"],
-        );
-
-        throw new \OutOfRangeException($message);
     }
 
     /**
@@ -314,16 +305,30 @@ abstract class AssemblyInstruction
         $address = $this->simulator->getCodeAtInstruction(4);
         $address = $this->unpackImmediate($address, Simulator::TYPE_DWRD);
 
-        /**
-         * We have a memory operand. Calculate the offset.
-         *
-         * If mod = 0b00, address is specified in rm.
-         * If mod = 0b01, address is specified in rm, plus 8-bit offset.
-         * If mod = 0b10, address is specified in rm, plus 16-bit offset.
-         */
-        $offset = $byte["mod"] * 8;
         $instructionPointer = $this->simulator->getInstructionPointer();
 
-        return new RipAddress($instructionPointer, $address, $offset);
+        return new RipAddress($instructionPointer, $address);
+    }
+
+    private function parseMemoryOffset(array $byte): ModRmAddress
+    {
+        $rex = $this->simulator->getRex();
+        $rexSet = (bool) ($rex & Simulator::REX);
+        $bseExt = (bool) ($rex & Simulator::REX_B);
+
+        $opSize = $this->getOperandSize();
+        $reg = Register::getByCode($byte['rm'], $opSize, $rexSet, $bseExt);
+        $address = $this->simulator->readRegister($reg);
+
+        $dispSize = 2 == $byte["mod"] ? 4 : $byte["mod"];
+        $displacement = 0;
+
+        if ($dispSize) {
+            $dispOffset = $this->simulator->getInstructionPointer();
+            $displacement = $this->simulator->getCodeBuffer($dispOffset, $dispSize);
+            $displacement = $this->unpackImmediate($displacement, $dispSize * 8);
+        }
+
+        return new ModRmAddress($address, $displacement, $dispSize);
     }
 }

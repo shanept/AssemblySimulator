@@ -64,7 +64,7 @@ class Push extends AssemblyInstruction
         $register = Register::getByCode($opcode, $opSize, $rexSet, $regExt);
 
         $value = $sim->readRegister($register, $opSize);
-        $sim->setStackAt($stackPosition, $value);
+        $sim->writeStackAt($stackPosition, $value);
 
         return true;
     }
@@ -89,7 +89,7 @@ class Push extends AssemblyInstruction
         $stackPosition = $sim->readRegister($stackPointer, $opSize, false, false);
 
         $sim->writeRegister($stackPointer, ++$stackPosition, $opSize);
-        $sim->setStackAt($stackPosition, $value);
+        $sim->writeStackAt($stackPosition, $value);
 
         return true;
     }
@@ -112,7 +112,7 @@ class Push extends AssemblyInstruction
         $stackPosition = $sim->readRegister($stackPointer, $opSize, false, false);
 
         $sim->writeRegister($stackPointer, ++$stackPosition, $opSize);
-        $sim->setStackAt($stackPosition, $value);
+        $sim->writeStackAt($stackPosition, $value);
 
         return true;
     }

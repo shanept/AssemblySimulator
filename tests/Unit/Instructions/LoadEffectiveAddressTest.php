@@ -20,8 +20,8 @@ class LoadEffectiveAddressTest extends \PHPUnit\Framework\TestCase
         $simulator->method('getRex')
                   ->willReturn(0x48);
 
-        $simulator->method('getPrefix')
-                  ->willReturn(0);
+        $simulator->method('getPrefixes')
+                  ->willReturn([]);
 
         $simulator->method('getCodeAtInstruction')
                   ->willReturnCallback(function ($length) {
@@ -53,8 +53,8 @@ class LoadEffectiveAddressTest extends \PHPUnit\Framework\TestCase
         $simulator->method('getRex')
                   ->willReturn(0x48);
 
-        $simulator->method('getPrefix')
-                  ->willReturn(0);
+        $simulator->method('getPrefixes')
+                  ->willReturn([]);
 
         $simulator->expects($this->once())
                   ->method('getCodeAtInstruction')

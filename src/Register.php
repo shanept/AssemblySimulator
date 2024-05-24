@@ -178,7 +178,7 @@ class Register
     const  SI = [       // r16(/r)
         'offset' => 6,
         'code' => 6,
-        'name' => '% si',
+        'name' => '%si',
         'width' => 16,
         'mask' => self::MASK_WIDTH[16],
     ];
@@ -194,7 +194,7 @@ class Register
     const  DH = [       //  r8(/r) without REX prefix
         'offset' => 6,
         'code' => 6,
-        'name' => '% dh',
+        'name' => '%dh',
         'width' => 8,
         'mask' => self::MASK_WIDTH[8],
     ];
@@ -220,7 +220,7 @@ class Register
     const  DI = [       // r16(/r)
         'offset' => 7,
         'code' => 7,
-        'name' => '% di',
+        'name' => '%di',
         'width' => 16,
         'mask' => self::MASK_WIDTH[16],
     ];
@@ -236,7 +236,7 @@ class Register
     const  BH = [       //  r8(/r) without REX prefix
         'offset' => 7,
         'code' => 7,
-        'name' => '% bh',
+        'name' => '%bh',
         'width' => 8,
         'mask' => self::MASK_WIDTH[8],
     ];
@@ -530,7 +530,7 @@ class Register
     const  SP = [       // r16(/r)
         'offset' => 4,
         'code' => 4,
-        'name' => '% sp',
+        'name' => '%sp',
         'width' => 16,
         'mask' => self::MASK_WIDTH[16],
     ];
@@ -546,7 +546,7 @@ class Register
     const  AH = [       //  r8(/r) without REX prefix
         'offset' => 4,
         'code' => 4,
-        'name' => '% ah',
+        'name' => '%ah',
         'width' => 8,
         'mask' => self::MASK_WIDTH[8],
     ];
@@ -571,7 +571,7 @@ class Register
     const  BP = [       // r16(/r)
         'offset' => 5,
         'code' => 5,
-        'name' => '% bp',
+        'name' => '%bp',
         'width' => 16,
         'mask' => self::MASK_WIDTH[16],
     ];
@@ -587,7 +587,7 @@ class Register
     const  CH = [       //  r8(/r) without REX prefix
         'offset' => 5,
         'code' => 5,
-        'name' => '% ch',
+        'name' => '%ch',
         'width' => 8,
         'mask' => self::MASK_WIDTH[8],
     ];

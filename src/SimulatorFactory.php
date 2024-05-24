@@ -11,9 +11,11 @@ declare(strict_types=1);
 
 namespace shanept\AssemblySimulator;
 
+use shanept\AssemblySimulator\Instruction\CallInstruction;
 use shanept\AssemblySimulator\Instruction\ExclusiveOr;
 use shanept\AssemblySimulator\Instruction\LoadEffectiveAddress;
 use shanept\AssemblySimulator\Instruction\Move;
+use shanept\AssemblySimulator\Instruction\NoOperation;
 use shanept\AssemblySimulator\Instruction\Pop;
 use shanept\AssemblySimulator\Instruction\Push;
 
@@ -51,9 +53,11 @@ class SimulatorFactory
     public static function getDefaultInstructionSet(): array
     {
         return [
+            CallInstruction::class,
             ExclusiveOr::class,
             LoadEffectiveAddress::class,
             Move::class,
+            NoOperation::class,
             Pop::class,
             Push::class,
         ];

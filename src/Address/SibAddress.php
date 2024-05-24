@@ -98,7 +98,9 @@ class SibAddress implements AddressInterface
             }
         }
 
-        return ($scale * $index) + $base + $disp + $this->sibSize + $this->offset;
+        $calculatedSib = ($scale * $index) + $base + $disp;
+
+        return $calculatedSib + $this->sibSize + $this->offset + $offset;
     }
 
     public function getDisplacement(): int

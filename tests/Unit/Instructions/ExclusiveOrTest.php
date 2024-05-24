@@ -44,8 +44,10 @@ class ExclusiveOrTest extends \PHPUnit\Framework\TestCase
         $simulator->method('getRex')
                   ->willReturn($rexValue);
 
-        $simulator->method('getPrefix')
-                  ->willReturn($prefixValue);
+        $simulator->method('hasPrefix')
+                  ->willReturnCallback(function ($requested) use ($prefixValue) {
+                      return $requested === $prefixValue;
+                  });
 
         $simulator->method('readRegister')
                   ->willReturn($regValue)
@@ -80,8 +82,10 @@ class ExclusiveOrTest extends \PHPUnit\Framework\TestCase
         $simulator->method('getRex')
                   ->willReturn($rexValue);
 
-        $simulator->method('getPrefix')
-                  ->willReturn($prefixValue);
+        $simulator->method('hasPrefix')
+                  ->willReturnCallback(function ($requested) use ($prefixValue) {
+                      return $requested === $prefixValue;
+                  });
 
         $simulator->method('readRegister')
                   ->willReturn($regValue)
@@ -139,8 +143,10 @@ class ExclusiveOrTest extends \PHPUnit\Framework\TestCase
         $simulator->method('getRex')
                   ->willReturn($rexValue);
 
-        $simulator->method('getPrefix')
-                  ->willReturn($prefixValue);
+        $simulator->method('hasPrefix')
+                  ->willReturnCallback(function ($requested) use ($prefixValue) {
+                      return $requested === $prefixValue;
+                  });
 
         $simulator->method('getCodeAtInstruction')
                   ->willReturn($instruction);
@@ -176,8 +182,10 @@ class ExclusiveOrTest extends \PHPUnit\Framework\TestCase
         $simulator->method('getRex')
                   ->willReturn($rexValue);
 
-        $simulator->method('getPrefix')
-                  ->willReturn($prefixValue);
+        $simulator->method('hasPrefix')
+                  ->willReturnCallback(function ($requested) use ($prefixValue) {
+                      return $requested === $prefixValue;
+                  });
 
         $simulator->method('getCodeAtInstruction')
                   ->willReturn($instruction);
@@ -246,8 +254,8 @@ class ExclusiveOrTest extends \PHPUnit\Framework\TestCase
         $simulator->method('getRex')
                   ->willReturn(0x45);
 
-        $simulator->method('getPrefix')
-                  ->willReturn(0);
+        $simulator->method('hasPrefix')
+                  ->willReturn(false);
 
         $simulator->method('getCodeAtInstruction')
                   ->willReturn("\xC9");
@@ -271,8 +279,8 @@ class ExclusiveOrTest extends \PHPUnit\Framework\TestCase
         $simulator->method('getRex')
                   ->willReturn(0x45);
 
-        $simulator->method('getPrefix')
-                  ->willReturn(0);
+        $simulator->method('hasPrefix')
+                  ->willReturn(false);
 
         $simulator->method('getCodeAtInstruction')
                   ->willReturn("\x89");

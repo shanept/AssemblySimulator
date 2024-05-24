@@ -40,12 +40,11 @@ class RipAddress implements AddressInterface
     /**
      * @param int $ripRegister The contents of the instruction pointer register.
      * @param int $address     The 32-bit RIP-relative address.
-     * @param int $offset      The offset to the end of this instruction.
      */
-    public function __construct(int $ripRegister, int $address, int $offset)
+    public function __construct(int $ripRegister, int $address)
     {
         $this->rip = $ripRegister;
-        $this->address = $address + $offset;
+        $this->address = $address;
     }
 
     public function getAddress(int $offset = 0): int

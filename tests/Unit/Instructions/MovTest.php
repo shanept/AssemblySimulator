@@ -51,8 +51,8 @@ class MovTest extends \PHPUnit\Framework\TestCase
         $simulator->method('getRex')
                   ->willReturn($rexValue);
 
-        $simulator->method('getPrefix')
-                  ->willReturn($prefixValue);
+        $simulator->method('getPrefixes')
+                  ->willReturn([$prefixValue]);
 
         $values = [$address, $opcode];
 
@@ -68,7 +68,7 @@ class MovTest extends \PHPUnit\Framework\TestCase
         $move = new Move();
         $move->setSimulator($simulator);
 
-        $move->executeOperandBx();
+        $this->assertTrue($move->executeOperandBx());
     }
 
     public function testMov8bLoadsMemoryAddress()
@@ -80,8 +80,8 @@ class MovTest extends \PHPUnit\Framework\TestCase
         $simulator->method('getRex')
                   ->willReturn(0x48);
 
-        $simulator->method('getPrefix')
-                  ->willReturn(0);
+        $simulator->method('getPrefixes')
+                  ->willReturn([]);
 
         $simulator->method('getCodeAtInstruction')
                   ->willReturnCallback(function ($length) {
@@ -102,7 +102,8 @@ class MovTest extends \PHPUnit\Framework\TestCase
 
         $move = new Move();
         $move->setSimulator($simulator);
-        $move->executeOperand8b();
+
+        $this->assertTrue($move->executeOperand8b());
     }
 
     public function testMov89OnRegisterValue()
@@ -114,8 +115,8 @@ class MovTest extends \PHPUnit\Framework\TestCase
         $simulator->method('getRex')
                   ->willReturn(0x48);
 
-        $simulator->method('getPrefix')
-                  ->willReturn(0);
+        $simulator->method('getPrefixes')
+                  ->willReturn([]);
 
         $simulator->method('getCodeAtInstruction')
                   ->willReturn("\xD1");
@@ -131,7 +132,7 @@ class MovTest extends \PHPUnit\Framework\TestCase
         $move = new Move();
         $move->setSimulator($simulator);
 
-        $move->executeOperand89();
+        $this->assertTrue($move->executeOperand89());
     }
 
     /**
@@ -148,8 +149,8 @@ class MovTest extends \PHPUnit\Framework\TestCase
         $simulator->method('getRex')
                   ->willReturn(0x48);
 
-        $simulator->method('getPrefix')
-                  ->willReturn(0);
+        $simulator->method('getPrefixes')
+                  ->willReturn([]);
 
         $simulator->method('getInstructionPointer')
                   ->willReturn(1);
@@ -197,7 +198,7 @@ class MovTest extends \PHPUnit\Framework\TestCase
                   ->willReturn(0x49);
 
         $simulator->method('getCodeAtInstruction')
-                  ->willReturn("\xFD");
+                  ->willReturn("\xFC");
 
         $simulator->method('readRegister')
                   ->with(Register::RDI)
@@ -205,12 +206,12 @@ class MovTest extends \PHPUnit\Framework\TestCase
 
         $simulator->expects($this->once())
                   ->method('writeRegister')
-                  ->with(Register::R13, 133);
+                  ->with(Register::R12, 133);
 
         $move = new Move();
         $move->setSimulator($simulator);
 
-        $move->executeOperand89();
+        $this->assertTrue($move->executeOperand89());
     }
 
     public function testMov89OnRexRegisterValue()
@@ -222,8 +223,8 @@ class MovTest extends \PHPUnit\Framework\TestCase
         $simulator->method('getRex')
                   ->willReturn(0x4D);
 
-        $simulator->method('getPrefix')
-                  ->willReturn(0);
+        $simulator->method('getPrefixes')
+                  ->willReturn([]);
 
         $simulator->method('getCodeAtInstruction')
                   ->willReturn("\xD1");
@@ -239,7 +240,7 @@ class MovTest extends \PHPUnit\Framework\TestCase
         $move = new Move();
         $move->setSimulator($simulator);
 
-        $move->executeOperand89();
+        $this->assertTrue($move->executeOperand89());
     }
 
     public function testMov8bOnRegisterValue()
@@ -251,8 +252,8 @@ class MovTest extends \PHPUnit\Framework\TestCase
         $simulator->method('getRex')
                   ->willReturn(0x48);
 
-        $simulator->method('getPrefix')
-                  ->willReturn(0);
+        $simulator->method('getPrefixes')
+                  ->willReturn([]);
 
         $simulator->method('getCodeAtInstruction')
                   ->willReturn("\xD1");
@@ -268,7 +269,7 @@ class MovTest extends \PHPUnit\Framework\TestCase
         $move = new Move();
         $move->setSimulator($simulator);
 
-        $move->executeOperand8b();
+        $this->assertTrue($move->executeOperand8b());
     }
 
     public function testMov8bOnRexRegisterValue()
@@ -280,8 +281,8 @@ class MovTest extends \PHPUnit\Framework\TestCase
         $simulator->method('getRex')
                   ->willReturn(0x4D);
 
-        $simulator->method('getPrefix')
-                  ->willReturn(0);
+        $simulator->method('getPrefixes')
+                  ->willReturn([]);
 
         $simulator->method('getCodeAtInstruction')
                   ->willReturn("\xD1");
@@ -297,6 +298,196 @@ class MovTest extends \PHPUnit\Framework\TestCase
         $move = new Move();
         $move->setSimulator($simulator);
 
-        $move->executeOperand8b();
+        $this->assertTrue($move->executeOperand8b());
+    }
+
+
+    public function testMovC6OnAddress()
+    {
+        // 0xC6 0x05 0x84 0x57 0x32 0x00 0x04
+        // mov [rip+0x325784] 0x04
+        $simulator = $this->getMockSimulator(Simulator::LONG_MODE);
+
+        $simulator->method('getRex')
+                  ->willReturn(0);
+
+        $simulator->method('hasPrefix')
+                  ->willReturn(false);
+
+        $simulator->method('getInstructionPointer')
+                  ->willReturn(0);
+
+        $values = [
+            "\x01",
+            "\x05",
+        ];
+
+        $simulator->method('getCodeAtInstruction')
+                  ->willReturnCallback(function ($length) use (&$values) {
+                      switch ($length) {
+                          case 4:
+                              return "\x84\x57\x32\x00";
+                          case 1:
+                              return array_pop($values);
+                      }
+
+                      $this->fail('Unknown length ' . $length);
+                  });
+
+        $iPointer = 0;
+
+        $simulator->method('advanceInstructionPointer')
+                  ->willReturnCallback(function ($amount) use (&$iPointer) {
+                      $iPointer += $amount;
+                  });
+
+        $mov = new Move();
+        $mov->setSimulator($simulator);
+
+        $this->assertTrue($mov->executeOperandC6());
+
+        $this->assertEquals(7, $iPointer);
+    }
+
+    public function testMovC6OnRegister()
+    {
+        // 0xC7 0xC0 0x04
+        // mov al 0x40
+        $simulator = $this->getMockSimulator(Simulator::LONG_MODE);
+
+        $simulator->method('getRex')
+                  ->willReturn(0);
+
+        $simulator->method('hasPrefix')
+                  ->willReturn(false);
+
+        $simulator->method('getInstructionPointer')
+                  ->willReturn(0);
+
+        $values = [
+            "\x40",
+            "\xC0",
+        ];
+
+        $simulator->method('getCodeAtInstruction')
+                  ->willReturnCallback(function ($length) use (&$values) {
+                      switch ($length) {
+                          case 1:
+                            return array_pop($values);
+                      }
+
+                      $this->fail('Unknown length ' . $length);
+                  });
+
+        $iPointer = 0;
+
+        $simulator->method('advanceInstructionPointer')
+                  ->willReturnCallback(function ($amount) use (&$iPointer) {
+                      $iPointer += $amount;
+                  });
+
+        $simulator->expects($this->once())
+                  ->method('writeRegister')
+                  ->with(Register::AL, 0x40);
+
+        $mov = new Move();
+        $mov->setSimulator($simulator);
+
+        $this->assertTrue($mov->executeOperandC6());
+
+        $this->assertEquals(3, $iPointer);
+    }
+
+    public function testMovC7OnAddress()
+    {
+        // 0xC7 0x05 0x84 0x57 0x32 0x00 0x01 0x02 0x03 0x04
+        // mov [rip+0x325784] 0x4030201
+        $simulator = $this->getMockSimulator(Simulator::LONG_MODE);
+
+        $simulator->method('getRex')
+                  ->willReturn(0);
+
+        $simulator->method('hasPrefix')
+                  ->willReturn(false);
+
+        $simulator->method('getInstructionPointer')
+                  ->willReturn(0);
+
+        $values = [
+            "\x01\x02\x03\x04",
+            "\x84\x57\x32\x00",
+        ];
+
+        $simulator->method('getCodeAtInstruction')
+                  ->willReturnCallback(function ($length) use (&$values) {
+                      switch ($length) {
+                          case 4:
+                            return array_pop($values);
+                          case 1:
+                            return "\x05";
+                      }
+
+                      $this->fail('Unknown length ' . $length);
+                  });
+
+        $iPointer = 0;
+
+        $simulator->method('advanceInstructionPointer')
+                  ->willReturnCallback(function ($amount) use (&$iPointer) {
+                      $iPointer += $amount;
+                  });
+
+        $mov = new Move();
+        $mov->setSimulator($simulator);
+
+        $this->assertTrue($mov->executeOperandC7());
+
+        $this->assertEquals(10, $iPointer);
+    }
+
+    public function testMovC7OnRegister()
+    {
+        // 0xC7 0xC0 0x01 0x02 0x03 0x04
+        // mov eax 0x4030201
+        $simulator = $this->getMockSimulator(Simulator::LONG_MODE);
+
+        $simulator->method('getRex')
+                  ->willReturn(0);
+
+        $simulator->method('hasPrefix')
+                  ->willReturn(false);
+
+        $simulator->method('getInstructionPointer')
+                  ->willReturn(0);
+
+        $simulator->method('getCodeAtInstruction')
+                  ->willReturnCallback(function ($length) use (&$values) {
+                      switch ($length) {
+                          case 4:
+                            return "\x01\x02\x03\x04";
+                          case 1:
+                            return "\xC0";
+                      }
+
+                      $this->fail('Unknown length ' . $length);
+                  });
+
+        $iPointer = 0;
+
+        $simulator->method('advanceInstructionPointer')
+                  ->willReturnCallback(function ($amount) use (&$iPointer) {
+                      $iPointer += $amount;
+                  });
+
+        $simulator->expects($this->once())
+                  ->method('writeRegister')
+                  ->with(Register::EAX, 0x4030201);
+
+        $mov = new Move();
+        $mov->setSimulator($simulator);
+
+        $this->assertTrue($mov->executeOperandC7());
+
+        $this->assertEquals(6, $iPointer);
     }
 }

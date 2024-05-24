@@ -5,6 +5,7 @@ namespace shanept\AssemblySimulatorTests\Unit\Instructions;
 use ReflectionMethod;
 use shanept\AssemblySimulator\Register;
 use shanept\AssemblySimulator\Simulator;
+use shanept\AssemblySimulator\Address\RipAddress;
 use shanept\AssemblySimulatorTests\Fakes\TestAssemblyInstruction;
 
 class AssemblyInstructionTest extends \PHPUnit\Framework\TestCase
@@ -23,26 +24,34 @@ class AssemblyInstructionTest extends \PHPUnit\Framework\TestCase
         $instruction->setSimulator($simulator);
     }
 
-    public function testParseAddressThrowsExceptionOnInvalidRmByte()
+    public function testParseAddressOnNonRipOrSibAddress()
     {
+        $simulator = $this->getMockSimulator(Simulator::PROTECTED_MODE);
+
+        $simulator->method('readRegister')
+                  ->willReturn(849)
+                  ->with(Register::EBX);
+
+        $simulator->method('hasPrefix')
+                  ->willReturn(false);
+
+        $simulator->method('getInstructionPointer')
+                  ->willReturn(1);
+
+        $simulator->method('getCodeBuffer')
+                  ->willReturn("\x10\x00\x00\x00")
+                  ->with(1, 4);
+
         $instruction = new TestAssemblyInstruction();
-        $instruction->setSimulator($this->getMockSimulator());
+        $instruction->setSimulator($simulator);
 
         $method = new ReflectionMethod($instruction, "parseAddress");
 
-        $this->expectException(\OutOfRangeException::class);
-        $method->invoke($instruction, ["rm" => 1]);
-    }
+        $byte = ['mod' => 2, 'reg' => 0, 'rm' => 3];
+        $address = $method->invoke($instruction, $byte);
 
-    public function testParseAddressThrowsExceptionOnRealModeRipAddress()
-    {
-        $instruction = new TestAssemblyInstruction();
-        $instruction->setSimulator($this->getMockSimulator());
-
-        $parseAddress = new ReflectionMethod($instruction, "parseAddress");
-
-        $this->expectException(\OutOfRangeException::class);
-        $parseAddress->invoke($instruction, ["rm" => 5]);
+        $this->assertEquals(865, $address->getAddress());
+        $this->assertEquals(4, $address->getDisplacement());
     }
 
     public function testParseAddressAcceptsRipAddressOnLongMode()
@@ -68,7 +77,34 @@ class AssemblyInstructionTest extends \PHPUnit\Framework\TestCase
         ];
 
         $address = $parseAddress->invoke($instruction, $byte);
+        $this->assertInstanceOf(RipAddress::class, $address);
         $this->assertEquals(0xF1917E5, $address->getAddress());
+    }
+
+    public function testParseAddressDoesNotUseRipOnModRmMod1()
+    {
+        $simulator = $this->getMockSimulator(Simulator::LONG_MODE);
+
+        $simulator->method('getCodeBuffer')
+                  ->willReturn("\xe0")
+                  ->with(1, 1);
+
+        $simulator->method('getInstructionPointer')
+                  ->willReturn(1);
+
+        $instruction = new TestAssemblyInstruction();
+        $instruction->setSimulator($simulator);
+
+        $parseAddress = new ReflectionMethod($instruction, "parseAddress");
+
+        $byte = [
+            "mod" => 1,
+            "reg" => 0b111,
+            "rm" => 0b101,
+        ];
+
+        $address = $parseAddress->invoke($instruction, $byte);
+        $this->assertNotInstanceOf(RipAddress::class, $address);
     }
 
     public function testParseAddressAcceptsSibAddressOnProtectedMode()
@@ -80,8 +116,8 @@ class AssemblyInstructionTest extends \PHPUnit\Framework\TestCase
         $simulator->method('getRex')
                   ->willReturn(0);
 
-        $simulator->method('getPrefix')
-                  ->willReturn(0);
+        $simulator->method('hasPrefix')
+                  ->willReturn(false);
 
         $simulator->method('getInstructionPointer')
                   ->willReturn(1);
@@ -126,8 +162,8 @@ class AssemblyInstructionTest extends \PHPUnit\Framework\TestCase
         $simulator->method('getRex')
                   ->willReturn(0x4A);
 
-        $simulator->method('getPrefix')
-                  ->willReturn(0);
+        $simulator->method('hasPrefix')
+                  ->willReturn(false);
 
         $simulator->method('getInstructionPointer')
                   ->willReturn(1);
@@ -170,8 +206,8 @@ class AssemblyInstructionTest extends \PHPUnit\Framework\TestCase
         $simulator->method('getRex')
                   ->willReturn(0);
 
-        $simulator->method('getPrefix')
-                  ->willReturn(0);
+        $simulator->method('hasPrefix')
+                  ->willReturn(false);
 
         $simulator->method('getInstructionPointer')
                   ->willReturn(3);
@@ -207,8 +243,8 @@ class AssemblyInstructionTest extends \PHPUnit\Framework\TestCase
         $simulator->method('getRex')
                   ->willReturn(0);
 
-        $simulator->method('getPrefix')
-                  ->willReturn(0);
+        $simulator->method('hasPrefix')
+                  ->willReturn(false);
 
         $simulator->expects($this->once())
                   ->method('readRegister')

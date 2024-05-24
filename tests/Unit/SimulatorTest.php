@@ -12,6 +12,24 @@ use shanept\AssemblySimulatorTests\Fakes\TestAssemblyInstruction;
 
 class SimulatorTest extends \PHPUnit\Framework\TestCase
 {
+    public function registerNopMock($simulator)
+    {
+        $nopMock = $this->getMockBuilder(TestAssemblyInstruction::class)
+                        ->addMethods(['executeOperand90'])
+                        ->getMock();
+
+        $nopMock->expects($this->once())
+                ->method('executeOperand90')
+                ->willReturnCallback(function () use ($simulator) {
+                    $simulator->advanceInstructionPointer(1);
+                    return true;
+                });
+
+        $simulator->registerInstructions($nopMock, [
+            0x90 => [$nopMock, 'executeOperand90'],
+        ]);
+    }
+
     public function testDefaultsToRealMode()
     {
         $simulator = new Simulator();
@@ -56,29 +74,10 @@ class SimulatorTest extends \PHPUnit\Framework\TestCase
         $this->assertEquals(64, $simulator->getLargestInstructionWidth());
     }
 
-    public function testNoOpSucceeds()
-    {
-        $simulator = new Simulator();
-
-        $regB = $simulator->getRawRegisters();
-        $flagB = $simulator->getFlags();
-
-        $simulator->setCodeBuffer("\x90");
-        $simulator->simulate();
-
-        $regA = $simulator->getRawRegisters();
-        $flagA = $simulator->getFlags();
-
-        $this->assertEquals($regB, $regA, "NOP changed the registers.");
-        $this->assertEquals($flagB, $flagA, "NOP changed the flags.");
-    }
-
-    /**
-     * @depends testNoOpSucceeds
-     */
     public function testModeChangeWithoutResetThrowsException()
     {
         $simulator = new Simulator();
+
         $simulator->setMode(Simulator::PROTECTED_MODE);
 
         $simulator->setCodeBuffer("\x90");
@@ -141,7 +140,7 @@ class SimulatorTest extends \PHPUnit\Framework\TestCase
         $simulator = new Simulator();
 
         foreach ($expected as $position => $value) {
-            $simulator->setStackAt($position, $value);
+            $simulator->writeStackAt($position, $value);
         }
 
         $this->assertEqualsCanonicalizing($expected, $simulator->getStack());
@@ -155,7 +154,7 @@ class SimulatorTest extends \PHPUnit\Framework\TestCase
         $simulator = new Simulator();
 
         foreach ($expected as $position => $value) {
-            $simulator->setStackAt($position, $value);
+            $simulator->writeStackAt($position, $value);
         }
 
         foreach ($expected as $position => $value) {
@@ -234,7 +233,7 @@ class SimulatorTest extends \PHPUnit\Framework\TestCase
         $simulator = new Simulator();
 
         foreach ($stack as $position => $value) {
-            $simulator->setStackAt($position, $value);
+            $simulator->writeStackAt($position, $value);
         }
 
         $simulator->clearStackAt($clearIdx);
@@ -327,6 +326,89 @@ class SimulatorTest extends \PHPUnit\Framework\TestCase
         ]);
 
         $simulator->setCodeBuffer("\x01");
+        $simulator->simulate();
+    }
+
+    public function testSimulatorThrowsExceptionIfOpcodeIsNotRegistered()
+    {
+        $simulator = new Simulator(Simulator::LONG_MODE);
+
+        $mockInstructionOld = $this->createMock(AssemblyInstruction::class);
+        $mockFunctionOld = function () use ($simulator) {
+            return true;
+        };
+
+        $simulator->registerInstructions($mockInstructionOld, [
+            0x02 => $mockFunctionOld,
+        ]);
+
+        $simulator->setCodeBuffer("\x01");
+
+        $this->expectException(\OutOfBoundsException::class);
+        $simulator->simulate();
+    }
+
+    public function testSimulatorThrowsExceptionIfTwoByteOpcodeIsNotRegistered()
+    {
+        $simulator = new Simulator(Simulator::LONG_MODE);
+
+        $mockInstructionOld = $this->createMock(AssemblyInstruction::class);
+        $mockFunctionOld = function () use ($simulator) {
+            return true;
+        };
+
+        $simulator->registerInstructions($mockInstructionOld, [
+            0x0F02 => $mockFunctionOld,
+        ]);
+
+        $simulator->setCodeBuffer("\x0F\x01");
+
+        $this->expectException(\OutOfBoundsException::class);
+        $simulator->simulate();
+    }
+
+    public function testTwoByteInstructionIsntOfferedToOneByteInstruction()
+    {
+        $simulator = new Simulator(Simulator::LONG_MODE);
+
+        $twoByte = $this->getMockBuilder(TestAssemblyInstruction::class)
+                        ->addMethods(['executeOperand0F90'])
+                        ->getMock();
+
+        $twoByte->expects($this->once())
+                ->method('executeOperand0F90')
+                ->willReturnCallback(function () use ($simulator) {
+                    $simulator->advanceInstructionPointer(1);
+                    return true;
+                });
+
+        $oneByte = $this->getMockBuilder(TestAssemblyInstruction::class)
+                        ->addMethods(['executeOperand90'])
+                        ->getMock();
+
+        $oneByte->expects($this->never())
+                ->method('executeOperand90')
+                ->willReturnCallback(function () use ($simulator) {
+                    $simulator->advanceInstructionPointer(1);
+                    return true;
+                });
+
+        /**
+         * The twoByte handler is intentionally registered first. This means
+         * when the oneByte handler is registered, it will have higher priority.
+         * If the simulator is not matching two-byte instructions correctly,
+         * it should hit the higher priority function first, failing the test.
+         */
+        $simulator->registerInstructions($twoByte, [
+            0x0F90 => [$twoByte, 'executeOperand0F90'],
+        ]);
+
+        $simulator->registerInstructions($oneByte, [
+            0x90 => [$oneByte, 'executeOperand90'],
+        ]);
+
+        $simulator->setCodeBuffer("\x0F\x90");
+
         $simulator->simulate();
     }
 
@@ -464,7 +546,7 @@ class SimulatorTest extends \PHPUnit\Framework\TestCase
         $simulator->simulate();
     }
 
-    public function testNewerRegisteredFunctionCanDelegateToOldfunction()
+    public function testNewerRegisteredFunctionCanDelegateToOldFunction()
     {
         $simulator = new Simulator(Simulator::LONG_MODE);
 
@@ -495,23 +577,26 @@ class SimulatorTest extends \PHPUnit\Framework\TestCase
         $simulator->simulate();
     }
 
-    /**
-     * @depends testNoOpSucceeds
-     */
-    public function testRexOnLongModeThrowsNoExceptions()
+    public function testRexOnLongModeIsRecorded()
     {
-        self::expectNotToPerformAssertions();
-
         $simulator = new Simulator(Simulator::LONG_MODE);
 
-        $simulator->setCodeBuffer("\x40\x90");
+        $mockInstruction = $this->createMock(AssemblyInstruction::class);
+        $mockFunction = function () use ($simulator) {
+            $simulator->advanceInstructionPointer(1);
+            $this->assertEquals(0x48, $simulator->getRex());
+            $this->assertEquals([0x48], $simulator->getPrefixes());
+            return true;
+        };
+
+        $simulator->registerInstructions($mockInstruction, [
+            0x01 => $mockFunction,
+        ]);
+
+        $simulator->setCodeBuffer("\x48\x01");
         $simulator->simulate();
     }
 
-    /**
-     * @depends testNoOpSucceeds
-     * @depends testRexOnLongModeThrowsNoExceptions
-     */
     public function testRexOnProtectedModeThrowsException()
     {
         $simulator = new Simulator(Simulator::PROTECTED_MODE);
@@ -522,10 +607,6 @@ class SimulatorTest extends \PHPUnit\Framework\TestCase
         $simulator->simulate();
     }
 
-    /**
-     * @depends testNoOpSucceeds
-     * @depends testRexOnLongModeThrowsNoExceptions
-     */
     public function testRexOnRealModeThrowsException()
     {
         $simulator = new Simulator(Simulator::REAL_MODE);
@@ -536,16 +617,13 @@ class SimulatorTest extends \PHPUnit\Framework\TestCase
         $simulator->simulate();
     }
 
-    /**
-     * @depends testNoOpSucceeds
-     */
     public function testOp66IsRecordedAsPrefixInLongMode()
     {
         $simulator = new Simulator(Simulator::LONG_MODE);
 
         $mockFunction = function () use ($simulator) {
             $simulator->advanceInstructionPointer(1);
-            $this->assertEquals(0x66, $simulator->getPrefix());
+            $this->assertTrue($simulator->hasPrefix(0x66));
             return true;
         };
 
@@ -558,9 +636,6 @@ class SimulatorTest extends \PHPUnit\Framework\TestCase
         $simulator->simulate();
     }
 
-    /**
-     * @depends testNoOpSucceeds
-     */
     public function testOp66IsIgnoredAsPrefixInProtectedMode()
     {
         $simulator = new Simulator(Simulator::PROTECTED_MODE);
@@ -571,9 +646,6 @@ class SimulatorTest extends \PHPUnit\Framework\TestCase
         $simulator->simulate();
     }
 
-    /**
-     * @depends testNoOpSucceeds
-     */
     public function testOp66IsIgnoredAsPrefixInRealMode()
     {
         $simulator = new Simulator(Simulator::REAL_MODE);
@@ -584,16 +656,13 @@ class SimulatorTest extends \PHPUnit\Framework\TestCase
         $simulator->simulate();
     }
 
-    /**
-     * @depends testNoOpSucceeds
-     */
     public function testOp67IsRecordedAsPrefixInLongMode()
     {
         $simulator = new Simulator(Simulator::LONG_MODE);
 
         $mockFunction = function () use ($simulator) {
             $simulator->advanceInstructionPointer(1);
-            $this->assertEquals(0x67, $simulator->getPrefix());
+            $this->assertTrue($simulator->hasPrefix(0x67));
             return true;
         };
 
@@ -606,16 +675,13 @@ class SimulatorTest extends \PHPUnit\Framework\TestCase
         $simulator->simulate();
     }
 
-    /**
-     * @depends testNoOpSucceeds
-     */
     public function testOp67IsRecordedAsPrefixInProtectedMode()
     {
         $simulator = new Simulator(Simulator::PROTECTED_MODE);
 
         $mockFunction = function () use ($simulator) {
             $simulator->advanceInstructionPointer(1);
-            $this->assertEquals(0x67, $simulator->getPrefix());
+            $this->assertTrue($simulator->hasPrefix(0x67));
             return true;
         };
 
@@ -628,9 +694,6 @@ class SimulatorTest extends \PHPUnit\Framework\TestCase
         $simulator->simulate();
     }
 
-    /**
-     * @depends testNoOpSucceeds
-     */
     public function testOp67IsIgnoredAsPrefixInRealMode()
     {
         $simulator = new Simulator(Simulator::REAL_MODE);
@@ -638,6 +701,107 @@ class SimulatorTest extends \PHPUnit\Framework\TestCase
         $simulator->setCodeBuffer("\x67");
 
         $this->expectException(\OutOfBoundsException::class);
+        $simulator->simulate();
+    }
+
+    public function testTwoByteInstructionIsNotCalledInRealMode()
+    {
+        $simulator = new Simulator(Simulator::REAL_MODE);
+
+        $mockInstruction = $this->createMock(TestAssemblyInstruction::class);
+        $mockFunction = function () use ($simulator) {
+            $this->fail('We should not have reached a 2-byte instruction!');
+        };
+
+        $simulator->registerInstructions($mockInstruction, [
+            0x0F01  => $mockFunction
+        ]);
+
+        $simulator->setCodeBuffer("\x0F\x01");
+
+        $this->expectException(\OutOfBoundsException::class);
+        $simulator->simulate();
+    }
+
+    public function testTwoByteInstructionIsCalledInProtectedMode()
+    {
+        $simulator = new Simulator(Simulator::PROTECTED_MODE);
+
+        $mockInstruction = $this->createMock(TestAssemblyInstruction::class);
+        $mockFunction = function () use ($simulator) {
+            $simulator->advanceInstructionPointer(1);
+            $this->assertTrue(true);
+            return true;
+        };
+
+        $simulator->registerInstructions($mockInstruction, [
+            0x0F01  => $mockFunction
+        ]);
+
+        $simulator->setCodeBuffer("\x0F\x01");
+        $simulator->simulate();
+    }
+
+    public function testTwoByteInstructionIsCalledInLongMode()
+    {
+        $simulator = new Simulator(Simulator::LONG_MODE);
+
+        $mockInstruction = $this->createMock(TestAssemblyInstruction::class);
+        $mockFunction = function () use ($simulator) {
+            $simulator->advanceInstructionPointer(1);
+            $this->assertTrue(true);
+            return true;
+        };
+
+        $simulator->registerInstructions($mockInstruction, [
+            0x0F01  => $mockFunction
+        ]);
+
+        $simulator->setCodeBuffer("\x0F\x01");
+        $simulator->simulate();
+    }
+
+    /**
+     * @depends testOp66IsRecordedAsPrefixInLongMode
+     * @depends testOp67IsRecordedAsPrefixInLongMode
+     * @depends testTwoByteInstructionIsCalledInLongMode
+     * @depends testRexOnLongModeIsRecorded
+     */
+    public function testGetPrefixReturnsListOfPrefixes()
+    {
+        $simulator = new Simulator(Simulator::LONG_MODE);
+
+        $mockInstruction = $this->createMock(AssemblyInstruction::class);
+        $mockFunction = function () use ($simulator) {
+            $simulator->advanceInstructionPointer(1);
+            $this->assertEquals([0x66, 0x40, 0x0F], $simulator->getPrefixes());
+            return true;
+        };
+
+        $simulator->registerInstructions($mockInstruction, [
+            0x0F09 => $mockFunction,
+        ]);
+
+        $simulator->setCodeBuffer("\x66\x40\x0F\x09");
+        $simulator->simulate();
+    }
+
+    public function testRexPrefixTreatedAsInstructionAfterTwoBytePrefix()
+    {
+        $simulator = new Simulator(Simulator::LONG_MODE);
+
+        $mockInstruction = $this->createMock(AssemblyInstruction::class);
+        $mockFunction = function () use ($simulator) {
+            $simulator->advanceInstructionPointer(2);
+            $this->assertTrue(true);
+            return true;
+        };
+
+        $simulator->registerInstructions($mockInstruction, [
+            0x0F40 => $mockFunction,
+        ]);
+
+        $simulator->setCodeBuffer("\x66\x0F\x40\x11");
         $simulator->simulate();
     }
 }

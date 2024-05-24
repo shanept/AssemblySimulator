@@ -62,8 +62,8 @@ class PopTest extends \PHPUnit\Framework\TestCase
         $simulator->method('getRex')
                   ->willReturn($rexValue);
 
-        $simulator->method('getPrefix')
-                  ->willReturn($prefixValue);
+        $simulator->method('getPrefixes')
+                  ->willReturn([$prefixValue]);
 
         $simulator->method('readStackAt')
                   ->willReturn($expected);

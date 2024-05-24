@@ -134,11 +134,11 @@ class Simulator
     private $rex = 0;
 
     /**
-     * Contains any applicable prefix for the current instruction.
+     * Contains any array of prefixes for the current instruction.
      *
-     * @var int
+     * @var int[]
      */
-    private $prefix = 0;
+    private $prefixes = [];
 
     /**
      * Stores the currently simulated assembly code.
@@ -205,7 +205,7 @@ class Simulator
         $this->tainted = false;
 
         $this->rex = 0;
-        $this->prefix = 0;
+        $this->prefixes = [];
         $this->buffer = false;
 
 
@@ -296,11 +296,23 @@ class Simulator
     }
 
     /**
-     * Gets the current instruction prefix under which we are operating.
+     * Gets the current instruction prefixes under which we are operating.
+     *
+     * @return int[]
      */
-    public function getPrefix(): int
+    public function getPrefixes(): array
     {
-        return $this->prefix;
+        return $this->prefixes;
+    }
+
+    /**
+     * Determines whether the specified prefix has been set.
+     *
+     * @param int $prefix The prefix to check for.
+     */
+    public function hasPrefix(int $prefix): bool
+    {
+        return in_array($prefix, $this->prefixes, true);
     }
 
     /**
@@ -491,7 +503,7 @@ class Simulator
      *
      * @return void
      */
-    public function setStackAt(int $offset, int $value)
+    public function writeStackAt(int $offset, int $value)
     {
         $this->stack[$offset] = $value;
     }
@@ -622,6 +634,11 @@ class Simulator
      */
     private function hasRegisteredInstruction(int $opcode): bool
     {
+        // Add our two-byte instruction prefix.
+        if ($this->hasPrefix(0x0F)) {
+            $opcode = 0xF00 | $opcode;
+        }
+
         foreach ($this->registeredInstructions as $record) {
             if (array_key_exists($opcode, $record['mappings'])) {
                 return true;
@@ -644,6 +661,11 @@ class Simulator
      */
     private function processOpcodeWithRegisteredInstruction(int $opcode): bool
     {
+        // Add our two-byte instruction prefix.
+        if ($this->hasPrefix(0x0F)) {
+            $opcode = 0xF00 | $opcode;
+        }
+
         foreach ($this->registeredInstructions as $record) {
             // If this Instruction class doesn't handle this opcode, skip it.
             if (! array_key_exists($opcode, $record['mappings'])) {
@@ -695,8 +717,7 @@ class Simulator
         }
 
         $message = sprintf(
-            'Expected boolean return value from Instruction %s, ' .
-            'but received "%s" instead.',
+            'Expected boolean return value from %s, but received "%s" instead.',
             $instructionName,
             var_export($response, true),
         );
@@ -722,27 +743,33 @@ class Simulator
         for (; $this->iPointer < $assembly_length;) {
             $op = ord($this->buffer[$this->iPointer]);
 
+            $isTwoByteOp = $this->hasPrefix(0x0F);
+
             // Go through our supported instructions.
             switch (true) {
+                // Two-byte Instructions
+                case $op == 0x0F && $this->mode !== self::REAL_MODE:
                 // Prefixes
-                case $op == 0x66 && $this->mode === self::LONG_MODE:
-                case $op == 0x67 && $this->mode !== self::REAL_MODE:
-                    $this->prefix = $op;
+                case $op == 0x66 && $this->mode === self::LONG_MODE && ! $isTwoByteOp:
+                case $op == 0x67 && $this->mode !== self::REAL_MODE && ! $isTwoByteOp:
+                    $this->prefixes[] = $op;
                     $this->iPointer++;
 
                     // If we don't continue to the outer loop, we will clear our
-                    // prefix and REX bit.
+                    // prefix, REX bit and two byte instruction prefix.
                     continue 2;
 
                 case ($op >= 0x40 &&
-                    $op <= 0x4f &&
-                    $this->mode === self::LONG_MODE):
+                      $op <= 0x4f
+                      && ! $isTwoByteOp
+                      && $this->mode === self::LONG_MODE):
 
+                    $this->prefixes[] = $op;
                     $this->rex = $op;
                     $this->iPointer++;
 
                     // If we don't continue to the outer loop, we will clear our
-                    // prefix and REX bit.
+                    // prefix, REX bit and two byte instruction prefix.
                     continue 2;
 
                 case ($this->hasRegisteredInstruction($op) &&
@@ -755,24 +782,26 @@ class Simulator
                      */
                     break;
 
-                case $op == 0x90: // NOP
-                    $this->iPointer++;
-                    break;
-
                 default:
-                    $errorMessage = sprintf(
-                        'Encountered unknown opcode 0x%x at offset %d (0x%x).',
-                        $op,
-                        $this->iPointer,
-                        $this->addressBase + $this->iPointer,
-                    );
+                    $format =
+                        'Encountered unknown opcode 0x%x at offset %d (0x%x).';
+                    $iPointer = $this->iPointer;
 
-                    throw new \OutOfBoundsException($errorMessage, $op);
+                    if ($isTwoByteOp) {
+                        $iPointer--;
+                        $format = 'Encountered unknown opcode 0x0F%x at ' .
+                                  'offset %d (0x%x).';
+                    }
+
+                    $address = $this->addressBase + $iPointer;
+                    $message = sprintf($format, $op, $iPointer, $address);
+
+                    throw new \OutOfBoundsException($message, $op);
             }
 
             // Reset our REX bit.
             $this->rex = 0;
-            $this->prefix = 0;
+            $this->prefixes = [];
         }
     }
 }

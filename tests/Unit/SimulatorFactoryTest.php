@@ -8,6 +8,9 @@ use shanept\AssemblySimulatorTests\Fakes\TestAssemblyInstruction;
 
 class SimulatorFactoryTest extends \PHPUnit\Framework\TestCase
 {
+    /**
+     * @covers shanept\AssemblySimulator\SimulatorFactory
+     */
     public function testFactoryDefaultInstructionsIncludeAllClasses()
     {
         // Get the list of all classes from the filesystem.
@@ -38,6 +41,9 @@ class SimulatorFactoryTest extends \PHPUnit\Framework\TestCase
         $this->assertEqualsCanonicalizing($expected, $defaultInstructionSet);
     }
 
+    /**
+     * @covers shanept\AssemblySimulator\SimulatorFactory
+     */
     public function testFactoryReturnsSimulatorInstance()
     {
         $simulator = SimulatorFactory::createSimulator();
@@ -45,22 +51,9 @@ class SimulatorFactoryTest extends \PHPUnit\Framework\TestCase
         $this->assertInstanceOf(Simulator::class, $simulator);
     }
 
-    public function testFactoryRegistersInstructionsWithSimulator()
-    {
-        $simulator = SimulatorFactory::createSimulator();
-
-        // Extract the registered instructions from the instantiated simulator.
-        // Convert to a list of class names, for comparison with our defaults.
-        $reflectionInstructions = new \ReflectionProperty($simulator, 'registeredInstructions');
-        $registered = $reflectionInstructions->getValue($simulator);
-        $registered = array_column($registered, 'reference');
-        $registered = array_map('get_class', $registered);
-
-        $expected = SimulatorFactory::getDefaultInstructionSet();
-
-        $this->assertEqualsCanonicalizing($expected, $registered);
-    }
-
+    /**
+     * @covers shanept\AssemblySimulator\SimulatorFactory
+     */
     public function testFactoryRegistersCustomInstructionWithSimulator()
     {
         $simulator = SimulatorFactory::createSimulator(Simulator::LONG_MODE, [

@@ -63,8 +63,10 @@ class PushTest extends \PHPUnit\Framework\TestCase
         $simulator->method('getRex')
                   ->willReturn($rexValue);
 
-        $simulator->method('getPrefix')
-                  ->willReturn($prefixValue);
+        $simulator->method('hasPrefix')
+                  ->willReturnCallback(function ($requested) use ($prefixValue) {
+                      return $requested === $prefixValue;
+                  });
 
         $simulator->method('getCodeAtInstruction')
                   ->willReturn($opcode);
@@ -86,7 +88,7 @@ class PushTest extends \PHPUnit\Framework\TestCase
                   });
 
         $simulator->expects($this->once())
-                  ->method('setStackAt')
+                  ->method('writeStackAt')
                   ->with($stackPosition + 1, $regValue);
 
         $instruction = new Push();
@@ -121,8 +123,10 @@ class PushTest extends \PHPUnit\Framework\TestCase
         $simulator->method('getRex')
                   ->willReturn($rexValue);
 
-        $simulator->method('getPrefix')
-                  ->willReturn($prefixValue);
+        $simulator->method('hasPrefix')
+                  ->willReturnCallback(function ($requested) use ($prefixValue) {
+                      return $requested === $prefixValue;
+                  });
 
         $simulator->method('getCodeAtInstruction')
                   ->willReturn($immediate);
@@ -132,7 +136,7 @@ class PushTest extends \PHPUnit\Framework\TestCase
                   ->with($stackPointer);
 
         $simulator->expects($this->once())
-                  ->method('setStackAt')
+                  ->method('writeStackAt')
                   ->with($stackPosition + 1, $expected);
 
         $instruction = new Push();
@@ -167,8 +171,8 @@ class PushTest extends \PHPUnit\Framework\TestCase
         $simulator->method('getRex')
                   ->willReturn($rexValue);
 
-        $simulator->method('getPrefix')
-                  ->willReturn($prefixValue);
+        $simulator->method('getPrefixes')
+                  ->willReturn([$prefixValue]);
 
         $simulator->method('getCodeAtInstruction')
                   ->willReturn($immediate);
@@ -178,7 +182,7 @@ class PushTest extends \PHPUnit\Framework\TestCase
                   ->with($stackPointer);
 
         $simulator->expects($this->once())
-                  ->method('setStackAt')
+                  ->method('writeStackAt')
                   ->with($stackPosition + 1, $expected);
 
         $instruction = new Push();

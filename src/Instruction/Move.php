@@ -35,6 +35,8 @@ class Move extends AssemblyInstruction
             0xBD => [&$this, 'executeOperandBx'],
             0xBE => [&$this, 'executeOperandBx'],
             0xBF => [&$this, 'executeOperandBx'],
+            0xC6 => [&$this, 'executeOperandC6'],
+            0xC7 => [&$this, 'executeOperandC7'],
         ];
     }
 
@@ -71,7 +73,7 @@ class Move extends AssemblyInstruction
     /**
      * Performs a MOV for a non-8-bit registry to ModRM byte.
      *
-     * Implements MOV r/m,reg for the opcode range \x89.
+     * Implements MOV r/m,reg for the opcode \x89.
      * This is the alternate encoding of MOV \x8b.
      */
     public function executeOperand89(): bool
@@ -92,8 +94,8 @@ class Move extends AssemblyInstruction
         $reg = Register::getByCode($byte["reg"], $opSize, $rexSet, $regExt);
         $value = $sim->readRegister($reg);
 
-        // We have a SIB byte.
-        if ($byte['rm'] === 0x4) {
+        // We have an address
+        if (0b11 !== $byte['mod']) {
             $address = $this->parseAddress($byte);
             $sim->advanceInstructionPointer($address->getDisplacement());
             // This would write to a memory location. We will not be doing that.
@@ -143,6 +145,92 @@ class Move extends AssemblyInstruction
         }
 
         $sim->writeRegister($reg, $value);
+
+        return true;
+    }
+
+    /**
+     * Performs a MOV for an 8-bit immediate to ModRM byte.
+     *
+     * Implements MOV r/m,imm8 for the opcode \xC6.
+     */
+    public function executeOperandC6(): bool
+    {
+        $sim = $this->getSimulator();
+        $sim->advanceInstructionPointer(1);
+
+        $byte = $this->parseModRmByte($sim->getCodeAtInstruction(1));
+        $sim->advanceInstructionPointer(1);
+
+        /**
+         * Depending on the value of the mod bit, we may be writing to a
+         * register or a memory address. If our ModRM mod field is 0b11, we
+         * write our value from the register. Otherwise, we are supposed to
+         * write to a memory location. We will skip that bit.
+         */
+        if (0b11 !== $byte["mod"]) {
+            $address = $this->parseAddress($byte);
+            $sim->advanceInstructionPointer($address->getDisplacement());
+        }
+
+        $immediate = $sim->getCodeAtInstruction(1);
+        $value = $this->unpackImmediate($immediate, 8);
+
+        $sim->advanceInstructionPointer(1);
+
+        if (0b11 === $byte["mod"]) {
+            $rex = $sim->getRex();
+            $rexSet = (bool) ($rex & Simulator::REX);
+            $rmExt = (bool) ($rex & Simulator::REX_B);
+
+            $rm = Register::getByCode($byte["rm"], 8, $rexSet, $rmExt);
+            $sim->writeRegister($rm, $value);
+        }
+        // This is where we *should* save to a memory location. We won't.
+
+        return true;
+    }
+
+    /**
+     * Performs a MOV for a non-8-bit immediate to ModRM byte.
+     *
+     * Implements MOV r/m,imm16/32 for the opcode \xC7.
+     */
+    public function executeOperandC7(): bool
+    {
+        $sim = $this->getSimulator();
+        $sim->advanceInstructionPointer(1);
+
+        $byte = $this->parseModRmByte($sim->getCodeAtInstruction(1));
+        $sim->advanceInstructionPointer(1);
+
+        /**
+        * Depending on the value of the mod bit, we may be writing to a
+        * register or a memory address. If our ModRM mod field is 0b11, we
+        * write our value from the register. Otherwise, we are supposed to
+        * write to a memory location. We will skip that bit.
+        */
+        if (0b11 !== $byte["mod"]) {
+            $address = $this->parseAddress($byte);
+            $sim->advanceInstructionPointer($address->getDisplacement());
+        }
+
+        // Now we load the Immediate value
+        $opSize = min(Simulator::TYPE_DWRD, $this->getOperandSize());
+        $immediate = $sim->getCodeAtInstruction($opSize / 8);
+        $value = $this->unpackImmediate($immediate, $opSize);
+
+        $sim->advanceInstructionPointer($opSize / 8);
+
+        if (0b11 === $byte["mod"]) {
+            $rex = $sim->getRex();
+            $rexSet = (bool) ($rex & Simulator::REX);
+            $rmExt = (bool) ($rex & Simulator::REX_B);
+
+            $rm = Register::getByCode($byte["rm"], $opSize, $rexSet, $rmExt);
+            $sim->writeRegister($rm, $value);
+        }
+        // This is where we *should* save to a memory location. We won't.
 
         return true;
     }
