@@ -373,7 +373,7 @@ class MovTest extends \PHPUnit\Framework\TestCase
                   ->willReturnCallback(function ($length) use (&$values) {
                       switch ($length) {
                           case 1:
-                            return array_pop($values);
+                              return array_pop($values);
                       }
 
                       $this->fail('Unknown length ' . $length);
@@ -422,9 +422,9 @@ class MovTest extends \PHPUnit\Framework\TestCase
                   ->willReturnCallback(function ($length) use (&$values) {
                       switch ($length) {
                           case 4:
-                            return array_pop($values);
+                              return array_pop($values);
                           case 1:
-                            return "\x05";
+                              return "\x05";
                       }
 
                       $this->fail('Unknown length ' . $length);
@@ -464,9 +464,9 @@ class MovTest extends \PHPUnit\Framework\TestCase
                   ->willReturnCallback(function ($length) use (&$values) {
                       switch ($length) {
                           case 4:
-                            return "\x01\x02\x03\x04";
+                              return "\x01\x02\x03\x04";
                           case 1:
-                            return "\xC0";
+                              return "\xC0";
                       }
 
                       $this->fail('Unknown length ' . $length);

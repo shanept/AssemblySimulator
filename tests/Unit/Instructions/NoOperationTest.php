@@ -2,8 +2,6 @@
 
 namespace shanept\AssemblySimulatorTests\Unit\Instructions;
 
-use shanept\AssemblySimulator\Register;
-use shanept\AssemblySimulator\Simulator;
 use shanept\AssemblySimulator\Instruction\NoOperation;
 
 class NoOperationTest extends \PHPUnit\Framework\TestCase

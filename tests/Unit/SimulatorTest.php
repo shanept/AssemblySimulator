@@ -714,7 +714,7 @@ class SimulatorTest extends \PHPUnit\Framework\TestCase
         };
 
         $simulator->registerInstructions($mockInstruction, [
-            0x0F01  => $mockFunction
+            0x0F01  => $mockFunction,
         ]);
 
         $simulator->setCodeBuffer("\x0F\x01");
@@ -735,7 +735,7 @@ class SimulatorTest extends \PHPUnit\Framework\TestCase
         };
 
         $simulator->registerInstructions($mockInstruction, [
-            0x0F01  => $mockFunction
+            0x0F01  => $mockFunction,
         ]);
 
         $simulator->setCodeBuffer("\x0F\x01");
@@ -754,7 +754,7 @@ class SimulatorTest extends \PHPUnit\Framework\TestCase
         };
 
         $simulator->registerInstructions($mockInstruction, [
-            0x0F01  => $mockFunction
+            0x0F01  => $mockFunction,
         ]);
 
         $simulator->setCodeBuffer("\x0F\x01");

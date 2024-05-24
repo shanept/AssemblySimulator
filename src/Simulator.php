@@ -747,9 +747,9 @@ class Simulator
 
             // Go through our supported instructions.
             switch (true) {
-                // Two-byte Instructions
+                // 0F: Two-byte Instructions
                 case $op == 0x0F && $this->mode !== self::REAL_MODE:
-                // Prefixes
+
                 case $op == 0x66 && $this->mode === self::LONG_MODE && ! $isTwoByteOp:
                 case $op == 0x67 && $this->mode !== self::REAL_MODE && ! $isTwoByteOp:
                     $this->prefixes[] = $op;
