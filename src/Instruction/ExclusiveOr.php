@@ -26,12 +26,60 @@ class ExclusiveOr extends AssemblyInstruction
     public function register(): array
     {
         return [
+            0x30 => [&$this, 'executeOperand30'],
             0x31 => [&$this, 'executeOperand31'],
+            0x32 => [&$this, 'executeOperand32'],
             0x33 => [&$this, 'executeOperand33'],
         ];
     }
 
-    private function preExecXorModRM(): array
+    /**
+     * Performs an xor operation on two registers.
+     *
+     * Implements XOR source8,dest8 for the xor opcode \x30. Result stored in rm.
+     */
+    public function executeOperand30(): bool
+    {
+        return $this->executeXorWithEncodingMr(Simulator::TYPE_BYTE);
+    }
+
+    /**
+     * Performs an xor operation on two registers.
+     *
+     * Implements XOR source,dest for the xor opcode \x31. Result stored in rm.
+     */
+    public function executeOperand31(): bool
+    {
+        $sim = $this->getSimulator();
+        $opSize = $this->getOperandSize();
+
+        return $this->executeXorWithEncodingMr($opSize);
+    }
+
+    /**
+     * Performs an xor operation on two registers.
+     *
+     * Implements XOR source8,dest8 for the xor opcode \x32. Result stored in reg.
+     */
+    public function executeOperand32(): bool
+    {
+        return $this->executeXorWithEncodingRm(Simulator::TYPE_BYTE);
+    }
+
+    /**
+     * Performs an xor operation on two registers.
+     *
+     * Implements XOR source,dest for the xor opcode \x33. Result stored in reg.
+     */
+    public function executeOperand33(): bool
+    {
+        $sim = $this->getSimulator();
+        $opSize = $this->getOperandSize();
+
+        return $this->executeXorWithEncodingRm($opSize);
+    }
+
+    private function preExecXorModRM($opSize): array
     {
         $sim = $this->getSimulator();
         $sim->advanceInstructionPointer(1);
@@ -54,7 +102,6 @@ class ExclusiveOr extends AssemblyInstruction
         $regExt = (bool) ($rex & Simulator::REX_R);
         $rmExt = (bool) ($rex & Simulator::REX_B);
 
-        $opSize = $this->getOperandSize();
         $reg = Register::getByCode($byte["reg"], $opSize, $rexSet, $regExt);
         $rm = Register::getByCode($byte["rm"], $opSize, $rexSet, $rmExt);
 
@@ -64,16 +111,11 @@ class ExclusiveOr extends AssemblyInstruction
         ];
     }
 
-    /**
-     * Performs an xor operation on two registers.
-     *
-     * Implements XOR source,dest for the xor opcode \x31. Result stored in rm.
-     */
-    public function executeOperand31(): bool
+    private function executeXorWithEncodingMr($opSize)
     {
         $sim = $this->getSimulator();
 
-        $modrm = $this->preExecXorModRM();
+        $modrm = $this->preExecXorModRM($opSize);
 
         $regVal = $sim->readRegister($modrm['reg']);
         $rmVal = $sim->readRegister($modrm['rm']);
@@ -89,16 +131,11 @@ class ExclusiveOr extends AssemblyInstruction
         return true;
     }
 
-    /**
-     * Performs an xor operation on two registers.
-     *
-     * Implements XOR source,dest for the xor opcode \x33. Result stored in reg.
-     */
-    public function executeOperand33(): bool
+    private function executeXorWithEncodingRm($opSize)
     {
         $sim = $this->getSimulator();
 
-        $modrm = $this->preExecXorModRM();
+        $modrm = $this->preExecXorModRM($opSize);
 
         $regVal = $sim->readRegister($modrm['reg']);
         $rmVal = $sim->readRegister($modrm['rm']);
