@@ -48,7 +48,7 @@ abstract class AssemblyInstruction
     }
 
     /**
-     * Determines the size of the operand to use for this instruction.
+     * Determines the size of the operand to use for this instruction, in bits.
      */
     protected function getOperandSize(): int
     {
@@ -72,20 +72,23 @@ abstract class AssemblyInstruction
     }
 
     /**
-     * We don't really use this function yet... When it is in use, remove this
-     * codeCoverage command.
-     * @codeCoverageIgnore
+     * Determines the size of the address to use for this instruction, in bits.
      */
     protected function getAddressSize(): int
     {
-        $maxWidth = $this->getLargestInstructionWidth();
+        $maxWidth = $this->simulator->getLargestInstructionWidth();
 
         $mode = $this->simulator->getMode();
 
-        // On x64, prefix 0x67 specifies a 32-bit address.
-        // On x32, prefix 0x67 specifies a 16-bit address.
-        if ($this->simulator->hasPrefix(0x67) && Simulator::REAL_MODE !== $mode) {
-            return $maxWidth / 2;
+        /**
+         * On x64, ignore this prefix.
+         * On x32, prefix 0x67 specifies a 16-bit address.
+         * On 16-bit, prefix 0x67 specifies a 32-bit address.
+         */
+        if ($this->simulator->hasPrefix(0x67) && Simulator::LONG_MODE !== $mode) {
+            $maxWidth = Simulator::REAL_MODE === $mode ?
+                            Simulator::TYPE_DWRD :
+                            Simulator::TYPE_WORD;
         }
 
         return $maxWidth;

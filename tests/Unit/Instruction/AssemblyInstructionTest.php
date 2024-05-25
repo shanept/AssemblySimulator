@@ -25,6 +25,64 @@ class AssemblyInstructionTest extends \PHPUnit\Framework\TestCase
         $instruction->setSimulator($simulator);
     }
 
+    public static function getAddressSizeDataProvider()
+    {
+        return [
+            // No prefix
+            [Simulator::REAL_MODE, 0, null, 16],
+            [Simulator::PROTECTED_MODE, 0, null, 32],
+            [Simulator::LONG_MODE, 0, null, 64],
+            // 64-bit operand size
+            [Simulator::LONG_MODE, 0x48, null, 64],
+
+            // Prefix applied
+            [Simulator::REAL_MODE, 0, 0x67, 32],
+            [Simulator::PROTECTED_MODE, 0, 0x67, 16],
+            [Simulator::LONG_MODE, 0, 0x67, 64],
+            // 64-bit operand size
+            [Simulator::LONG_MODE, 0x48, 0x67, 64],
+        ];
+    }
+
+    /**
+     * @dataProvider getAddressSizeDataProvider
+     */
+    public function testGetAddressSize(
+        $simulatorMode,
+        $rex,
+        $prefix,
+        $expected,
+    ) {
+        $simulator = $this->getMockSimulator($simulatorMode);
+
+        $simulator->method('getRex')
+                  ->willReturn($rex);
+
+        $simulator->method('hasPrefix')
+                  ->willReturnCallback(function ($check) use ($prefix) {
+                      return $check === $prefix;
+                  });
+
+        $simulator->method('getLargestInstructionWidth')
+                  ->willReturnCallback(function () use ($simulatorMode) {
+                      switch ($simulatorMode) {
+                          case Simulator::REAL_MODE:
+                              return 16;
+                          case Simulator::PROTECTED_MODE:
+                              return 32;
+                          case Simulator::LONG_MODE:
+                              return 64;
+                      }
+                  });
+
+        $instruction = new TestAssemblyInstruction();
+        $instruction->setSimulator($simulator);
+
+        $fn = new ReflectionMethod($instruction, 'getAddressSize');
+
+        $this->assertEquals($expected, $fn->invoke($instruction));
+    }
+
     public function testParseAddressOnNonRipOrSibAddress()
     {
         $simulator = $this->getMockSimulator(Simulator::PROTECTED_MODE);
