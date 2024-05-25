@@ -323,6 +323,15 @@ abstract class AssemblyInstruction
         $dispSize = 2 == $byte["mod"] ? 4 : $byte["mod"];
         $displacement = 0;
 
+        /**
+         * If we are on 64-bit and receive a mod of 0 and an rm of 5, we have a
+         * RIP relative address with 32-bit displacement. On a 32-bit machine,
+         * we just have a near with 32-bit displacement.
+         */
+        if (0x5 === $byte['rm'] && 0x0 === $byte['mod']) {
+            $dispSize = 4;
+        }
+
         if ($dispSize) {
             $dispOffset = $this->simulator->getInstructionPointer();
             $displacement = $this->simulator->getCodeBuffer($dispOffset, $dispSize);

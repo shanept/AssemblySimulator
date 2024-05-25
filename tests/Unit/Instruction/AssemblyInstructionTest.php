@@ -6,6 +6,7 @@ use ReflectionMethod;
 use shanept\AssemblySimulator\Register;
 use shanept\AssemblySimulator\Simulator;
 use shanept\AssemblySimulator\Address\RipAddress;
+use shanept\AssemblySimulator\Address\ModRmAddress;
 use shanept\AssemblySimulatorTests\Fakes\TestAssemblyInstruction;
 
 class AssemblyInstructionTest extends \PHPUnit\Framework\TestCase
@@ -79,6 +80,39 @@ class AssemblyInstructionTest extends \PHPUnit\Framework\TestCase
         $address = $parseAddress->invoke($instruction, $byte);
         $this->assertInstanceOf(RipAddress::class, $address);
         $this->assertEquals(0xF1917E5, $address->getAddress());
+    }
+
+    public function testParseAddressLooksLikeRipOnProtectedModeReturnsModRmAddress()
+    {
+        $simulator = $this->getMockSimulator(Simulator::PROTECTED_MODE);
+
+        $simulator->method('getRex')
+                  ->willReturn(0);
+
+        $simulator->method('hasPrefix')
+                  ->willReturn(false);
+
+        $simulator->method('getCodeBuffer')
+                  ->willReturn("\xe0\x17\x19\x0F")
+                  ->with(1, 4);
+
+        $simulator->method('getInstructionPointer')
+                  ->willReturn(1);
+
+        $instruction = new TestAssemblyInstruction();
+        $instruction->setSimulator($simulator);
+
+        $parseAddress = new ReflectionMethod($instruction, "parseAddress");
+
+        $byte = [
+            "mod" => 0,
+            "reg" => 0b111,
+            "rm" => 0b101,
+        ];
+
+        $address = $parseAddress->invoke($instruction, $byte);
+        $this->assertInstanceOf(ModRmAddress::class, $address);
+        $this->assertEquals(0xF1917E0, $address->getAddress());
     }
 
     public function testParseAddressDoesNotUseRipOnModRmMod1()
