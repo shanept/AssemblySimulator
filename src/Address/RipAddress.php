@@ -57,7 +57,9 @@ class RipAddress implements AddressInterface
             $address = -(((~$address) & 0xFFFFFFFF) + 1);
         }
 
-        return $this->rip + $address + $this->displacement + $offset;
+        // Our RIP pointer is lagging behind, however it should be in front.
+        // We will adjust that here.
+        return ($this->rip + $this->displacement) + $address + $offset;
     }
 
     public function getDisplacement(): int
