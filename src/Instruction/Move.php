@@ -74,7 +74,7 @@ class Move extends AssemblyInstruction
      */
     public function executeOperand8a(): bool
     {
-        return $this->executeMovWithEncodingRm(Simualtor::TYPE_BYTE);
+        return $this->executeMovWithEncodingRm(Simulator::TYPE_BYTE);
     }
 
     /**
