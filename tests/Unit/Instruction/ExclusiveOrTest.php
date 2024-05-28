@@ -28,7 +28,8 @@ class ExclusiveOrTest extends \PHPUnit\Framework\TestCase
         ];
     }
 
-    public function testXor30RegisterAgainstItselfIsEmpty() {
+    public function testXor30RegisterAgainstItselfIsEmpty()
+    {
         $simulator = $this->getMockSimulator(Simulator::LONG_MODE);
 
         $simulator->method('getRex')
@@ -92,7 +93,8 @@ class ExclusiveOrTest extends \PHPUnit\Framework\TestCase
         $xor->executeOperand31();
     }
 
-    public function testXor32RegisterAgainstItselfIsEmpty() {
+    public function testXor32RegisterAgainstItselfIsEmpty()
+    {
         $simulator = $this->getMockSimulator(Simulator::LONG_MODE);
 
         $simulator->method('getRex')
