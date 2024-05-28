@@ -71,6 +71,35 @@ class MovTest extends \PHPUnit\Framework\TestCase
         $this->assertTrue($move->executeOperandBx());
     }
 
+    public function testMovBxLoadsImmediate8bitValue()
+    {
+        $simulator = $this->getMockSimulator(Simulator::LONG_MODE);
+
+        // mov cl,0x01
+        // 0xB1 0x01
+        $simulator->method('getRex')
+                  ->willReturn(0);
+
+        $simulator->method('getPrefixes')
+                  ->willReturn([]);
+
+        $values = ["\x01", "\xB1"];
+
+        $simulator->method('getCodeAtInstruction')
+                  ->willReturnCallback(function ($length) use (&$values) {
+                      return array_pop($values);
+                  });
+
+        $simulator->expects($this->once())
+                  ->method('writeRegister')
+                  ->with(Register::CL, 1);
+
+        $move = new Move();
+        $move->setSimulator($simulator);
+
+        $this->assertTrue($move->executeOperandBx8());
+    }
+
     public function testMov8bLoadsMemoryAddress()
     {
         $simulator = $this->getMockSimulator(Simulator::LONG_MODE);

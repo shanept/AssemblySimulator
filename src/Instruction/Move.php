@@ -29,6 +29,14 @@ class Move extends AssemblyInstruction
             0x89 => [&$this, 'executeOperand89'],
             0x8A => [&$this, 'executeOperand8A'],
             0x8B => [&$this, 'executeOperand8B'],
+            0xB0 => [&$this, 'executeOperandBx8'],
+            0xB1 => [&$this, 'executeOperandBx8'],
+            0xB2 => [&$this, 'executeOperandBx8'],
+            0xB3 => [&$this, 'executeOperandBx8'],
+            0xB4 => [&$this, 'executeOperandBx8'],
+            0xB5 => [&$this, 'executeOperandBx8'],
+            0xB6 => [&$this, 'executeOperandBx8'],
+            0xB7 => [&$this, 'executeOperandBx8'],
             0xB8 => [&$this, 'executeOperandBx'],
             0xB9 => [&$this, 'executeOperandBx'],
             0xBA => [&$this, 'executeOperandBx'],
@@ -61,7 +69,6 @@ class Move extends AssemblyInstruction
      */
     public function executeOperand89(): bool
     {
-        $sim = $this->getSimulator();
         $opSize = $this->getOperandSize();
 
         return $this->executeMovWithEncodingMr($opSize);
@@ -84,10 +91,20 @@ class Move extends AssemblyInstruction
      */
     public function executeOperand8b(): bool
     {
-        $sim = $this->getSimulator();
         $opSize = $this->getOperandSize();
 
         return $this->executeMovWithEncodingRm($opSize);
+    }
+
+    /**
+     * Performs a MOV for an 8-bit memory address.
+     *
+     * Implements MOV reg,imm8 for the opcode range \xB0-\xB7.
+     */
+    public function executeOperandBx8(): bool
+    {
+        $opSize = Simulator::TYPE_BYTE;
+        return $this->executeMovWithEncodingOi($opSize);
     }
 
     /**
@@ -97,27 +114,8 @@ class Move extends AssemblyInstruction
      */
     public function executeOperandBx(): bool
     {
-        $sim = $this->getSimulator();
-
-        // Get the last bit of the operand.
-        $opcode = ord($sim->getCodeAtInstruction(1)) & 0x7;
-        $sim->advanceInstructionPointer(1);
-
         $opSize = $this->getOperandSize();
-        $value = $sim->getCodeAtInstruction($opSize / 8);
-        $value = $this->unpackImmediate($value, $opSize);
-
-        $sim->advanceInstructionPointer($opSize / 8);
-
-        $rex = $sim->getRex();
-        $rexSet = (bool) ($rex & Simulator::REX);
-        $regExt = (bool) ($rex & Simulator::REX_B);
-
-        $register = Register::getByCode($opcode, $opSize, $rexSet, $regExt);
-
-        $sim->writeRegister($register, $value);
-
-        return true;
+        return $this->executeMovWithEncodingOi($opSize);
     }
 
     /**
@@ -277,6 +275,35 @@ class Move extends AssemblyInstruction
         }
 
         $sim->writeRegister($reg, $value);
+
+        return true;
+    }
+
+    /**
+     * Provides the functionality for operand range \xB0-\xBF. They simply
+     * dictate the operand size, this function does the rest.
+     * Parameter encoding is "OI".
+     */
+    private function executeMovWithEncodingOi($opSize): bool
+    {
+        $sim = $this->getSimulator();
+
+        // Get the last bit of the operand.
+        $opcode = ord($sim->getCodeAtInstruction(1)) & 0x7;
+        $sim->advanceInstructionPointer(1);
+
+        $value = $sim->getCodeAtInstruction($opSize / 8);
+        $value = $this->unpackImmediate($value, $opSize);
+
+        $sim->advanceInstructionPointer($opSize / 8);
+
+        $rex = $sim->getRex();
+        $rexSet = (bool) ($rex & Simulator::REX);
+        $regExt = (bool) ($rex & Simulator::REX_B);
+
+        $register = Register::getByCode($opcode, $opSize, $rexSet, $regExt);
+
+        $sim->writeRegister($register, $value);
 
         return true;
     }
