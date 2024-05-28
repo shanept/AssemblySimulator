@@ -28,6 +28,32 @@ class ExclusiveOrTest extends \PHPUnit\Framework\TestCase
         ];
     }
 
+    public function testXor30RegisterAgainstItselfIsEmpty() {
+        $simulator = $this->getMockSimulator(Simulator::LONG_MODE);
+
+        $simulator->method('getRex')
+                  ->willReturn(0x45);
+
+        $simulator->method('hasPrefix')
+                  ->willReturn(false);
+
+        $simulator->method('readRegister')
+                  ->willReturn(1234)
+                  ->with(Register::R9B);
+
+        $simulator->expects($this->once())
+                  ->method('writeRegister')
+                  ->with(Register::R9B, 0);
+
+        $simulator->method('getCodeAtInstruction')
+                  ->willReturn("\xC9");
+
+        $xor = new ExclusiveOr();
+        $xor->setSimulator($simulator);
+
+        $xor->executeOperand30();
+    }
+
     /**
      * @dataProvider xorRegisterAgainstItselfIsEmptyDataProvider
      */
@@ -64,6 +90,32 @@ class ExclusiveOrTest extends \PHPUnit\Framework\TestCase
         $xor->setSimulator($simulator);
 
         $xor->executeOperand31();
+    }
+
+    public function testXor32RegisterAgainstItselfIsEmpty() {
+        $simulator = $this->getMockSimulator(Simulator::LONG_MODE);
+
+        $simulator->method('getRex')
+                  ->willReturn(0x45);
+
+        $simulator->method('hasPrefix')
+                  ->willReturn(false);
+
+        $simulator->method('readRegister')
+                  ->willReturn(1234)
+                  ->with(Register::R9B);
+
+        $simulator->expects($this->once())
+                  ->method('writeRegister')
+                  ->with(Register::R9B, 0);
+
+        $simulator->method('getCodeAtInstruction')
+                  ->willReturn("\xC9");
+
+        $xor = new ExclusiveOr();
+        $xor->setSimulator($simulator);
+
+        $xor->executeOperand32();
     }
 
     /**

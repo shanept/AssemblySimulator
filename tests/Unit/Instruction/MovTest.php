@@ -35,7 +35,7 @@ class MovTest extends \PHPUnit\Framework\TestCase
     /**
      * @dataProvider movLoadsImmediate32bitValueDataProvider
      */
-    public function testMovLoadsImmediate32bitValue(
+    public function testMovBxLoadsImmediate32bitValue(
         $simulatorMode,
         $rexValue,
         $prefixValue,
@@ -104,6 +104,143 @@ class MovTest extends \PHPUnit\Framework\TestCase
         $move->setSimulator($simulator);
 
         $this->assertTrue($move->executeOperand8b());
+    }
+
+    public function testMov88OnRegisterValue()
+    {
+        $simulator = $this->getMockSimulator(Simulator::LONG_MODE);
+
+        // mov cl,dl
+        // 0x88 0xD1
+        $simulator->method('getRex')
+                  ->willReturn(0x40);
+
+        $simulator->method('getPrefixes')
+                  ->willReturn([]);
+
+        $simulator->method('getCodeAtInstruction')
+                  ->willReturn("\xD1");
+
+        $simulator->method('readRegister')
+                  ->with(Register::DL)
+                  ->willReturn(690);
+
+        $simulator->expects($this->once())
+                  ->method('writeRegister')
+                  ->with(Register::CL, 690);
+
+        $move = new Move();
+        $move->setSimulator($simulator);
+
+        $this->assertTrue($move->executeOperand88());
+    }
+
+    /**
+     * We aren't looking for much here as we don't actually handle the value.
+     * We just want to ensure we move past the SIB value without error and
+     * return true.
+     */
+    public function testMov88OnSibValue()
+    {
+        $simulator = $this->getMockSimulator(Simulator::LONG_MODE);
+
+        // mov [esp+0x10],rsi
+        // 0x88 0x74 0x24 0x10
+        $simulator->method('getRex')
+                  ->willReturn(0);
+
+        $simulator->method('getPrefixes')
+                  ->willReturn([]);
+
+        $simulator->method('getInstructionPointer')
+                  ->willReturn(1);
+
+        $values = [
+            "\x24",
+            "\x74",
+        ];
+
+        $simulator->method('getCodeAtInstruction')
+                  ->willReturnCallback(function () use (&$values) {
+                      return array_pop($values);
+                  });
+
+        $simulator->method('getCodeBuffer')
+                  ->with(2, 1)
+                  ->willReturn("\x10");
+
+        $simulator->method('readRegister')
+                  ->willReturnCallback(function ($register) {
+                      switch ($register) {
+                          case Register::DH:
+                              return 690;
+                          case Register::ESP:
+                              return 0;
+                      }
+
+                      $this->fail(sprintf('Unexpected register %s.', $register['name']));
+                  });
+
+        $simulator->expects($this->exactly(3))
+                  ->method('advanceInstructionPointer');
+
+        $move = new Move();
+        $move->setSimulator($simulator);
+
+        $this->assertTrue($move->executeOperand88());
+    }
+
+    public function testMov88OnNonSibValue()
+    {
+        $simulator = $this->getMockSimulator(Simulator::LONG_MODE);
+
+        $simulator->method('getRex')
+                  ->willReturn(0x41);
+
+        $simulator->method('getCodeAtInstruction')
+                  ->willReturn("\xFC");
+
+        $simulator->method('readRegister')
+                  ->with(Register::DIL)
+                  ->willReturn(133);
+
+        $simulator->expects($this->once())
+                  ->method('writeRegister')
+                  ->with(Register::R12B, 133);
+
+        $move = new Move();
+        $move->setSimulator($simulator);
+
+        $this->assertTrue($move->executeOperand88());
+    }
+
+    public function testMov88OnRexRegisterValue()
+    {
+        $simulator = $this->getMockSimulator(Simulator::LONG_MODE);
+
+        // mov r9b,r10b
+        // 0x45 0x88 0xD1
+        $simulator->method('getRex')
+                  ->willReturn(0x45);
+
+        $simulator->method('getPrefixes')
+                  ->willReturn([]);
+
+        $simulator->method('getCodeAtInstruction')
+                  ->willReturn("\xD1");
+
+        $simulator->method('readRegister')
+                  ->with(Register::R10B)
+                  ->willReturn(691);
+
+        $simulator->expects($this->once())
+                  ->method('writeRegister')
+                  ->with(Register::R9B, 691);
+
+        $move = new Move();
+        $move->setSimulator($simulator);
+
+        $this->assertTrue($move->executeOperand88());
     }
 
     public function testMov89OnRegisterValue()
@@ -241,6 +378,64 @@ class MovTest extends \PHPUnit\Framework\TestCase
         $move->setSimulator($simulator);
 
         $this->assertTrue($move->executeOperand89());
+    }
+
+    public function testMov8aOnRegisterValue()
+    {
+        $simulator = $this->getMockSimulator(Simulator::LONG_MODE);
+
+        // mov dl,cl
+        // 0x8A 0xD1
+        $simulator->method('getRex')
+                  ->willReturn(0);
+
+        $simulator->method('getPrefixes')
+                  ->willReturn([]);
+
+        $simulator->method('getCodeAtInstruction')
+                  ->willReturn("\xD1");
+
+        $simulator->method('readRegister')
+                  ->with(Register::CL)
+                  ->willReturn(693);
+
+        $simulator->expects($this->once())
+                  ->method('writeRegister')
+                  ->with(Register::DL, 693);
+
+        $move = new Move();
+        $move->setSimulator($simulator);
+
+        $this->assertTrue($move->executeOperand8a());
+    }
+
+    public function testMov8aOnRexRegisterValue()
+    {
+        $simulator = $this->getMockSimulator(Simulator::LONG_MODE);
+
+        // mov r10b,r9b
+        // 0x45 0x88 0xD1
+        $simulator->method('getRex')
+                  ->willReturn(0x45);
+
+        $simulator->method('getPrefixes')
+                  ->willReturn([]);
+
+        $simulator->method('getCodeAtInstruction')
+                  ->willReturn("\xD1");
+
+        $simulator->method('readRegister')
+                  ->with(Register::R9B)
+                  ->willReturn(694);
+
+        $simulator->expects($this->once())
+                  ->method('writeRegister')
+                  ->with(Register::R10B, 694);
+
+        $move = new Move();
+        $move->setSimulator($simulator);
+
+        $this->assertTrue($move->executeOperand8a());
     }
 
     public function testMov8bOnRegisterValue()
