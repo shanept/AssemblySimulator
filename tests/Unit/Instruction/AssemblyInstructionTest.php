@@ -83,34 +83,65 @@ class AssemblyInstructionTest extends \PHPUnit\Framework\TestCase
         $this->assertEquals($expected, $fn->invoke($instruction));
     }
 
-    public function testParseAddressOnNonRipOrSibAddress()
+    public static function parseAddressOnNonRipOrSibAddressDataProvider()
     {
-        $simulator = $this->getMockSimulator(Simulator::PROTECTED_MODE);
+        return [
+            [Simulator::LONG_MODE,  null, Register::EBX, 849, "\x10", 1, 0, 3, 865],
+            [Simulator::PROTECTED_MODE, null, Register::EBX, 849, "\x10\x00\x00\x00", 2, 0, 3, 865],
+            [Simulator::REAL_MODE, 0x66, Register::EBX, 277938170, "\x10", 1, 0, 3, 277938186],
+        ];
+    }
+
+    /**
+     * @dataProvider parseAddressOnNonRipOrSibAddressDataProvider
+     */
+    public function testParseAddressOnNonRipOrSibAddress(
+        $simulatorMode,
+        $prefixValue,
+        $register,
+        $regValue,
+        $addressBytes,
+        $mod,
+        $reg,
+        $rm,
+        $expect,
+    ) {
+        $simulator = $this->getMockSimulator($simulatorMode);
 
         $simulator->method('readRegister')
-                  ->willReturn(849)
-                  ->with(Register::EBX);
+                  ->willReturn($regValue)
+                  ->with($register);
 
         $simulator->method('hasPrefix')
-                  ->willReturn(false);
+                  ->willReturnCallback(function ($requested) use ($prefixValue) {
+                      return $prefixValue === $requested;
+                  });
 
         $simulator->method('getInstructionPointer')
                   ->willReturn(1);
 
+        if (1 === $mod) {
+            $dispSize = 1;
+        } elseif (2 === $mod) {
+            $dispSize = 4;
+        } else {
+            $dispSize = 0;
+        }
+
         $simulator->method('getCodeBuffer')
-                  ->willReturn("\x10\x00\x00\x00")
-                  ->with(1, 4);
+                  ->willReturn($addressBytes)
+                  ->with(1, $dispSize);
 
         $instruction = new TestAssemblyInstruction();
         $instruction->setSimulator($simulator);
 
         $method = new ReflectionMethod($instruction, "parseAddress");
 
-        $byte = ['mod' => 2, 'reg' => 0, 'rm' => 3];
+        $byte = compact('mod', 'reg', 'rm');
         $address = $method->invoke($instruction, $byte);
 
-        $this->assertEquals(865, $address->getAddress());
-        $this->assertEquals(4, $address->getDisplacement());
+        $this->assertEquals($expect, $address->getAddress());
+        $this->assertEquals($dispSize, $address->getDisplacement());
     }
 
     public function testParseAddressAcceptsRipAddressOnLongMode()
@@ -199,82 +230,69 @@ class AssemblyInstructionTest extends \PHPUnit\Framework\TestCase
         $this->assertNotInstanceOf(RipAddress::class, $address);
     }
 
-    public function testParseAddressAcceptsSibAddressOnProtectedMode()
+    public static function parseSibAddressDataProvider()
     {
-        $simulator = $this->getMockSimulator(Simulator::PROTECTED_MODE);
+        return [
+            // mov [eax+ebx*4],ecx
+            // 0x89 0x0C 0x98
+            [Simulator::PROTECTED_MODE, 0, null, Register::EBX, 426, Register::EAX, 54923, 0, 1, 4, "\x98", 56629],
 
-        // mov [eax+ebx*4],ecx
-        // 0x89 0x0C 0x98
-        $simulator->method('getRex')
-                  ->willReturn(0);
-
-        $simulator->method('hasPrefix')
-                  ->willReturn(false);
-
-        $simulator->method('getInstructionPointer')
-                  ->willReturn(1);
-
-        $simulator->method('readRegister')
-                  ->willReturnCallback(function ($register) {
-                      switch ($register) {
-                          case Register::EAX:
-                              return 54923;
-                          case Register::EBX:
-                              return 426;
-                      }
-
-                      $this->fail('Incorrect register ' . $register['name']);
-                  });
-
-        $simulator->method('getCodeAtInstruction')
-                  ->with(1)
-                  ->willReturn("\x98");
-
-        $instruction = new TestAssemblyInstruction();
-        $instruction->setSimulator($simulator);
-
-        $parseAddress = new ReflectionMethod($instruction, "parseAddress");
-
-        $byte = [
-            "mod" => 0,
-            "reg" => 0b1,
-            "rm" => 0b100,
+            // mov [rax+rbx*4],ecx
+            // 0x89 0x0C 0xA0
+            [Simulator::LONG_MODE, 0x4A, null, Register::R12, 428, Register::RAX, 54925, 0, 1, 4, "\xA0", 56639],
         ];
-
-        $address = $parseAddress->invoke($instruction, $byte);
-        $this->assertEquals(56629, $address->getAddress());
     }
 
-    public function testParseAddressAcceptsSibAddressWithExtendedScaleOnLongMode()
-    {
-        $simulator = $this->getMockSimulator(Simulator::LONG_MODE);
+    /**
+     * @dataProvider parseSibAddressDataProvider
+     */
+    public function testParseSibAddress(
+        $simulatorMode,
+        $rexValue,
+        $prefixValue,
+        $scaleReg,
+        $scaleVal,
+        $indexReg,
+        $indexVal,
+        $mod,
+        $reg,
+        $rm,
+        $sibByte,
+        $expected,
+    ) {
+        $simulator = $this->getMockSimulator($simulatorMode);
 
-        // mov [rax+rbx*4],ecx
-        // 0x89 0x0C 0xA0
         $simulator->method('getRex')
-                  ->willReturn(0x4A);
+                  ->willReturn($rexValue);
 
         $simulator->method('hasPrefix')
-                  ->willReturn(false);
+                  ->willReturnCallback(function ($requested) use ($prefixValue) {
+                      return $prefixValue === $requested;
+                  });
 
         $simulator->method('getInstructionPointer')
                   ->willReturn(1);
 
         $simulator->method('readRegister')
-                  ->willReturnCallback(function ($register) {
+                  ->willReturnCallback(function ($register) use (
+                      $scaleReg,
+                      $scaleVal,
+                      $indexReg,
+                      $indexVal,
+                  ) {
                       switch ($register) {
-                          case Register::RAX:
-                              return 54925;
-                          case Register::R12:
-                              return 428;
+                          case $scaleReg:
+                              return $scaleVal;
+                          case $indexReg:
+                              return $indexVal;
                       }
 
                       $this->fail('Incorrect register ' . $register['name']);
                   });
 
         $simulator->method('getCodeAtInstruction')
-                  ->with(1)
-                  ->willReturn("\xA0");
+                  ->willReturn($sibByte)
+                  ->with(strlen($sibByte));
 
         $instruction = new TestAssemblyInstruction();
         $instruction->setSimulator($simulator);
@@ -282,13 +300,13 @@ class AssemblyInstructionTest extends \PHPUnit\Framework\TestCase
         $parseAddress = new ReflectionMethod($instruction, "parseAddress");
 
         $byte = [
-            "mod" => 0,
-            "reg" => 0b1,
-            "rm" => 0b100,
+            "mod" => $mod,
+            "reg" => $reg,
+            "rm" => $rm,
         ];
 
         $address = $parseAddress->invoke($instruction, $byte);
-        $this->assertEquals(56639, $address->getAddress());
+        $this->assertEquals($expected, $address->getAddress());
     }
 
     public function testParseAddressWithSibDisp32OverrideInProtectedMode()
