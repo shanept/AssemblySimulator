@@ -343,4 +343,19 @@ abstract class AssemblyInstruction
 
         return new ModRmAddress($address, $displacement, $dispSize);
     }
+
+    /**
+     * Returns the correct stack pointer for the Simulator mode.
+     */
+    protected function getStackPointerRegister()
+    {
+        $pointers = [
+            null,
+            Register::SP,
+            Register::ESP,
+            Register::RSP,
+        ];
+
+        return $pointers[$this->simulator->getMode()];
+    }
 }

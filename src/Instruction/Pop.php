@@ -49,7 +49,7 @@ class Pop extends AssemblyInstruction
         $sim->advanceInstructionPointer(1);
 
         $opSize = $this->getOperandSize();
-        $stackPointer = $this->getStackPointerRegister($sim->getMode());
+        $stackPointer = $this->getStackPointerRegister();
         $stackPosition = $sim->readRegister($stackPointer);
 
         $rex = $sim->getRex();
@@ -65,20 +65,5 @@ class Pop extends AssemblyInstruction
         $sim->writeRegister($register, $value, $opSize);
 
         return true;
-    }
-
-    /**
-     * Returns the correct stack pointer for the Simulator mode.
-     */
-    protected function getStackPointerRegister($mode)
-    {
-        $pointers = [
-            null,
-            Register::SP,
-            Register::ESP,
-            Register::RSP,
-        ];
-
-        return $pointers[$mode];
     }
 }

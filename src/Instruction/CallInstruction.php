@@ -75,8 +75,16 @@ class CallInstruction extends AssemblyInstruction
             $address = -(($address ^ 0xFFFFFFFF) + 1);
         }
 
+        $instructionPointer = $sim->getInstructionPointer();
+
+        // Push our instruction pointer to the stack.
+        $stackPointer = $this->getStackPointerRegister();
+        $stackPosition = $sim->readRegister($stackPointer);
+        $sim->writeStackAt($stackPosition, $instructionPointer);
+        $sim->writeRegister($stackPointer, ++$stackPosition);
+
         // The address is relative. We should make it absolute.
-        $addr = $sim->getAddressBase() + $sim->getInstructionPointer() + $address;
+        $addr = $sim->getAddressBase() + $instructionPointer + $address;
 
         if (is_callable($this->handleAddressCb)) {
             call_user_func($this->handleAddressCb, $addr);
