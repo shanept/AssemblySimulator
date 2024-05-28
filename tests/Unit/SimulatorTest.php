@@ -636,13 +636,22 @@ class SimulatorTest extends \PHPUnit\Framework\TestCase
         $simulator->simulate();
     }
 
-    public function testOp66IsIgnoredAsPrefixInProtectedMode()
+    public function testOp66IsRecordedAsPrefixInProtectedMode()
     {
         $simulator = new Simulator(Simulator::PROTECTED_MODE);
 
-        $simulator->setCodeBuffer("\x66");
+        $mockFunction = function () use ($simulator) {
+            $simulator->advanceInstructionPointer(1);
+            $this->assertTrue($simulator->hasPrefix(0x66));
+            return true;
+        };
 
-        $this->expectException(\OutOfBoundsException::class);
+        $instruction = $this->createMock(AssemblyInstruction::class);
+        $simulator->registerInstructions($instruction, [
+            0x01 => $mockFunction,
+        ]);
+
+        $simulator->setCodeBuffer("\x66\x01");
         $simulator->simulate();
     }
 

@@ -58,9 +58,14 @@ abstract class AssemblyInstruction
         $mode = $this->simulator->getMode();
         $rex = $this->simulator->getRex();
 
-        // On x64, prefix 0x66 specifies the 16-bit register.
-        if (Simulator::LONG_MODE === $mode && $this->simulator->hasPrefix(0x66)) {
-            return Simulator::TYPE_WORD;
+        /**
+         * On LONG and PROTECTED mode, 0x66 specifies 16-bit operations.
+         * On REAL mode, 0x66 specifies 32-bit operations.
+         */
+        if ($this->simulator->hasPrefix(0x66)) {
+            $size = Simulator::REAL_MODE === $mode ?
+                    Simulator::TYPE_DWRD :
+                    Simulator::TYPE_WORD;
         }
 
         // If we are operating with REX_W, promote operation to 64-bits.
