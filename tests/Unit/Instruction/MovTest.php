@@ -174,7 +174,7 @@ class MovTest extends \PHPUnit\Framework\TestCase
                       switch ($register) {
                           case Register::DH:
                               return 690;
-                          case Register::ESP:
+                          case Register::RSP:
                               return 0;
                       }
 
@@ -546,7 +546,7 @@ class MovTest extends \PHPUnit\Framework\TestCase
 
     public function testMovC6OnRegister()
     {
-        // 0xC7 0xC0 0x04
+        // 0xC6 0xC0 0x04
         // mov al 0x40
         $simulator = $this->getMockSimulator(Simulator::LONG_MODE);
 
@@ -683,6 +683,58 @@ class MovTest extends \PHPUnit\Framework\TestCase
 
         $this->assertTrue($mov->executeOperandC7());
 
+        $this->assertEquals(6, $iPointer);
+    }
+
+    public function testMovC7WithOp66InProtectedMode()
+    {
+        // mov [esi+0x25], 0x0
+        // 0x66 0xc7 0x46 0x25 0x00 0x00
+        $simulator = $this->getMockSimulator(Simulator::PROTECTED_MODE);
+
+        $simulator->method('getRex')
+                  ->willReturn(0);
+
+        $simulator->method('hasPrefix')
+                  ->willReturnCallback(function ($prefix) {
+                      return 0x66 === $prefix;
+                  });
+
+        $simulator->method('readRegister')
+                  ->willReturnCallback(function ($register) {
+                      if ($register === Register::SI) {
+                          return 63;
+                      }
+
+                      $this->fail('Unexpected register ' . $register['name']);
+                  });
+
+        $simulator->method('getCodeAtInstruction')
+                  ->willReturnCallback(function ($length) use (&$values) {
+                      if (1 === $length) {
+                          return "\x46";
+                      } elseif (2 === $length) {
+                          return "\x00\x00";
+                      }
+                  });
+
+        $simulator->method('getCodeBuffer')
+                  ->willReturn("\x25");
+
+        $iPointer = 1;
+
+        $simulator->method('getInstructionPointer')
+                  ->willReturn(1);
+
+        $simulator->method('advanceInstructionPointer')
+                  ->willReturnCallback(function ($amount) use (&$iPointer) {
+                      $iPointer += $amount;
+                  });
+
+        $move = new Move();
+        $move->setSimulator($simulator);
+
+        $this->assertTrue($move->executeOperandC7());
         $this->assertEquals(6, $iPointer);
     }
 }

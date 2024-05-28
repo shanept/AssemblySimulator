@@ -140,7 +140,7 @@ abstract class AssemblyInstruction
         ];
 
         $mode = $this->simulator->getMode();
-        $opSize = $this->getOperandSize();
+        $addrSize = $this->getAddressSize();
 
         $rex = $this->simulator->getRex();
         $rexSet = (bool) ($rex & Simulator::REX);
@@ -169,7 +169,7 @@ abstract class AssemblyInstruction
         $index = 0;
 
         if (0x4 !== $sib['i'] || $idxExt) {
-            $reg = Register::getByCode($sib['i'], $opSize, $rexSet, $idxExt);
+            $reg = Register::getByCode($sib['i'], $addrSize, $rexSet, $idxExt);
             $index = $this->simulator->readRegister($reg);
         }
 
@@ -198,10 +198,10 @@ abstract class AssemblyInstruction
         ) {
             // Override displacement - EBP + disp8 (however we do not actually displace 8 bits)
             $displacement = 0;
-            $reg = Register::getByCode($sib['b'], $opSize, $rexSet, $bseExt);
+            $reg = Register::getByCode($sib['b'], $addrSize, $rexSet, $bseExt);
             $base = $this->simulator->readRegister($reg);
         } else {
-            $reg = Register::getByCode($sib['b'], $opSize, $rexSet, $bseExt);
+            $reg = Register::getByCode($sib['b'], $addrSize, $rexSet, $bseExt);
             $base = $this->simulator->readRegister($reg);
         }
 
