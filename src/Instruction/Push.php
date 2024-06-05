@@ -86,9 +86,9 @@ class Push extends AssemblyInstruction
         $sim->advanceInstructionPointer($opSize / 8);
 
         $stackPointer = $this->getStackPointerRegister($sim->getMode());
-        $stackPosition = $sim->readRegister($stackPointer, $opSize, false, false);
+        $stackPosition = $sim->readRegister($stackPointer) + 1;
 
-        $sim->writeRegister($stackPointer, ++$stackPosition, $opSize);
+        $sim->writeRegister($stackPointer, $stackPosition);
         $sim->writeStackAt($stackPosition, $value);
 
         return true;
@@ -109,9 +109,9 @@ class Push extends AssemblyInstruction
 
         $opSize = Simulator::TYPE_BYTE;
         $stackPointer = $this->getStackPointerRegister($sim->getMode());
-        $stackPosition = $sim->readRegister($stackPointer, $opSize, false, false);
+        $stackPosition = $sim->readRegister($stackPointer, $opSize) + 1;
 
-        $sim->writeRegister($stackPointer, ++$stackPosition, $opSize);
+        $sim->writeRegister($stackPointer, $stackPosition, $opSize);
         $sim->writeStackAt($stackPosition, $value);
 
         return true;
