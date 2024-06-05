@@ -2,6 +2,7 @@
 
 namespace shanept\AssemblySimulatorTests\Unit\Instruction;
 
+use shanept\AssemblySimulator\Register;
 use shanept\AssemblySimulator\Simulator;
 use shanept\AssemblySimulator\Instruction\CallInstruction;
 use shanept\AssemblySimulatorTests\Fakes\TestAssemblyInstruction;
@@ -22,6 +23,18 @@ class CallInstructionTest extends \PHPUnit\Framework\TestCase
 
         $simulator->method('getCodeAtInstruction')
                   ->willReturn("\x10\x20\x30\x40");
+
+        $simulator->method('readRegister')
+                  ->willReturn(3)
+                  ->with(Register::ESP);
+
+        $simulator->expects($this->once())
+                  ->method('writeStackAt')
+                  ->with(4);
+
+        $simulator->expects($this->once())
+                  ->method('writeRegister')
+                  ->with(Register::ESP, 4);
 
         $iPointer = 0;
         $simulator->expects($this->atLeastOnce())
