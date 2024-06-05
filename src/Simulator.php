@@ -492,6 +492,15 @@ class Simulator
      */
     public function readStackAt(int $offset): int
     {
+        if (! array_key_exists($offset, $this->stack)) {
+            $message = sprintf(
+                'Attempted to read from invalid stack offset 0x%x.',
+                $offset,
+            );
+
+            throw new Exception\StackIndex($message);
+        }
+
         return $this->stack[$offset];
     }
 
@@ -518,6 +527,15 @@ class Simulator
      */
     public function clearStackAt(int $offset)
     {
+        if (! array_key_exists($offset, $this->stack)) {
+            $message = sprintf(
+                'Attempted to clear invalid stack offset 0x%x.',
+                $offset,
+            );
+
+            throw new Exception\StackIndex($message);
+        }
+
         unset($this->stack[$offset]);
     }
 

@@ -241,6 +241,22 @@ class SimulatorTest extends \PHPUnit\Framework\TestCase
         $this->assertEqualsCanonicalizing($expected, $simulator->getStack());
     }
 
+    public function testReadStackAtInvalidOffsetThrowsException()
+    {
+        $simulator = new Simulator();
+
+        $this->expectException(Exception\StackIndex::class);
+        $simulator->readStackAt(4560);
+    }
+
+    public function testClearStackAtInvalidOffsetThrowsException()
+    {
+        $simulator = new Simulator();
+
+        $this->expectException(Exception\StackIndex::class);
+        $simulator->clearStackAt(4560);
+    }
+
     public static function getCodeBufferDataProvider()
     {
         return [
