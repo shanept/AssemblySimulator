@@ -303,10 +303,12 @@ class AssemblyInstructionTest extends \PHPUnit\Framework\TestCase
                   ->willReturn($sibByte)
                   ->with(strlen($sibByte));
 
+        $dispByteLen = 0;
         if (! is_null($dispByte)) {
+            $dispByteLen = strlen($dispByte);
             $simulator->method('getCodeBuffer')
                       ->willReturn($dispByte)
-                      ->with(3, strlen($dispByte));
+                      ->with(3, $dispByteLen);
         }
 
         $instruction = new TestAssemblyInstruction();
@@ -322,6 +324,7 @@ class AssemblyInstructionTest extends \PHPUnit\Framework\TestCase
 
         $address = $parseAddress->invoke($instruction, $byte);
         $this->assertEquals($expected, $address->getAddress());
+        $this->assertEquals(1 + $dispByteLen, $address->getDisplacement());
     }
 
     public function testParseAddressWithSibDisp32OverrideInProtectedMode()
