@@ -802,12 +802,12 @@ class Simulator
 
                 default:
                     $format =
-                        'Encountered unknown opcode 0x%x at offset %d (0x%x).';
+                        'Encountered unknown opcode 0x%X at offset %d (0x%x).';
                     $iPointer = $this->iPointer;
 
                     if ($isTwoByteOp) {
                         $iPointer--;
-                        $format = 'Encountered unknown opcode 0x0F%x at ' .
+                        $format = 'Encountered unknown opcode 0x0F%X at ' .
                                   'offset %d (0x%x).';
                     }
 

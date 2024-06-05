@@ -173,9 +173,6 @@ abstract class AssemblyInstruction
             $index = $this->simulator->readRegister($reg);
         }
 
-        // Default to the ModRM displacement.
-        $displacement = 2 == $modrm["mod"] ? 4 : $modrm["mod"];
-
         /**
          * If the SIB base is 5, we are handling a special case displacement.
          * Otherwise, we simply read from the registers.
@@ -188,19 +185,11 @@ abstract class AssemblyInstruction
             0b00 === $modrm['mod'] &&
             Simulator::REAL_MODE !== $mode
         ) {
-            // Override displacement (disp32 only).
+            // Override displacement, no base (disp32 only).
             $base = 0;
             $displacement = 4;
-        } elseif (
-            0x5 === $sib['b'] &&
-            0b01 === $modrm['mod'] &&
-            Simulator::REAL_MODE !== $mode
-        ) {
-            // Override displacement - EBP + disp8 (however we do not actually displace 8 bits)
-            $displacement = 0;
-            $reg = Register::getByCode($sib['b'], $addrSize, $rexSet, $bseExt);
-            $base = $this->simulator->readRegister($reg);
         } else {
+            $displacement = (0b10 === $modrm['mod'] ? 4 : $modrm['mod']);
             $reg = Register::getByCode($sib['b'], $addrSize, $rexSet, $bseExt);
             $base = $this->simulator->readRegister($reg);
         }
@@ -272,14 +261,6 @@ abstract class AssemblyInstruction
         $sibByte = $sim->getCodeAtInstruction(1);
         $sib = $this->parseSibByte($sibByte, $byte);
 
-        /**
-         * Calculate the displacement of the SIB operation. The offset
-         * is specified by the ModRM mod byte:
-         *
-         * If mod = 0b00, displacement is 0.
-         * If mod = 0b01, displacement is 1.
-         * If mod = 0b10, displacement is 4.
-         */
         $dispSize = $sib['displacement'];
         $instructionPointer = $sim->getInstructionPointer();
 

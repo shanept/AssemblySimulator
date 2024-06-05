@@ -235,11 +235,19 @@ class AssemblyInstructionTest extends \PHPUnit\Framework\TestCase
         return [
             // mov [eax+ebx*4],ecx
             // 0x89 0x0C 0x98
-            [Simulator::PROTECTED_MODE, 0, null, Register::EBX, 426, Register::EAX, 54923, 0, 1, 4, "\x98", 56629],
+            [Simulator::PROTECTED_MODE, 0, null, Register::EBX, 426, Register::EAX, 54923, 0, 1, 4, "\x98", null, 56630],
 
             // mov [rax+rbx*4],ecx
             // 0x89 0x0C 0xA0
-            [Simulator::LONG_MODE, 0x4A, null, Register::R12, 428, Register::RAX, 54925, 0, 1, 4, "\xA0", 56639],
+            [Simulator::LONG_MODE, 0x4A, null, Register::R12, 428, Register::RAX, 54925, 0, 1, 4, "\xA0", null, 56640],
+
+            // mov eax,[ebp+eax*4+0x31]
+            // 0x8B 0x44 0x85 0x31
+            [Simulator::PROTECTED_MODE, 0, null, Register::EAX, 12, Register::EBP, 498, 1, 0, 4, "\x85", "\x31", 599],
+
+            // mov eax,[ebp+eax*2+0x40201030]
+            // 0x8B 0x84 0x45 0x30 0x10 0x20 0x40
+            [Simulator::PROTECTED_MODE, 0, null, Register::EAX, 12, Register::EBP, 498, 2, 0, 4, "\x45", "\x30\x10\x20\x40", 1075843649],
         ];
     }
 
@@ -258,6 +266,7 @@ class AssemblyInstructionTest extends \PHPUnit\Framework\TestCase
         $reg,
         $rm,
         $sibByte,
+        $dispByte,
         $expected,
     ) {
         $simulator = $this->getMockSimulator($simulatorMode);
@@ -271,7 +280,7 @@ class AssemblyInstructionTest extends \PHPUnit\Framework\TestCase
                   });
 
         $simulator->method('getInstructionPointer')
-                  ->willReturn(1);
+                  ->willReturn(2);
 
         $simulator->method('readRegister')
                   ->willReturnCallback(function ($register) use (
@@ -293,6 +302,12 @@ class AssemblyInstructionTest extends \PHPUnit\Framework\TestCase
         $simulator->method('getCodeAtInstruction')
                   ->willReturn($sibByte)
                   ->with(strlen($sibByte));
+
+        if (! is_null($dispByte)) {
+            $simulator->method('getCodeBuffer')
+                      ->willReturn($dispByte)
+                      ->with(3, strlen($dispByte));
+        }
 
         $instruction = new TestAssemblyInstruction();
         $instruction->setSimulator($simulator);
@@ -344,45 +359,5 @@ class AssemblyInstructionTest extends \PHPUnit\Framework\TestCase
         $address = $parseAddress->invoke($instruction, $byte);
         $this->assertEquals(48, $address->getAddress());
         $this->assertEquals(5, $address->getDisplacement());
-    }
-
-    public function testParseAddressWithSibEbpInProtectedMode()
-    {
-        $simulator = $this->getMockSimulator(Simulator::PROTECTED_MODE);
-
-        $simulator->method('getRex')
-                  ->willReturn(0);
-
-        $simulator->method('hasPrefix')
-                  ->willReturn(false);
-
-        $simulator->expects($this->once())
-                  ->method('readRegister')
-                  ->willReturn(69)
-                  ->with(Register::EBP);
-
-        $simulator->method('getInstructionPointer')
-                  ->willReturn(3);
-
-        $simulator->method('getCodeAtInstruction')
-                  ->willReturn("\x25");
-
-        $simulator->expects($this->never())
-                  ->method('getCodeBuffer');
-
-        $instruction = new TestAssemblyInstruction();
-        $instruction->setSimulator($simulator);
-
-        $parseAddress = new ReflectionMethod($instruction, "parseAddress");
-
-        $byte = [
-            "mod" => 1,
-            "reg" => 0,
-            "rm" => 0b100,
-        ];
-
-        $address = $parseAddress->invoke($instruction, $byte);
-        $this->assertEquals(73, $address->getAddress());
-        $this->assertEquals(1, $address->getDisplacement());
     }
 }
