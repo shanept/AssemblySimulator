@@ -360,7 +360,7 @@ class SimulatorTest extends \PHPUnit\Framework\TestCase
 
         $simulator->setCodeBuffer("\x01");
 
-        $this->expectException(\OutOfBoundsException::class);
+        $this->expectException(Exception\InvalidOpcode::class);
         $simulator->simulate();
     }
 

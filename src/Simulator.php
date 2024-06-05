@@ -814,7 +814,7 @@ class Simulator
                     $address = $this->addressBase + $iPointer;
                     $message = sprintf($format, $op, $iPointer, $address);
 
-                    throw new \OutOfBoundsException($message, $op);
+                    throw new Exception\InvalidOpcode($message, $op);
             }
 
             // Reset our REX bit.
