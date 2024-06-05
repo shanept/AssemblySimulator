@@ -82,7 +82,7 @@ class SimulatorTest extends \PHPUnit\Framework\TestCase
 
         $simulator->setCodeBuffer("\x90");
 
-        $this->expectException(Exception\TaintException::class);
+        $this->expectException(Exception\Tainted::class);
         $simulator->simulate();
     }
 

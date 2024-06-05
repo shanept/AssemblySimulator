@@ -17,4 +17,4 @@ use LogicException;
  *
  * @author Shane Thompson
  */
-class TaintException extends LogicException {}
+class Tainted extends LogicException {}

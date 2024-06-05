@@ -631,7 +631,7 @@ class Simulator
     /**
      * Throws an exception if we are trying to operate a tainted environment.
      *
-     * @throws shanept\AssemblySimulator\Exception\TaintException
+     * @throws shanept\AssemblySimulator\Exception\Tainted
      *
      * @return void
      */
@@ -641,7 +641,7 @@ class Simulator
             'change modes and forget to reset?';
 
         if ($this->tainted) {
-            throw new Exception\TaintException($message);
+            throw new Exception\Tainted($message);
         }
     }
 
