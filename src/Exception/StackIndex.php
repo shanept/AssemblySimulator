@@ -9,7 +9,7 @@ declare(strict_types=1);
 
 namespace shanept\AssemblySimulator\Exception;
 
-use LogicException;
+use RuntimeException;
 
 /**
  * This exception is thrown in instances where we attempt to access an invalid
@@ -17,4 +17,4 @@ use LogicException;
  *
  * @author Shane Thompson
  */
-class StackIndex extends LogicException {}
+class StackIndex extends RuntimeException {}
