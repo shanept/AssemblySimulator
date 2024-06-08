@@ -75,7 +75,9 @@ class CallInstruction extends AssemblyInstruction
             $address = -(($address ^ 0xFFFFFFFF) + 1);
         }
 
+        // Get the absolute instruction pointer.
         $instructionPointer = $sim->getInstructionPointer();
+        $instructionPointer += $sim->getAddressBase();
 
         // Push our instruction pointer to the stack.
         $stackPointer = $this->getStackPointerRegister();
@@ -83,8 +85,12 @@ class CallInstruction extends AssemblyInstruction
         $sim->writeStackAt($stackPosition, $instructionPointer);
         $sim->writeRegister($stackPointer, $stackPosition);
 
-        // The address is relative. We should make it absolute.
-        $addr = $sim->getAddressBase() + $instructionPointer + $address;
+        /**
+         * As this is a NEAR call, the address is relative to the instruction
+         * pointer. We must make it absolute before attempting the call
+         * procedure.
+         */
+        $addr = $instructionPointer + $address;
 
         if (is_callable($this->handleAddressCb)) {
             call_user_func($this->handleAddressCb, $addr);
