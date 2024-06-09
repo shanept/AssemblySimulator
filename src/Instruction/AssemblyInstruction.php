@@ -306,10 +306,6 @@ abstract class AssemblyInstruction
         $bseExt = (bool) ($rex & Simulator::REX_B);
 
         $opSize = $this->getOperandSize();
-        $reg = Register::getByCode($byte['rm'], $opSize, $rexSet, $bseExt);
-        $address = $this->simulator->readRegister($reg);
-
-        $dispSize = 2 == $byte["mod"] ? 4 : $byte["mod"];
         $displacement = 0;
 
         /**
@@ -319,6 +315,12 @@ abstract class AssemblyInstruction
          */
         if (0x5 === $byte['rm'] && 0x0 === $byte['mod']) {
             $dispSize = 4;
+            $address = 0;
+        } else {
+            $dispSize = 2 == $byte["mod"] ? 4 : $byte["mod"];
+
+            $reg = Register::getByCode($byte['rm'], $opSize, $rexSet, $bseExt);
+            $address = $this->simulator->readRegister($reg);
         }
 
         if ($dispSize) {

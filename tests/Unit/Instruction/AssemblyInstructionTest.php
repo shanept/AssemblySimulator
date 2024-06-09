@@ -144,6 +144,54 @@ class AssemblyInstructionTest extends \PHPUnit\Framework\TestCase
         $this->assertEquals($dispSize, $address->getDisplacement());
     }
 
+    public static function parseAddressOnModRmDisp32AddressInProtectedModeDataProvider()
+    {
+        return [
+            [Simulator::REAL_MODE, Register::BP],
+            [Simulator::PROTECTED_MODE, Register::EBP],
+        ];
+    }
+
+    /**
+     * @dataProvider parseAddressOnModRmDisp32AddressInProtectedModeDataProvider
+     */
+    public function testParseAddressOnModRmDisp32AddressInProtectedMode($mode, $reg)
+    {
+        // mov edx, 0x10722a80
+        // 0x8b 0x15 0x80 0x2a 0x72 0x10
+        $simulator = $this->getMockSimulator($mode);
+
+        $simulator->expects($this->never())
+                  ->method('readRegister')
+                  ->with($reg)
+                  ->willReturn(100);
+
+        $simulator->method('hasPrefix')
+                  ->willReturn(false);
+
+        $simulator->method('getInstructionPointer')
+                  ->willReturn(2);
+
+        $simulator->method('getCodeBuffer')
+                  ->willReturn("\x80\x2a\x72\x10")
+                  ->with(2, 4);
+
+        $instruction = new TestAssemblyInstruction();
+        $instruction->setSimulator($simulator);
+
+        $method = new ReflectionMethod($instruction, "parseAddress");
+
+        $byte = [
+            'mod' => 0,
+            'reg' => 2,
+            'rm' => 5,
+        ];
+        $address = $method->invoke($instruction, $byte);
+
+        $this->assertEquals(0x10722a80, $address->getAddress());
+        $this->assertEquals(4, $address->getDisplacement());
+    }
+
     public function testParseAddressAcceptsRipAddressOnLongMode()
     {
         $simulator = $this->getMockSimulator(Simulator::LONG_MODE);
