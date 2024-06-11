@@ -46,8 +46,9 @@ class LoadEffectiveAddress extends AssemblyInstruction
         $rexSet = (bool) ($rex & Simulator::REX);
         $regExt = (bool) ($rex & Simulator::REX_R);
 
-        $opSize = $this->getOperandSize();
-        $reg = Register::getByCode($byte["reg"], $opSize, $rexSet, $regExt);
+        $operandSize = $this->getOperandSize();
+        $addressSize = $sim->getLargestInstructionWidth();
+        $reg = Register::getByCode($byte["reg"], $operandSize, $rexSet, $regExt);
 
         if (0b11 === $byte["mod"]) {
             $message = sprintf(
@@ -60,7 +61,19 @@ class LoadEffectiveAddress extends AssemblyInstruction
         }
 
         $effectiveAddress = $this->parseAddress($byte);
-        $address = $effectiveAddress->getAddress() + $sim->getAddressBase();
+        $address = $effectiveAddress->getAddress();
+
+        /**
+         * If we have an operand on a machine where the operand size is smaller
+         * than the address size, we should mask the address down to the operand
+         * size.
+         */
+        if ($operandSize < $addressSize) {
+            $mask =  ~(1 << $operandSize) & ((1 << $operandSize) - 1);
+            $address &= $mask;
+        }
+
+        $address += $sim->getAddressBase();
 
         $sim->advanceInstructionPointer($effectiveAddress->getDisplacement());
 

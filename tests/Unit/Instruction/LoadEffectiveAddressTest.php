@@ -43,6 +43,44 @@ class LoadEffectiveAddressTest extends \PHPUnit\Framework\TestCase
         $this->assertEquals(0xf1917e7, $simulator->readRegister(Register::RDI));
     }
 
+    public function testLeaLoadsAddressWithDisplacement()
+    {
+        $simulator = $this->getMockSimulator(Simulator::LONG_MODE);
+
+        // lea edx,[r9+0x17]
+        // REX.B 0x41 0x8d 0x51 0x17
+        $simulator->method('getRex')
+                  ->willReturn(0x41);
+
+        $simulator->method('hasPrefix')
+                  ->willReturn(false);
+
+        $simulator->method('readRegister')
+                  ->willReturn(1)
+                  ->with(Register::R9D);
+
+        $simulator->method('writeRegister')
+                  ->with(Register::EDX, 0x18);
+
+        $simulator->method('getCodeAtInstruction')
+                  ->willReturn("\x51")
+                  ->with(1);
+
+        $simulator->method('getCodeBuffer')
+                  ->willReturn("\x17")
+                  ->with(3, 1);
+
+        $simulator->method('getInstructionPointer')
+                  ->willReturn(3);
+
+        $lea = new LoadEffectiveAddress();
+        $lea->setSimulator($simulator);
+
+        $this->expectNotToPerformAssertions();
+
+        $lea->executeOperand8d();
+    }
+
     public function testLeaThrowsExceptionOnInvalidModBit()
     {
         $simulator = $this->getMockSimulator(Simulator::LONG_MODE);
