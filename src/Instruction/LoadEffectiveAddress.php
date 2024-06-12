@@ -69,8 +69,7 @@ class LoadEffectiveAddress extends AssemblyInstruction
          * size.
          */
         if ($operandSize < $addressSize) {
-            $mask =  ~(1 << $operandSize) & ((1 << $operandSize) - 1);
-            $address &= $mask;
+            $address &= $reg['mask'];
         }
 
         $address += $sim->getAddressBase();
