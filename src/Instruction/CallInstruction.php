@@ -79,10 +79,13 @@ class CallInstruction extends AssemblyInstruction
         $instructionPointer = $sim->getInstructionPointer();
         $instructionPointer += $sim->getAddressBase();
 
-        // Push our instruction pointer to the stack.
+        $addressSize = $this->getAddressSize();
         $stackPointer = $this->getStackPointerRegister();
-        $stackPosition = $sim->readRegister($stackPointer) + 1;
-        $sim->writeStackAt($stackPosition, $instructionPointer);
+        $stackPosition = $sim->readRegister($stackPointer) - $addressSize;
+
+        // Push our instruction pointer to the stack.
+        $value = $this->packImmediate($instructionPointer, $addressSize);
+        $sim->writeStackAt($stackPosition, $value);
         $sim->writeRegister($stackPointer, $stackPosition);
 
         /**

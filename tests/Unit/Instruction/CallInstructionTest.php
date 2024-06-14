@@ -15,6 +15,9 @@ class CallInstructionTest extends \PHPUnit\Framework\TestCase
     {
         $simulator = $this->getMockSimulator(Simulator::PROTECTED_MODE);
 
+        $stringPointer = "\x10\x20\x30\x40";
+        $binaryPointer = pack('V', $stringPointer);
+
         $simulator->method('getRex')
                   ->willReturn(0);
 
@@ -22,19 +25,19 @@ class CallInstructionTest extends \PHPUnit\Framework\TestCase
                   ->willReturn(false);
 
         $simulator->method('getCodeAtInstruction')
-                  ->willReturn("\x10\x20\x30\x40");
+                  ->willReturn($stringPointer);
 
         $simulator->method('readRegister')
-                  ->willReturn(3)
+                  ->willReturn(128)
                   ->with(Register::ESP);
 
         $simulator->expects($this->once())
                   ->method('writeStackAt')
-                  ->with(4);
+                  ->with(96, $binaryPointer);
 
         $simulator->expects($this->once())
                   ->method('writeRegister')
-                  ->with(Register::ESP, 4);
+                  ->with(Register::ESP, 96);
 
         $iPointer = 0;
         $simulator->expects($this->atLeastOnce())

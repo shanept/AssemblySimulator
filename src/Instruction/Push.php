@@ -54,7 +54,7 @@ class Push extends AssemblyInstruction
         $stackPointer = $this->getStackPointerRegister();
 
         // Incrememnt stack pointer
-        $stackPosition = $sim->readRegister($stackPointer) + 1;
+        $stackPosition = $sim->readRegister($stackPointer) - ($opSize / 8);
         $sim->writeRegister($stackPointer, $stackPosition);
 
         $rex = $sim->getRex();
@@ -64,6 +64,8 @@ class Push extends AssemblyInstruction
         $register = Register::getByCode($opcode, $opSize, $rexSet, $regExt);
 
         $value = $sim->readRegister($register, $opSize);
+
+        $value = $this->packImmediate($value, $opSize);
         $sim->writeStackAt($stackPosition, $value);
 
         return true;
@@ -80,13 +82,13 @@ class Push extends AssemblyInstruction
         $sim->advanceInstructionPointer(1);
 
         $opSize = $this->getOperandSize();
-        $immediate = $sim->getCodeAtInstruction($opSize / 8);
-        $value = $this->unpackImmediate($immediate, $opSize);
+        $opDisp = $opSize / 8;
+        $value = $sim->getCodeAtInstruction($opDisp);
 
-        $sim->advanceInstructionPointer($opSize / 8);
+        $sim->advanceInstructionPointer($opDisp);
 
         $stackPointer = $this->getStackPointerRegister($sim->getMode());
-        $stackPosition = $sim->readRegister($stackPointer) + 1;
+        $stackPosition = $sim->readRegister($stackPointer) - $opDisp;
 
         $sim->writeRegister($stackPointer, $stackPosition);
         $sim->writeStackAt($stackPosition, $value);
@@ -104,12 +106,12 @@ class Push extends AssemblyInstruction
         $sim = $this->getSimulator();
         $sim->advanceInstructionPointer(1);
 
-        $value = ord($sim->getCodeAtInstruction(1));
+        $value = $sim->getCodeAtInstruction(1);
         $sim->advanceInstructionPointer(1);
 
         $opSize = Simulator::TYPE_BYTE;
         $stackPointer = $this->getStackPointerRegister($sim->getMode());
-        $stackPosition = $sim->readRegister($stackPointer, $opSize) + 1;
+        $stackPosition = $sim->readRegister($stackPointer, $opSize) - 1;
 
         $sim->writeRegister($stackPointer, $stackPosition, $opSize);
         $sim->writeStackAt($stackPosition, $value);

@@ -123,43 +123,109 @@ class SimulatorTest extends \PHPUnit\Framework\TestCase
         $this->assertEmpty($simulator->getStack());
     }
 
+    public function testSetStackAddressTaintsSimulator()
+    {
+        $simulator = new Simulator();
+        $simulator->setStackAddress(0);
+
+        $this->expectException(Exception\Tainted::class);
+        $simulator->simulate();
+    }
+
+    public function testSetStackAddressChangesStackAddress()
+    {
+        $simulator = new Simulator();
+
+        $stackAddress = $simulator->readRegister(Register::SP);
+
+        $simulator->setStackAddress(1);
+        $simulator->reset();
+
+        $newAddress = $simulator->readRegister(Register::SP);
+
+        $this->assertEquals(1, $newAddress);
+        $this->assertNotEquals($stackAddress, $newAddress);
+    }
+
+    public function testSetStackSizeTaintsSimulator()
+    {
+        $simulator = new Simulator();
+        $simulator->setStackSize(1);
+
+        $this->expectException(Exception\Tainted::class);
+        $simulator->simulate();
+    }
+
+    /**
+     * @depends testSetStackAddressTaintsSimulator
+     * @depends testSetStackAddressChangesStackAddress
+     */
+    public function testSetStackSize()
+    {
+        $simulator = new Simulator();
+        $simulator->setStackAddress(100);
+        $simulator->reset();
+
+        $simulator->writeStackAt(90, "\0");
+
+        $simulator->setStackSize(5);
+        $simulator->reset();
+
+        $this->expectException(\RangeException::class);
+        $simulator->writeStackAt(90, "\0");
+    }
+
+    public function testWriteStackPastMemoryLimitThrowsException()
+    {
+        $simulator = new Simulator();
+
+        $this->expectException(\RangeException::class);
+        $simulator->writeStackAt(0, "fail");
+    }
+
     public static function setStackDataProvider()
     {
         return [
-            [ [ 0 => 3, 4 => 2 ] ],
-            [ [ 1 => 2] ],
-            [ [ PHP_INT_MAX => PHP_INT_MAX, 0 => 3 ] ],
+            [ [ 0 => "\x3", 1 => "\x4" ], "\x4\x3" ],
+            [ [ 0 => "\x3", 2 => "\x4" ], "\x4\x0\x3" ],
+            [ [ 0 => "\x3", 4 => "\x2\x1" ], "\x2\x1\x0\x0\x3" ],
+            [ [ 1 => "\x2" ], "\x2\x0" ],
         ];
     }
 
     /**
      * @dataProvider setStackDataProvider
      */
-    public function testGetStack($expected)
+    public function testGetStack($values, $expected)
     {
-        $simulator = new Simulator();
+        $simulator = new Simulator(Simulator::REAL_MODE);
 
-        foreach ($expected as $position => $value) {
-            $simulator->writeStackAt($position, $value);
+        $stackAddress = $simulator->readRegister(Register::SP);
+
+        foreach ($values as $position => $value) {
+            $simulator->writeStackAt($stackAddress - $position, $value);
         }
 
-        $this->assertEqualsCanonicalizing($expected, $simulator->getStack());
+        $this->assertEquals($expected, $simulator->getStack());
     }
 
     /**
      * @dataProvider setStackDataProvider
      */
-    public function testReadStackAt($expected)
+    public function testReadStackAt($values, $expected)
     {
-        $simulator = new Simulator();
+        $simulator = new Simulator(Simulator::REAL_MODE);
 
-        foreach ($expected as $position => $value) {
-            $simulator->writeStackAt($position, $value);
+        $stackAddress = $simulator->readRegister(Register::SP);
+
+        foreach ($values as $position => $value) {
+            $simulator->writeStackAt($stackAddress - $position, $value);
         }
 
-        foreach ($expected as $position => $value) {
-            $actual = $simulator->readStackAt($position);
-            $this->assertEquals($value, $actual);
+        foreach ($values as $position => $expected) {
+            $length = strlen($expected);
+            $actual = $simulator->readStackAt($stackAddress - $position, $length);
+            $this->assertEquals($expected, $actual);
         }
     }
 
@@ -168,59 +234,42 @@ class SimulatorTest extends \PHPUnit\Framework\TestCase
         return [
             [
                 [
-                    0 => 432,
-                    1 => 321,
-                    2 => 654,
-                    3 => 789,
+                    0 => "\x43",
+                    1 => "\x32",
+                    2 => "\x65",
+                    4 => "\x43\x42",
                 ],
-                3,
-                [
-                    0 => 432,
-                    1 => 321,
-                    2 => 654,
-                ],
+                4,
+                "\x65\x32\x43",
             ],
             [
                 [
-                    0 => 432,
-                    1 => 321,
-                    2 => 654,
-                    3 => 789,
-                ],
-                2,
-                [
-                    0 => 432,
-                    1 => 321,
-                    3 => 789,
-                ],
-            ],
-            [
-                [
-                    0 => 432,
-                    1 => 321,
-                    2 => 654,
-                    3 => 789,
+                    0 => "\x43",
+                    2 => "\x3\x4",
+                    3 => "\x78",
                 ],
                 1,
-                [
-                    0 => 432,
-                    2 => 654,
-                    3 => 789,
-                ],
+                "\x78\x3\x0\x43",
             ],
             [
                 [
-                    0 => 432,
-                    1 => 321,
-                    2 => 654,
-                    3 => 789,
+                    0 => "\x32",
+                    1 => "\x21",
+                    2 => "\x54",
+                    3 => "\x89",
+                ],
+                1,
+                "\x89\x54\x0\x32",
+            ],
+            [
+                [
+                    0 => "\x42",
+                    1 => "\x31",
+                    2 => "\x64",
+                    3 => "\x79",
                 ],
                 0,
-                [
-                    1 => 321,
-                    2 => 654,
-                    3 => 789,
-                ],
+                "\x79\x64\x31\x0",
             ],
         ];
     }
@@ -232,13 +281,24 @@ class SimulatorTest extends \PHPUnit\Framework\TestCase
     {
         $simulator = new Simulator();
 
+        $startAddress = $simulator->readRegister(Register::SP);
+
         foreach ($stack as $position => $value) {
-            $simulator->writeStackAt($position, $value);
+            $simulator->writeStackAt($startAddress - $position, $value);
         }
 
-        $simulator->clearStackAt($clearIdx);
+        $length = strlen($stack[$clearIdx] ?? " ");
+        $simulator->clearStackAt($startAddress - $clearIdx, $length);
 
-        $this->assertEqualsCanonicalizing($expected, $simulator->getStack());
+        $this->assertEquals($expected, $simulator->getStack());
+    }
+
+    public function testReadStackUnderflowThrowsException()
+    {
+        $simulator = new Simulator(Simulator::REAL_MODE);
+
+        $this->expectException(Exception\StackUnderflow::class);
+        $simulator->readStackAt(PHP_INT_MAX, 1);
     }
 
     public function testReadStackAtInvalidOffsetThrowsException()
@@ -246,7 +306,23 @@ class SimulatorTest extends \PHPUnit\Framework\TestCase
         $simulator = new Simulator();
 
         $this->expectException(Exception\StackIndex::class);
-        $simulator->readStackAt(4560);
+        $simulator->readStackAt(4560, 2);
+    }
+
+    public function testWriteStackUnderflowThrowsException()
+    {
+        $simulator = new Simulator(Simulator::REAL_MODE);
+
+        $this->expectException(Exception\StackUnderflow::class);
+        $simulator->writeStackAt(PHP_INT_MAX, " ");
+    }
+
+    public function testClearStackUnderflowThrowsException()
+    {
+        $simulator = new Simulator(Simulator::REAL_MODE);
+
+        $this->expectException(Exception\StackUnderflow::class);
+        $simulator->clearStackAt(PHP_INT_MAX, 2);
     }
 
     public function testClearStackAtInvalidOffsetThrowsException()
@@ -254,7 +330,7 @@ class SimulatorTest extends \PHPUnit\Framework\TestCase
         $simulator = new Simulator();
 
         $this->expectException(Exception\StackIndex::class);
-        $simulator->clearStackAt(4560);
+        $simulator->clearStackAt(4560, 1);
     }
 
     public static function getCodeBufferDataProvider()

@@ -23,6 +23,18 @@ use shanept\AssemblySimulator\Address\AddressInterface;
  */
 abstract class AssemblyInstruction
 {
+    /**
+     * Defines the pack/unpack formats for each operand width.
+     *
+     * @var string[]
+     */
+    const IMM_PACK_FMT = [
+        8 => "Cimm",
+        16 => "vimm",
+        32 => "Vimm",
+        64 => "Pimm",
+    ];
+
     private $simulator;
 
     /**
@@ -211,14 +223,21 @@ abstract class AssemblyInstruction
      */
     protected function unpackImmediate(string $immediate, int $size): int
     {
-        $format = [
-            8 => "Cimm",
-            16 => "vimm",
-            32 => "Vimm",
-            64 => "Pimm",
-        ];
+        return unpack(self::IMM_PACK_FMT[$size], $immediate)["imm"];
+    }
 
-        return unpack($format[$size], $immediate)["imm"];
+    /**
+     * Packs an unsigned integer into a binary encoded string, width depending
+     * on the $size parameter.
+     *
+     * @param int $immediate The unsigned integer to encode.
+     * @param int $size      The bit-width of the $immediate (8, 16, 32, 64).
+     *
+     * @return string The binary encoded immediate.
+     */
+    protected function packImmediate(int $immediate, int $size): string
+    {
+        return pack(self::IMM_PACK_FMT[$size][0], $immediate);
     }
 
     /**

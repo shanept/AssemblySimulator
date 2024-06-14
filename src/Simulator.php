@@ -32,16 +32,30 @@ class Simulator
     /**
      * This is our memory storage for our registers.
      *
-     * @param int[]
+     * @var int[]
      */
     private $registers = [];
 
     /**
-     * Contains all the values stored in our stack.
+     * A binary string representing the stack.
      *
-     * @param int[]
+     * @var string
      */
-    private $stack = [];
+    private $stack = '';
+
+    /**
+     * Contains the address for the start of our stack.
+     *
+     * @var int
+     */
+    private $stackAddress;
+
+    /**
+     * Specifies the maximum permissible size of the stack, in bytes.
+     *
+     * @var int
+     */
+    private $stackSize;
 
     /**
      * 32-bit register to store extended flags.
@@ -170,6 +184,13 @@ class Simulator
     {
         $this->mode = $mode ?? self::REAL_MODE;
 
+        // Set an appropriately high stack address, dependent on mode, where
+        // the leading 4 bits are 0100.
+        $this->stackAddress = 2 ** ($this->getLargestInstructionWidth() - 2);
+
+        // Limit the maximum size of our stack to a reasonable amount.
+        $this->stackSize = 2 ** ((4 << $this->mode) - 1) - 1;
+
         // Sets the simulator up to a known state.
         $this->reset();
     }
@@ -210,11 +231,14 @@ class Simulator
 
 
         $this->eFlags = 0;
-        $this->stack = [];
+        $this->stack = "";
 
         // 16 and 32 bit use 8 registers, 64-bit uses 16.
         $numRegisters = max(8, 2 << $this->mode);
         $this->registers = array_fill(0, $numRegisters, 0);
+
+        // Set the stack pointer to the stack address.
+        $this->registers[Register::SP['offset']] = $this->stackAddress;
     }
 
     /**
@@ -241,12 +265,42 @@ class Simulator
      * Sets the operating mode. ALWAYS reset the machine after doing this!
      *
      * @param int $mode The machine mode to operate in.
+     *
+     * @return void
      */
     public function setMode(int $mode)
     {
         $this->tainted = true;
 
         $this->mode = $mode;
+    }
+
+    /**
+     * Sets the address of the stack. ALWAYS reset the machine after doing this!
+     *
+     * @param int $address The starting address of the stack.
+     *
+     * @return void
+     */
+    public function setStackAddress(int $address)
+    {
+        $this->tainted = true;
+
+        $this->stackAddress = $address;
+    }
+
+    /**
+     * Sets the maximum size of the stack. ALWAYS reset the machine after doing this!
+     *
+     * @param int $size The maximum size for the stack.
+     *
+     * @return void
+     */
+    public function setStackSize(int $size)
+    {
+        $this->tainted = true;
+
+        $this->stackSize = $size;
     }
 
     /**
@@ -478,9 +532,9 @@ class Simulator
     /**
      * Returns a copy of the internal representation of the stack.
      *
-     * @return int[]
+     * @return string
      */
-    public function getStack(): array
+    public function getStack(): string
     {
         return $this->stack;
     }
@@ -488,33 +542,93 @@ class Simulator
     /**
      * Returns the value of the stack at a specified offset.
      *
-     * @param int $offset The offset from the start of the stack. (array index)
+     * @param int $offset The offset within the stack.
+     * @param int $length The amount of bytes to read.
+     *
+     * @return string The value of the stack at the specified position, as a binary string.
      */
-    public function readStackAt(int $offset): int
+    public function readStackAt(int $offset, int $length): string
     {
-        if (! array_key_exists($offset, $this->stack)) {
+        if ($offset > $this->stackAddress) {
             $message = sprintf(
-                'Attempted to read from invalid stack offset 0x%x.',
+                'Stack underflow. Offset 0x%X requested. Stack starts at 0x%X.',
                 $offset,
+                $this->stackAddress,
+            );
+
+            throw new Exception\StackUnderflow($message);
+        }
+
+        $stackLength = strlen($this->stack);
+
+        // This makes our offset relative to the start of the stack string.
+        $stackOffset = $offset - ($this->stackAddress - $stackLength + 1);
+
+        if ($stackOffset < 0) {
+            $message = sprintf(
+                'Stack offset 0x%X requested, but it exceeds the top of the ' .
+                'stack (0x%X)',
+                $offset,
+                $this->stackAddress - $stackLength,
             );
 
             throw new Exception\StackIndex($message);
         }
 
-        return $this->stack[$offset];
+        // Our offset is relative to the end of the string.
+        return substr($this->stack, $stackOffset, $length);
     }
 
     /**
      * Write to the stack at a specified offset.
      *
-     * @param int $offset The stack offset at which to write the value.
-     * @param int $value  The value to write to the stack.
+     * @param int    $offset The stack offset at which to write the value.
+     * @param string $value  The value to write to the stack, as a binary string.
      *
      * @return void
      */
-    public function writeStackAt(int $offset, int $value)
+    public function writeStackAt(int $offset, string $value)
     {
-        $this->stack[$offset] = $value;
+        if ($offset > $this->stackAddress) {
+            $message = sprintf(
+                'Stack underflow. Offset 0x%X requested. Stack starts at 0x%X.',
+                $offset,
+                $this->stackAddress,
+            );
+
+            throw new Exception\StackUnderflow($message);
+        }
+
+        $valueLength = strlen($value);
+        $stackLength = strlen($this->stack);
+
+        // This makes our offset relative to the start of the stack string.
+        $stackOffset = $offset - ($this->stackAddress - $stackLength + 1);
+
+        /**
+         * If the requested offset is further up the stack than the amount of
+         * bytes we have been provided with to write to the stack, we will
+         * zero-extend the value by the required amount.
+         */
+        if ($stackOffset < -$valueLength) {
+            $extendAmount = abs($stackOffset) - $valueLength;
+
+            if ($stackLength + $extendAmount > $this->stackSize) {
+                $message = sprintf(
+                    'Exceeded maximum stack size. Attempted to allocate %d ' .
+                    'new bytes to the stack, however it exceeds the maximum ' .
+                    'stack size of %d.',
+                    $extendAmount,
+                    $this->stackSize,
+                );
+
+                throw new \RangeException($message);
+            }
+
+            $value .= str_repeat("\0", $extendAmount);
+        }
+
+        $this->stack = $value . $this->stack;
     }
 
     /**
@@ -522,21 +636,48 @@ class Simulator
      * the stack offset.
      *
      * @param int $offset The offset to clear.
+     * @param int $bytes  The amount of bytes to clear (between offset and stackAddress).
      *
      * @return void
      */
-    public function clearStackAt(int $offset)
+    public function clearStackAt(int $offset, int $bytes)
     {
-        if (! array_key_exists($offset, $this->stack)) {
+        if ($offset > $this->stackAddress) {
             $message = sprintf(
-                'Attempted to clear invalid stack offset 0x%x.',
+                'Stack underflow. Offset 0x%X requested. Stack starts at 0x%X.',
                 $offset,
+                $this->stackAddress,
+            );
+
+            throw new Exception\StackUnderflow($message);
+        }
+
+        $stackLength = strlen($this->stack);
+        $clearString = str_repeat("\0", $bytes);
+
+        // This makes our offset relative to the start of the stack string.
+        $stackOffset = $offset - ($this->stackAddress - $stackLength + 1);
+
+        if ($stackOffset < 0) {
+            $message = sprintf(
+                'Stack offset 0x%X requested, but it exceeds the top of the ' .
+                'stack (0x%X)',
+                $offset,
+                $this->stackAddress - $stackLength,
             );
 
             throw new Exception\StackIndex($message);
         }
 
-        unset($this->stack[$offset]);
+        // Replace the offset with NUL bytes.
+        $stack = substr_replace(
+            $this->stack,
+            $clearString,
+            $stackOffset,
+            $bytes,
+        );
+
+        $this->stack = ltrim($stack, "\0");
     }
 
     /**

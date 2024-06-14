@@ -58,10 +58,12 @@ class Pop extends AssemblyInstruction
 
         $register = Register::getByCode($opcode, $opSize, $rexSet, $regExt);
 
-        $value = $sim->readStackAt($stackPosition);
-        $sim->clearStackAt($stackPosition);
+        $value = $sim->readStackAt($stackPosition, $opSize);
+        $sim->clearStackAt($stackPosition, $opSize);
 
-        $sim->writeRegister($stackPointer, $stackPosition - 1);
+        $value = $this->unpackImmediate($value, $opSize);
+
+        $sim->writeRegister($stackPointer, $stackPosition + $opSize);
         $sim->writeRegister($register, $value, $opSize);
 
         return true;
