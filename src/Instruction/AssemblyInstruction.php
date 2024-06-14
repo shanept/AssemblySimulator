@@ -273,7 +273,6 @@ abstract class AssemblyInstruction
         }
 
         $address = new SibAddress(
-            $instructionPointer,
             $sib,
             $displacement,
             $dispSize + 1,

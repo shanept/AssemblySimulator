@@ -16,13 +16,6 @@ namespace shanept\AssemblySimulator\Address;
 class SibAddress implements AddressInterface
 {
     /**
-     * Stores the offset to the end of the instruction.
-     *
-     * @var int
-     */
-    private $offset;
-
-    /**
      * Stores the SIB byte.
      *
      * @var int[]
@@ -44,12 +37,11 @@ class SibAddress implements AddressInterface
     private $sibSize;
 
     /**
-     * @param int    $offset  The offset to the end of this instruction.
      * @param int[]  $sib     The parsed SIB byte.
      * @param int    $disp    The displacement of the address.
      * @param int    $sibSize How many bytes the SIB address consumes.
      */
-    public function __construct(int $offset, array $sib, int $disp, int $sibSize)
+    public function __construct(array $sib, int $disp, int $sibSize)
     {
         if (! in_array($sib['s'], [1, 2, 4, 8])) {
             $message = sprintf(
@@ -70,7 +62,6 @@ class SibAddress implements AddressInterface
             throw new \UnexpectedValueException($message);
         }
 
-        $this->offset = $offset;
         $this->sib = $sib;
         $this->displacement = $disp;
         $this->sibSize = $sibSize;
@@ -87,7 +78,6 @@ class SibAddress implements AddressInterface
 
         // Handle two's compliment addresses.
         if ($dispSize) {
-
             // This will generate the appropriate sized mask for the operation size.
             $dispMask = (256 ** $dispSize) - 1;
             $dispShift = (8 * $dispSize) - 1;
@@ -100,7 +90,7 @@ class SibAddress implements AddressInterface
 
         $calculatedSib = ($scale * $index) + $base + $disp;
 
-        return $calculatedSib + $this->sibSize + $this->offset + $offset;
+        return $calculatedSib + $offset;
     }
 
     public function getDisplacement(): int

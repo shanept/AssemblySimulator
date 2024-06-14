@@ -283,19 +283,19 @@ class AssemblyInstructionTest extends \PHPUnit\Framework\TestCase
         return [
             // mov [eax+ebx*4],ecx
             // 0x89 0x0C 0x98
-            [Simulator::PROTECTED_MODE, 0, null, Register::EBX, 426, Register::EAX, 54923, 0, 1, 4, "\x98", null, 56630],
+            [Simulator::PROTECTED_MODE, 0, null, Register::EBX, 426, Register::EAX, 54923, 0, 1, 4, "\x98", null, 56627],
 
-            // mov [rax+rbx*4],ecx
+            // mov [rax+r12*4],ecx
             // 0x89 0x0C 0xA0
-            [Simulator::LONG_MODE, 0x4A, null, Register::R12, 428, Register::RAX, 54925, 0, 1, 4, "\xA0", null, 56640],
+            [Simulator::LONG_MODE, 0x4A, null, Register::R12, 428, Register::RAX, 54925, 0, 1, 4, "\xA0", null, 56637],
 
             // mov eax,[ebp+eax*4+0x31]
             // 0x8B 0x44 0x85 0x31
-            [Simulator::PROTECTED_MODE, 0, null, Register::EAX, 12, Register::EBP, 498, 1, 0, 4, "\x85", "\x31", 599],
+            [Simulator::PROTECTED_MODE, 0, null, Register::EAX, 12, Register::EBP, 498, 1, 0, 4, "\x85", "\x31", 595],
 
             // mov eax,[ebp+eax*2+0x40201030]
             // 0x8B 0x84 0x45 0x30 0x10 0x20 0x40
-            [Simulator::PROTECTED_MODE, 0, null, Register::EAX, 12, Register::EBP, 498, 2, 0, 4, "\x45", "\x30\x10\x20\x40", 1075843649],
+            [Simulator::PROTECTED_MODE, 0, null, Register::EAX, 12, Register::EBP, 498, 2, 0, 4, "\x45", "\x30\x10\x20\x40", 1075843642],
         ];
     }
 
@@ -408,7 +408,7 @@ class AssemblyInstructionTest extends \PHPUnit\Framework\TestCase
         ];
 
         $address = $parseAddress->invoke($instruction, $byte);
-        $this->assertEquals(48, $address->getAddress());
+        $this->assertEquals(40, $address->getAddress());
         $this->assertEquals(5, $address->getDisplacement());
     }
 }
