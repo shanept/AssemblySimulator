@@ -50,7 +50,21 @@ class ModRmAddress implements AddressInterface
 
     public function getAddress(int $offset = 0): int
     {
-        return $this->baseAddress + $this->offset + $offset;
+        $disp = $this->offset;
+
+        // Handle two's compliment addresses.
+        if ($this->displacement) {
+            // This will generate the appropriate sized mask for the operation size.
+            $dispMask = (256 ** $this->displacement) - 1;
+            $dispShift = (8 * $this->displacement) - 1;
+
+            // If the most significant bit is set, we have a 2's complement.
+            if (($disp >> $dispShift) & 1) {
+                $disp = -(((~$disp) & $dispMask) + 1);
+            }
+        }
+
+        return $this->baseAddress + $disp + $offset;
     }
 
     public function getDisplacement(): int
