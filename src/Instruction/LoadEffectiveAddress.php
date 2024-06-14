@@ -72,8 +72,6 @@ class LoadEffectiveAddress extends AssemblyInstruction
             $address &= $reg['mask'];
         }
 
-        $address += $sim->getAddressBase();
-
         $sim->advanceInstructionPointer($effectiveAddress->getDisplacement());
 
         $sim->writeRegister($reg, $address);
