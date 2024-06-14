@@ -203,6 +203,9 @@ class AssemblyInstructionTest extends \PHPUnit\Framework\TestCase
         $simulator->method('getInstructionPointer')
                   ->willReturn(1);
 
+        $simulator->method('getAddressBase')
+                  ->willReturn(0xF000000000);
+
         $instruction = new TestAssemblyInstruction();
         $instruction->setSimulator($simulator);
 
@@ -216,7 +219,7 @@ class AssemblyInstructionTest extends \PHPUnit\Framework\TestCase
 
         $address = $parseAddress->invoke($instruction, $byte);
         $this->assertInstanceOf(RipAddress::class, $address);
-        $this->assertEquals(0xF1917E5, $address->getAddress());
+        $this->assertEquals(0xF00F1917E5, $address->getAddress());
     }
 
     public function testParseAddressLooksLikeRipOnProtectedModeReturnsModRmAddress()

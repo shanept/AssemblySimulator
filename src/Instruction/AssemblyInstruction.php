@@ -294,6 +294,7 @@ abstract class AssemblyInstruction
         $address = $this->unpackImmediate($address, Simulator::TYPE_DWRD);
 
         $instructionPointer = $this->simulator->getInstructionPointer();
+        $instructionPointer += $this->simulator->getAddressBase();
 
         return new RipAddress($instructionPointer, $address);
     }
