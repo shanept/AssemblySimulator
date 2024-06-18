@@ -277,6 +277,8 @@ class ExclusiveOrTest extends \PHPUnit\Framework\TestCase
                 Flags::PF => 1,
             ];
 
+            $name = '<UNKNOWN>';
+
             switch ($flag) {
                 case Flags::OF:
                     $name = 'OF';

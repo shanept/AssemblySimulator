@@ -426,7 +426,7 @@ class SimulatorTest extends \PHPUnit\Framework\TestCase
         $simulator = new Simulator(Simulator::LONG_MODE);
 
         $mockInstructionOld = $this->createMock(AssemblyInstruction::class);
-        $mockFunctionOld = function () use ($simulator) {
+        $mockFunctionOld = function () {
             return true;
         };
 
@@ -445,7 +445,7 @@ class SimulatorTest extends \PHPUnit\Framework\TestCase
         $simulator = new Simulator(Simulator::LONG_MODE);
 
         $mockInstructionOld = $this->createMock(AssemblyInstruction::class);
-        $mockFunctionOld = function () use ($simulator) {
+        $mockFunctionOld = function () {
             return true;
         };
 
@@ -509,7 +509,7 @@ class SimulatorTest extends \PHPUnit\Framework\TestCase
         $simulator = new Simulator(Simulator::LONG_MODE);
 
         $mockInstructionOld = $this->createMock(AssemblyInstruction::class);
-        $mockFunctionOld = function () use ($simulator) {
+        $mockFunctionOld = function () {
             return false;
         };
 
@@ -810,7 +810,7 @@ class SimulatorTest extends \PHPUnit\Framework\TestCase
         $simulator = new Simulator(Simulator::REAL_MODE);
 
         $mockInstruction = $this->createMock(TestAssemblyInstruction::class);
-        $mockFunction = function () use ($simulator) {
+        $mockFunction = function () {
             $this->fail('We should not have reached a 2-byte instruction!');
         };
 

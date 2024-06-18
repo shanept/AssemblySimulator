@@ -24,7 +24,7 @@ class SimulatorFactoryTest extends \PHPUnit\Framework\TestCase
 
         $fqcnFormat = 'shanept\AssemblySimulator\Instruction\%s';
 
-        $expected = array_map(function ($filepath) use ($instructionDir, $fqcnFormat) {
+        $expected = array_map(function ($filepath) use ($fqcnFormat) {
             // Remove filesystem artifacts
             $filepath = basename($filepath);
             $filepath = explode('.', $filepath)[0];

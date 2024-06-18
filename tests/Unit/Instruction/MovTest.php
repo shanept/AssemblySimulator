@@ -685,7 +685,7 @@ class MovTest extends \PHPUnit\Framework\TestCase
                   ->willReturn(0);
 
         $simulator->method('getCodeAtInstruction')
-                  ->willReturnCallback(function ($length) use (&$values) {
+                  ->willReturnCallback(function ($length) {
                       switch ($length) {
                           case 4:
                               return "\x01\x02\x03\x04";
@@ -739,7 +739,7 @@ class MovTest extends \PHPUnit\Framework\TestCase
                   });
 
         $simulator->method('getCodeAtInstruction')
-                  ->willReturnCallback(function ($length) use (&$values) {
+                  ->willReturnCallback(function ($length) {
                       if (1 === $length) {
                           return "\x46";
                       } elseif (2 === $length) {
