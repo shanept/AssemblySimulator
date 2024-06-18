@@ -19,7 +19,7 @@ jobs:
         uses: php-actions/composer@v6
 
       - name: Test Code Guideline Adherance
-        run: vendor/bin/php-cs-fixer fix --diff -vvv --dry-run || true
+        run: "vendor/bin/php-cs-fixer check --diff -vvv || true"
 
   unit-tests:
     strategy:
@@ -59,7 +59,23 @@ jobs:
           args: ${{ matrix.composer_args }}
 
       - name: Run PHPUnit Tests
-        run: "vendor/bin/phpunit --no-coverage"
+        run: "vendor/bin/phpunit --no-coverage -c phpunit.dist.xml"
         env:
           ACTION_PHP_VERSION: ${{ matrix.php_version }}
           ACTION_PHP_EXTENSIONS: pcntl
+
+  static-analysis:
+    name: Static Analysis
+
+    runs-on: ubuntu-latest
+    timeout-minutes: 3
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Install Dependency Management
+        uses: php-actions/composer@v6
+
+      - name: Run PHPStan Static Analysis (Level 9)
+        run: "vendor/bin/phpstan"
