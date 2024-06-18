@@ -1,3 +1,5 @@
 code-coverage/
 vendor/
 *.cache
+phpstan.neon
+phpunit.xml
