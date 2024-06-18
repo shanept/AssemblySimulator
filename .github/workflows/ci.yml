@@ -1,0 +1,65 @@
+name: CI
+
+on:
+  - pull_request
+  - push
+
+jobs:
+  coding-guidelines:
+    name: Coding Guidelines
+
+    runs-on: ubuntu-latest
+    timeout-minutes: 3
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Install Dependency Management
+        uses: php-actions/composer@v6
+
+      - name: Test Code Guideline Adherance
+        run: vendor/bin/php-cs-fixer fix --diff -vvv --dry-run || true
+
+  unit-tests:
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - name: "PHP v7.4"
+            php_version: 7.4
+            composer_args: ""
+
+          - name: "PHP v7.4, lowest deps"
+            php_version: 7.4
+            composer_args: "--prefer-lowest"
+
+          - name: "PHP v8.3"
+            php_version: 8.3
+            composer_args: ""
+
+          - name: "PHP v8.3, lowest deps"
+            php_version: 8.3
+            composer_args: "--prefer-lowest"
+
+    name: Unit Tests on ${{ matrix.name }}
+
+    runs-on: ubuntu-latest
+    timeout-minutes: 3
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Install Dependency Management
+        uses: php-actions/composer@v6
+        with:
+          command: "update"
+          php_version: ${{ matrix.php_version }}
+          args: ${{ matrix.composer_args }}
+
+      - name: Run PHPUnit Tests
+        run: "vendor/bin/phpunit --no-coverage"
+        env:
+          ACTION_PHP_VERSION: ${{ matrix.php_version }}
+          ACTION_PHP_EXTENSIONS: pcntl
