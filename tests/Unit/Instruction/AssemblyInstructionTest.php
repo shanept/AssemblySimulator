@@ -434,4 +434,14 @@ class AssemblyInstructionTest extends \PHPUnit\Framework\TestCase
         $this->assertEquals(40, $address->getAddress());
         $this->assertEquals(5, $address->getDisplacement());
     }
+
+    public function testUnpackThrowsExceptionOnInvalidImmediateForSize(): void
+    {
+        $instruction = new TestAssemblyInstruction();
+
+        $unpackMethod = new ReflectionMethod($instruction, "unpackImmediate");
+
+        $this->expectException(\UnexpectedValueException::class);
+        $unpackMethod->invoke($instruction, "\x1", 64);
+    }
 }

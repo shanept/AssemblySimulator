@@ -23,6 +23,8 @@ use shanept\AssemblySimulator\Instruction\Push;
  * A factory to assist with the generation of the simulator.
  *
  * @author Shane Thompson
+ *
+ * @phpstan-type InstructionList array<int, class-string<Instruction\AssemblyInstruction>>
  */
 class SimulatorFactory
 {
@@ -31,7 +33,7 @@ class SimulatorFactory
      * instruction set, plus any additional instructions, if specified.
      *
      * @param int $simulatorMode The mode for the simulator to be instantiated in.
-     * @param string[] $additionalInstructions A list of additional instruction
+     * @param InstructionList $additionalInstructions A list of additional instruction
      *             FQCN to load into the simulator. These will take processing
      *             priority over the default instruction set.
      */
@@ -63,7 +65,7 @@ class SimulatorFactory
      * Returns the default instruction set. This will include all instructions
      * in the Instruction namespace.
      *
-     * @return array<int, string>
+     * @return InstructionList
      */
     public static function getDefaultInstructionSet(): array
     {

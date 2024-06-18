@@ -231,7 +231,19 @@ abstract class AssemblyInstruction
      */
     protected function unpackImmediate(string $immediate, int $size): int
     {
-        return unpack(self::IMM_PACK_FMT[$size], $immediate)["imm"];
+        $result = @unpack(self::IMM_PACK_FMT[$size], $immediate);
+
+        if (is_array($result)) {
+            return $result['imm'];
+        }
+
+        $message = sprintf(
+            'Invalid binary-encoded immediate value 0x%s specified for size %d.',
+            bin2hex($immediate),
+            $size,
+        );
+
+        throw new \UnexpectedValueException($message);
     }
 
     /**

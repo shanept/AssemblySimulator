@@ -173,7 +173,7 @@ class Simulator
      * their own implementation for an opcode, or overload the existing
      * implementation.
      *
-     * @var callable[]
+     * @var array<int, array{"reference": AssemblyInstruction, "mappings": array<int, callable>}>
      */
     private array $registeredInstructions = [];
 
@@ -837,9 +837,15 @@ class Simulator
         $instructionName = $callback;
 
         if (is_array($callback)) {
+            $className = $callback[0];
+
+            if (! is_string($className)) {
+                $className = get_class($className);
+            }
+
             $instructionName = sprintf(
                 '%s::%s',
-                get_class($callback[0]),
+                $className,
                 $callback[1],
             );
         } elseif (is_object($callback)) {

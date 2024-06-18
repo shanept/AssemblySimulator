@@ -17,6 +17,10 @@ class SimulatorFactoryTest extends \PHPUnit\Framework\TestCase
         $instructionDir = realpath(__DIR__ . '/../../src/Instruction');
         $files = glob($instructionDir . '/*.php');
 
+        if (! $files) {
+            $this->fail('Could not list Instruction directory.');
+        }
+
         // Remove AssemblyInstruction
         $files = array_filter($files, function ($filename) {
             return false === strpos($filename, 'AssemblyInstruction.php');
