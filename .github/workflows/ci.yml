@@ -19,7 +19,7 @@ jobs:
         uses: php-actions/composer@v6
 
       - name: Test Code Guideline Adherance
-        run: "vendor/bin/php-cs-fixer check --diff -vvv || true"
+        run: "vendor/bin/php-cs-fixer check --diff -vvv"
 
   static-analysis:
     name: Static Analysis
