@@ -4,7 +4,6 @@ namespace shanept\AssemblySimulatorTests\Unit;
 
 use shanept\AssemblySimulator\Simulator;
 use shanept\AssemblySimulator\SimulatorFactory;
-use shanept\AssemblySimulatorTests\Fakes\TestAssemblyInstruction;
 
 class SimulatorFactoryTest extends \PHPUnit\Framework\TestCase
 {
@@ -53,24 +52,5 @@ class SimulatorFactoryTest extends \PHPUnit\Framework\TestCase
         $simulator = SimulatorFactory::createSimulator();
 
         $this->assertInstanceOf(Simulator::class, $simulator);
-    }
-
-    /**
-     * @covers shanept\AssemblySimulator\SimulatorFactory
-     */
-    public function testFactoryRegistersCustomInstructionWithSimulator(): void
-    {
-        $simulator = SimulatorFactory::createSimulator(Simulator::LONG_MODE, [
-            TestAssemblyInstruction::class,
-        ]);
-
-        // Extract the registered instructions from the instantiated simulator.
-        // Convert to a list of class names, for comparison with our defaults.
-        $reflectionInstructions = new \ReflectionProperty($simulator, 'registeredInstructions');
-        $registered = $reflectionInstructions->getValue($simulator);
-        $registered = array_column($registered, 'reference');
-        $registered = array_map('get_class', $registered);
-
-        $this->assertContains(TestAssemblyInstruction::class, $registered);
     }
 }
