@@ -21,6 +21,22 @@ jobs:
       - name: Test Code Guideline Adherance
         run: "vendor/bin/php-cs-fixer check --diff -vvv || true"
 
+  static-analysis:
+    name: Static Analysis
+
+    runs-on: ubuntu-latest
+    timeout-minutes: 3
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Install Dependency Management
+        uses: php-actions/composer@v6
+
+      - name: Run PHPStan Static Analysis (Level 9)
+        run: "vendor/bin/phpstan"
+
   unit-tests:
     strategy:
       fail-fast: false
@@ -63,19 +79,3 @@ jobs:
         env:
           ACTION_PHP_VERSION: ${{ matrix.php_version }}
           ACTION_PHP_EXTENSIONS: pcntl
-
-  static-analysis:
-    name: Static Analysis
-
-    runs-on: ubuntu-latest
-    timeout-minutes: 3
-
-    steps:
-      - name: Checkout
-        uses: actions/checkout@v4
-
-      - name: Install Dependency Management
-        uses: php-actions/composer@v6
-
-      - name: Run PHPStan Static Analysis (Level 9)
-        run: "vendor/bin/phpstan"
