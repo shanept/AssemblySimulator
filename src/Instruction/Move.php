@@ -22,6 +22,9 @@ use shanept\AssemblySimulator\Simulator;
  */
 class Move extends AssemblyInstruction
 {
+    /**
+     * {@inheritDoc}
+     */
     public function register(): array
     {
         return [
@@ -209,7 +212,7 @@ class Move extends AssemblyInstruction
      * the operand size, this function does the rest.
      * Parameter encoding is "MR".
      */
-    private function executeMovWithEncodingMr($opSize): bool
+    private function executeMovWithEncodingMr(int $opSize): bool
     {
         $sim = $this->getSimulator();
         $sim->advanceInstructionPointer(1);
@@ -244,7 +247,7 @@ class Move extends AssemblyInstruction
      * the operand size, this function does the rest.
      * Parameter encoding is "RM".
      */
-    private function executeMovWithEncodingRm($opSize): bool
+    private function executeMovWithEncodingRm(int $opSize): bool
     {
         $sim = $this->getSimulator();
         $sim->advanceInstructionPointer(1);
@@ -284,7 +287,7 @@ class Move extends AssemblyInstruction
      * dictate the operand size, this function does the rest.
      * Parameter encoding is "OI".
      */
-    private function executeMovWithEncodingOi($opSize): bool
+    private function executeMovWithEncodingOi(int $opSize): bool
     {
         $sim = $this->getSimulator();
 

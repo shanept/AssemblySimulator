@@ -23,12 +23,17 @@ use shanept\AssemblySimulator\Simulator;
  */
 class CallInstruction extends AssemblyInstruction
 {
+    /**
+     * @var ?callable
+     */
     private $handleAddressCb;
 
     /**
      * @param ?callable $onAddress The callback to call when we encounter an
      *                             address. This callback will receive the
      *                             parsed address as the first parameter.
+     *
+     * @throws \LogicException if we are provided a non-callable $onAddress.
      */
     public function __construct($onAddress = null)
     {
@@ -44,6 +49,9 @@ class CallInstruction extends AssemblyInstruction
         $this->handleAddressCb = $onAddress;
     }
 
+    /**
+     * {@inheritDoc}
+     */
     public function register(): array
     {
         return [

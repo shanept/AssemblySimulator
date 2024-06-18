@@ -23,6 +23,9 @@ use shanept\AssemblySimulator\Simulator;
  */
 class ExclusiveOr extends AssemblyInstruction
 {
+    /**
+     * {@inheritDoc}
+     */
     public function register(): array
     {
         return [
@@ -79,7 +82,12 @@ class ExclusiveOr extends AssemblyInstruction
         return $this->executeXorWithEncodingRm($opSize);
     }
 
-    private function preExecXorModRM($opSize): array
+    /**
+     * @throws \RuntimeException If MOD byte is not 0x3.
+     *
+     * @return mixed[]
+     */
+    private function preExecXorModRM(int $opSize): array
     {
         $sim = $this->getSimulator();
         $sim->advanceInstructionPointer(1);
@@ -111,7 +119,7 @@ class ExclusiveOr extends AssemblyInstruction
         ];
     }
 
-    private function executeXorWithEncodingMr($opSize)
+    private function executeXorWithEncodingMr(int $opSize): bool
     {
         $sim = $this->getSimulator();
 
@@ -131,7 +139,7 @@ class ExclusiveOr extends AssemblyInstruction
         return true;
     }
 
-    private function executeXorWithEncodingRm($opSize)
+    private function executeXorWithEncodingRm(int $opSize): bool
     {
         $sim = $this->getSimulator();
 
@@ -151,7 +159,7 @@ class ExclusiveOr extends AssemblyInstruction
         return true;
     }
 
-    private function operationResult($result)
+    private function operationResult(int $result): void
     {
         $sim = $this->getSimulator();
 

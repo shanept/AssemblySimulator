@@ -8,7 +8,7 @@ class NoOperationTest extends \PHPUnit\Framework\TestCase
 {
     use MockSimulatorTrait;
 
-    public function testNoOperationOperand90LeavesRegistersAndStackAlone()
+    public function testNoOperationOperand90LeavesRegistersAndStackAlone(): void
     {
         $simulator = $this->getMockSimulator();
 
@@ -40,7 +40,7 @@ class NoOperationTest extends \PHPUnit\Framework\TestCase
         $this->assertTrue($nop->executeOperand90());
     }
 
-    public function testNoOperationOperand0F1FLeavesRegistersAndStackAlone()
+    public function testNoOperationOperand0F1FLeavesRegistersAndStackAlone(): void
     {
         $simulator = $this->getMockSimulator();
 
@@ -75,7 +75,7 @@ class NoOperationTest extends \PHPUnit\Framework\TestCase
         $this->assertTrue($nop->executeOperand0F1F());
     }
 
-    public function testNoOperationOperand0F1FWithAddressLeavesRegistersAndStackAlone()
+    public function testNoOperationOperand0F1FWithAddressLeavesRegistersAndStackAlone(): void
     {
         // 0x0F 0x1F 0x80 0x00 0x00 0x00 0x00
         // NOP [rax+0x0]

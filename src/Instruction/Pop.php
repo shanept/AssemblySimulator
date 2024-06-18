@@ -22,6 +22,9 @@ use shanept\AssemblySimulator\Simulator;
  */
 class Pop extends AssemblyInstruction
 {
+    /**
+     * {@inheritDoc}
+     */
     public function register(): array
     {
         return [

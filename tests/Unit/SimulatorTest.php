@@ -12,7 +12,10 @@ use shanept\AssemblySimulatorTests\Fakes\TestAssemblyInstruction;
 
 class SimulatorTest extends \PHPUnit\Framework\TestCase
 {
-    public function registerNopMock($simulator)
+    /**
+     * @param mixed $simulator
+     */
+    public function registerNopMock($simulator): void
     {
         $nopMock = $this->getMockBuilder(TestAssemblyInstruction::class)
                         ->addMethods(['executeOperand90'])
@@ -30,21 +33,21 @@ class SimulatorTest extends \PHPUnit\Framework\TestCase
         ]);
     }
 
-    public function testDefaultsToRealMode()
+    public function testDefaultsToRealMode(): void
     {
         $simulator = new Simulator();
 
         $this->assertEquals(Simulator::REAL_MODE, $simulator->getMode());
     }
 
-    public function testDefaultAddressBaseIsZero()
+    public function testDefaultAddressBaseIsZero(): void
     {
         $simulator = new Simulator();
 
         $this->assertEquals(0, $simulator->getAddressBase());
     }
 
-    public function testGetAddressBaseAfterSet()
+    public function testGetAddressBaseAfterSet(): void
     {
         $simulator = new Simulator();
 
@@ -53,28 +56,28 @@ class SimulatorTest extends \PHPUnit\Framework\TestCase
         $this->assertEquals(0xdeadbeef, $simulator->getAddressBase());
     }
 
-    public function testGetLargestInstructionWidthOnRealMode()
+    public function testGetLargestInstructionWidthOnRealMode(): void
     {
         $simulator = new Simulator(Simulator::REAL_MODE);
 
         $this->assertEquals(16, $simulator->getLargestInstructionWidth());
     }
 
-    public function testGetLargestInstructionWidthOnProtectedMode()
+    public function testGetLargestInstructionWidthOnProtectedMode(): void
     {
         $simulator = new Simulator(Simulator::PROTECTED_MODE);
 
         $this->assertEquals(32, $simulator->getLargestInstructionWidth());
     }
 
-    public function testGetLargestInstructionWidthOnLongMode()
+    public function testGetLargestInstructionWidthOnLongMode(): void
     {
         $simulator = new Simulator(Simulator::LONG_MODE);
 
         $this->assertEquals(64, $simulator->getLargestInstructionWidth());
     }
 
-    public function testModeChangeWithoutResetThrowsException()
+    public function testModeChangeWithoutResetThrowsException(): void
     {
         $simulator = new Simulator();
 
@@ -86,7 +89,7 @@ class SimulatorTest extends \PHPUnit\Framework\TestCase
         $simulator->simulate();
     }
 
-    public function testReadRegisterOnSizeLargerThanMachineWidth()
+    public function testReadRegisterOnSizeLargerThanMachineWidth(): void
     {
         $simulator = new Simulator(Simulator::PROTECTED_MODE);
 
@@ -94,7 +97,7 @@ class SimulatorTest extends \PHPUnit\Framework\TestCase
         $simulator->readRegister(Register::RAX);
     }
 
-    public function testSetFlag()
+    public function testSetFlag(): void
     {
         $simulator = new Simulator(Simulator::REAL_MODE);
 
@@ -106,7 +109,7 @@ class SimulatorTest extends \PHPUnit\Framework\TestCase
     /**
      * @depends testSetFlag
      */
-    public function testMultipleSetFlags()
+    public function testMultipleSetFlags(): void
     {
         $simulator = new Simulator(Simulator::REAL_MODE);
 
@@ -116,14 +119,14 @@ class SimulatorTest extends \PHPUnit\Framework\TestCase
         $this->assertEquals(0b10001, $simulator->getFlags());
     }
 
-    public function testDefaultStackIsEmpty()
+    public function testDefaultStackIsEmpty(): void
     {
         $simulator = new Simulator();
 
         $this->assertEmpty($simulator->getStack());
     }
 
-    public function testSetStackAddressTaintsSimulator()
+    public function testSetStackAddressTaintsSimulator(): void
     {
         $simulator = new Simulator();
         $simulator->setStackAddress(0);
@@ -132,7 +135,7 @@ class SimulatorTest extends \PHPUnit\Framework\TestCase
         $simulator->simulate();
     }
 
-    public function testSetStackAddressChangesStackAddress()
+    public function testSetStackAddressChangesStackAddress(): void
     {
         $simulator = new Simulator();
 
@@ -147,7 +150,7 @@ class SimulatorTest extends \PHPUnit\Framework\TestCase
         $this->assertNotEquals($stackAddress, $newAddress);
     }
 
-    public function testSetStackSizeTaintsSimulator()
+    public function testSetStackSizeTaintsSimulator(): void
     {
         $simulator = new Simulator();
         $simulator->setStackSize(1);
@@ -160,7 +163,7 @@ class SimulatorTest extends \PHPUnit\Framework\TestCase
      * @depends testSetStackAddressTaintsSimulator
      * @depends testSetStackAddressChangesStackAddress
      */
-    public function testSetStackSize()
+    public function testSetStackSize(): void
     {
         $simulator = new Simulator();
         $simulator->setStackAddress(100);
@@ -175,7 +178,7 @@ class SimulatorTest extends \PHPUnit\Framework\TestCase
         $simulator->writeStackAt(90, "\0");
     }
 
-    public function testWriteStackPastMemoryLimitThrowsException()
+    public function testWriteStackPastMemoryLimitThrowsException(): void
     {
         $simulator = new Simulator();
 
@@ -183,7 +186,10 @@ class SimulatorTest extends \PHPUnit\Framework\TestCase
         $simulator->writeStackAt(0, "fail");
     }
 
-    public static function setStackDataProvider()
+    /**
+     * @return array<int, array{array<int, string>, string}>
+     */
+    public static function setStackDataProvider(): array
     {
         return [
             [ [ 0 => "\x3", 1 => "\x4" ], "\x4\x3" ],
@@ -195,8 +201,10 @@ class SimulatorTest extends \PHPUnit\Framework\TestCase
 
     /**
      * @dataProvider setStackDataProvider
+     *
+     * @param array<int, string> $values
      */
-    public function testGetStack($values, $expected)
+    public function testGetStack(array $values, string $expected): void
     {
         $simulator = new Simulator(Simulator::REAL_MODE);
 
@@ -211,8 +219,10 @@ class SimulatorTest extends \PHPUnit\Framework\TestCase
 
     /**
      * @dataProvider setStackDataProvider
+     *
+     * @param array<int, string> $values
      */
-    public function testReadStackAt($values, $expected)
+    public function testReadStackAt(array $values, string $expected): void
     {
         $simulator = new Simulator(Simulator::REAL_MODE);
 
@@ -229,7 +239,10 @@ class SimulatorTest extends \PHPUnit\Framework\TestCase
         }
     }
 
-    public static function clearStackAtDataProvider()
+    /**
+     * @return array<int, array{array<int, string>, int, string}>
+     */
+    public static function clearStackAtDataProvider(): array
     {
         return [
             [
@@ -276,9 +289,14 @@ class SimulatorTest extends \PHPUnit\Framework\TestCase
 
     /**
      * @dataProvider clearStackAtDataProvider
+     *
+     * @param array<int, string> $stack
      */
-    public function testClearStackAt($stack, $clearIdx, $expected)
-    {
+    public function testClearStackAt(
+        array $stack,
+        int $clearIdx,
+        string $expected,
+    ): void {
         $simulator = new Simulator();
 
         $startAddress = $simulator->readRegister(Register::SP);
@@ -293,7 +311,7 @@ class SimulatorTest extends \PHPUnit\Framework\TestCase
         $this->assertEquals($expected, $simulator->getStack());
     }
 
-    public function testReadStackUnderflowThrowsException()
+    public function testReadStackUnderflowThrowsException(): void
     {
         $simulator = new Simulator(Simulator::REAL_MODE);
 
@@ -301,7 +319,7 @@ class SimulatorTest extends \PHPUnit\Framework\TestCase
         $simulator->readStackAt(PHP_INT_MAX, 1);
     }
 
-    public function testReadStackAtInvalidOffsetThrowsException()
+    public function testReadStackAtInvalidOffsetThrowsException(): void
     {
         $simulator = new Simulator();
 
@@ -309,7 +327,7 @@ class SimulatorTest extends \PHPUnit\Framework\TestCase
         $simulator->readStackAt(4560, 2);
     }
 
-    public function testWriteStackUnderflowThrowsException()
+    public function testWriteStackUnderflowThrowsException(): void
     {
         $simulator = new Simulator(Simulator::REAL_MODE);
 
@@ -317,7 +335,7 @@ class SimulatorTest extends \PHPUnit\Framework\TestCase
         $simulator->writeStackAt(PHP_INT_MAX, " ");
     }
 
-    public function testClearStackUnderflowThrowsException()
+    public function testClearStackUnderflowThrowsException(): void
     {
         $simulator = new Simulator(Simulator::REAL_MODE);
 
@@ -325,7 +343,7 @@ class SimulatorTest extends \PHPUnit\Framework\TestCase
         $simulator->clearStackAt(PHP_INT_MAX, 2);
     }
 
-    public function testClearStackAtInvalidOffsetThrowsException()
+    public function testClearStackAtInvalidOffsetThrowsException(): void
     {
         $simulator = new Simulator();
 
@@ -333,7 +351,10 @@ class SimulatorTest extends \PHPUnit\Framework\TestCase
         $simulator->clearStackAt(4560, 1);
     }
 
-    public static function getCodeBufferDataProvider()
+    /**
+     * @return array<int, array{string, ?int, ?int, string}>
+     */
+    public static function getCodeBufferDataProvider(): array
     {
         return [
             ['FullBuffer', null, null, 'FullBuffer'],
@@ -349,8 +370,12 @@ class SimulatorTest extends \PHPUnit\Framework\TestCase
     /**
      * @dataProvider getCodeBufferDataProvider
      */
-    public function testGetCodeBuffer($fullBuffer, $start, $length, $expected)
-    {
+    public function testGetCodeBuffer(
+        string $fullBuffer,
+        ?int $start,
+        ?int $length,
+        string $expected,
+    ): void {
         $simulator = new Simulator();
         $simulator->setCodeBuffer($fullBuffer);
 
@@ -358,7 +383,10 @@ class SimulatorTest extends \PHPUnit\Framework\TestCase
         $this->assertEquals($expected, $actual);
     }
 
-    public static function getCodeBufferSizeDataProvider()
+    /**
+     * @return array<int, array{string, int}>
+     */
+    public static function getCodeBufferSizeDataProvider(): array
     {
         return [
             ['string', 6],
@@ -372,7 +400,7 @@ class SimulatorTest extends \PHPUnit\Framework\TestCase
     /**
      * @dataProvider getCodeBufferSizeDataProvider
      */
-    public function testGetCodeBufferSize($fullBuffer, $expected)
+    public function testGetCodeBufferSize(string $fullBuffer, int $expected): void
     {
         $simulator = new Simulator();
         $simulator->setCodeBuffer($fullBuffer);
@@ -380,14 +408,14 @@ class SimulatorTest extends \PHPUnit\Framework\TestCase
         $this->assertEquals($expected, $simulator->getCodeBufferSize());
     }
 
-    public function testDefaultInstructionPointerIsZero()
+    public function testDefaultInstructionPointerIsZero(): void
     {
         $simulator = new Simulator();
 
         $this->assertEquals(0, $simulator->getInstructionPointer());
     }
 
-    public function testGetAndSetAndAdvanceInstructionPointer()
+    public function testGetAndSetAndAdvanceInstructionPointer(): void
     {
         $simulator = new Simulator();
         $simulator->setCodeBuffer('thisisareallyreallyreallyreallyreallylongstringthatis70characterslong!');
@@ -402,7 +430,7 @@ class SimulatorTest extends \PHPUnit\Framework\TestCase
         $this->assertEquals(12, $simulator->getInstructionPointer());
     }
 
-    public function testRegisteredInstructionIsCalled()
+    public function testRegisteredInstructionIsCalled(): void
     {
         $simulator = new Simulator(Simulator::LONG_MODE);
 
@@ -421,7 +449,7 @@ class SimulatorTest extends \PHPUnit\Framework\TestCase
         $simulator->simulate();
     }
 
-    public function testSimulatorThrowsExceptionIfOpcodeIsNotRegistered()
+    public function testSimulatorThrowsExceptionIfOpcodeIsNotRegistered(): void
     {
         $simulator = new Simulator(Simulator::LONG_MODE);
 
@@ -440,7 +468,7 @@ class SimulatorTest extends \PHPUnit\Framework\TestCase
         $simulator->simulate();
     }
 
-    public function testSimulatorThrowsExceptionIfTwoByteOpcodeIsNotRegistered()
+    public function testSimulatorThrowsExceptionIfTwoByteOpcodeIsNotRegistered(): void
     {
         $simulator = new Simulator(Simulator::LONG_MODE);
 
@@ -459,7 +487,7 @@ class SimulatorTest extends \PHPUnit\Framework\TestCase
         $simulator->simulate();
     }
 
-    public function testTwoByteInstructionIsntOfferedToOneByteInstruction()
+    public function testTwoByteInstructionIsntOfferedToOneByteInstruction(): void
     {
         $simulator = new Simulator(Simulator::LONG_MODE);
 
@@ -504,7 +532,7 @@ class SimulatorTest extends \PHPUnit\Framework\TestCase
         $simulator->simulate();
     }
 
-    public function testSimulatorThrowsExceptionIfAllRegisteredFunctionsReturnFalse()
+    public function testSimulatorThrowsExceptionIfAllRegisteredFunctionsReturnFalse(): void
     {
         $simulator = new Simulator(Simulator::LONG_MODE);
 
@@ -523,7 +551,7 @@ class SimulatorTest extends \PHPUnit\Framework\TestCase
         $simulator->simulate();
     }
 
-    public function testSimulatorSkipsNonMatchingOpcodeRegistrations()
+    public function testSimulatorSkipsNonMatchingOpcodeRegistrations(): void
     {
         $simulator = new Simulator(Simulator::LONG_MODE);
 
@@ -554,7 +582,7 @@ class SimulatorTest extends \PHPUnit\Framework\TestCase
         $simulator->simulate();
     }
 
-    public function testSimulatorThrowsExceptionIfRegisteredClosureDoesntReturnBool()
+    public function testSimulatorThrowsExceptionIfRegisteredClosureDoesntReturnBool(): void
     {
         $simulator = new Simulator(Simulator::LONG_MODE);
 
@@ -573,7 +601,7 @@ class SimulatorTest extends \PHPUnit\Framework\TestCase
         $simulator->simulate();
     }
 
-    public function testSimulatorThrowsExceptionIfRegisteredInstantiatedClassDoesntReturnBool()
+    public function testSimulatorThrowsExceptionIfRegisteredInstantiatedClassDoesntReturnBool(): void
     {
         $simulator = new Simulator(Simulator::LONG_MODE);
 
@@ -591,7 +619,7 @@ class SimulatorTest extends \PHPUnit\Framework\TestCase
         $simulator->simulate();
     }
 
-    public function testSimulatorThrowsExceptionIfRegisteredClassStringDoesntReturnBool()
+    public function testSimulatorThrowsExceptionIfRegisteredClassStringDoesntReturnBool(): void
     {
         $simulator = new Simulator(Simulator::LONG_MODE);
 
@@ -607,7 +635,7 @@ class SimulatorTest extends \PHPUnit\Framework\TestCase
         $simulator->simulate();
     }
 
-    public function testNewerRegisteredFunctionIsGivenPriority()
+    public function testNewerRegisteredFunctionIsGivenPriority(): void
     {
         $simulator = new Simulator(Simulator::LONG_MODE);
 
@@ -638,7 +666,7 @@ class SimulatorTest extends \PHPUnit\Framework\TestCase
         $simulator->simulate();
     }
 
-    public function testNewerRegisteredFunctionCanDelegateToOldFunction()
+    public function testNewerRegisteredFunctionCanDelegateToOldFunction(): void
     {
         $simulator = new Simulator(Simulator::LONG_MODE);
 
@@ -669,7 +697,7 @@ class SimulatorTest extends \PHPUnit\Framework\TestCase
         $simulator->simulate();
     }
 
-    public function testRexOnLongModeIsRecorded()
+    public function testRexOnLongModeIsRecorded(): void
     {
         $simulator = new Simulator(Simulator::LONG_MODE);
 
@@ -689,7 +717,7 @@ class SimulatorTest extends \PHPUnit\Framework\TestCase
         $simulator->simulate();
     }
 
-    public function testRexOnProtectedModeThrowsException()
+    public function testRexOnProtectedModeThrowsException(): void
     {
         $simulator = new Simulator(Simulator::PROTECTED_MODE);
 
@@ -699,7 +727,7 @@ class SimulatorTest extends \PHPUnit\Framework\TestCase
         $simulator->simulate();
     }
 
-    public function testRexOnRealModeThrowsException()
+    public function testRexOnRealModeThrowsException(): void
     {
         $simulator = new Simulator(Simulator::REAL_MODE);
 
@@ -709,7 +737,7 @@ class SimulatorTest extends \PHPUnit\Framework\TestCase
         $simulator->simulate();
     }
 
-    public function testOp66IsRecordedAsPrefixInLongMode()
+    public function testOp66IsRecordedAsPrefixInLongMode(): void
     {
         $simulator = new Simulator(Simulator::LONG_MODE);
 
@@ -728,7 +756,7 @@ class SimulatorTest extends \PHPUnit\Framework\TestCase
         $simulator->simulate();
     }
 
-    public function testOp66IsRecordedAsPrefixInProtectedMode()
+    public function testOp66IsRecordedAsPrefixInProtectedMode(): void
     {
         $simulator = new Simulator(Simulator::PROTECTED_MODE);
 
@@ -747,7 +775,7 @@ class SimulatorTest extends \PHPUnit\Framework\TestCase
         $simulator->simulate();
     }
 
-    public function testOp66IsIgnoredAsPrefixInRealMode()
+    public function testOp66IsIgnoredAsPrefixInRealMode(): void
     {
         $simulator = new Simulator(Simulator::REAL_MODE);
 
@@ -757,7 +785,7 @@ class SimulatorTest extends \PHPUnit\Framework\TestCase
         $simulator->simulate();
     }
 
-    public function testOp67IsRecordedAsPrefixInLongMode()
+    public function testOp67IsRecordedAsPrefixInLongMode(): void
     {
         $simulator = new Simulator(Simulator::LONG_MODE);
 
@@ -776,7 +804,7 @@ class SimulatorTest extends \PHPUnit\Framework\TestCase
         $simulator->simulate();
     }
 
-    public function testOp67IsRecordedAsPrefixInProtectedMode()
+    public function testOp67IsRecordedAsPrefixInProtectedMode(): void
     {
         $simulator = new Simulator(Simulator::PROTECTED_MODE);
 
@@ -795,7 +823,7 @@ class SimulatorTest extends \PHPUnit\Framework\TestCase
         $simulator->simulate();
     }
 
-    public function testOp67IsIgnoredAsPrefixInRealMode()
+    public function testOp67IsIgnoredAsPrefixInRealMode(): void
     {
         $simulator = new Simulator(Simulator::REAL_MODE);
 
@@ -805,7 +833,7 @@ class SimulatorTest extends \PHPUnit\Framework\TestCase
         $simulator->simulate();
     }
 
-    public function testTwoByteInstructionIsNotCalledInRealMode()
+    public function testTwoByteInstructionIsNotCalledInRealMode(): void
     {
         $simulator = new Simulator(Simulator::REAL_MODE);
 
@@ -824,7 +852,7 @@ class SimulatorTest extends \PHPUnit\Framework\TestCase
         $simulator->simulate();
     }
 
-    public function testTwoByteInstructionIsCalledInProtectedMode()
+    public function testTwoByteInstructionIsCalledInProtectedMode(): void
     {
         $simulator = new Simulator(Simulator::PROTECTED_MODE);
 
@@ -843,7 +871,7 @@ class SimulatorTest extends \PHPUnit\Framework\TestCase
         $simulator->simulate();
     }
 
-    public function testTwoByteInstructionIsCalledInLongMode()
+    public function testTwoByteInstructionIsCalledInLongMode(): void
     {
         $simulator = new Simulator(Simulator::LONG_MODE);
 
@@ -868,7 +896,7 @@ class SimulatorTest extends \PHPUnit\Framework\TestCase
      * @depends testTwoByteInstructionIsCalledInLongMode
      * @depends testRexOnLongModeIsRecorded
      */
-    public function testGetPrefixReturnsListOfPrefixes()
+    public function testGetPrefixReturnsListOfPrefixes(): void
     {
         $simulator = new Simulator(Simulator::LONG_MODE);
 
@@ -887,7 +915,7 @@ class SimulatorTest extends \PHPUnit\Framework\TestCase
         $simulator->simulate();
     }
 
-    public function testRexPrefixTreatedAsInstructionAfterTwoBytePrefix()
+    public function testRexPrefixTreatedAsInstructionAfterTwoBytePrefix(): void
     {
         $simulator = new Simulator(Simulator::LONG_MODE);
 

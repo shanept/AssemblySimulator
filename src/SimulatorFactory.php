@@ -26,6 +26,15 @@ use shanept\AssemblySimulator\Instruction\Push;
  */
 class SimulatorFactory
 {
+    /**
+     * Factory method to generate a Simulator instance with the default
+     * instruction set, plus any additional instructions, if specified.
+     *
+     * @param int $simulatorMode The mode for the simulator to be instantiated in.
+     * @param string[] $additionalInstructions A list of additional instruction
+     *             FQCN to load into the simulator. These will take processing
+     *             priority over the default instruction set.
+     */
     public static function createSimulator(
         int $simulatorMode = Simulator::REAL_MODE,
         array $additionalInstructions = [],
@@ -50,6 +59,12 @@ class SimulatorFactory
         return $simulator;
     }
 
+    /**
+     * Returns the default instruction set. This will include all instructions
+     * in the Instruction namespace.
+     *
+     * @return array<int, string>
+     */
     public static function getDefaultInstructionSet(): array
     {
         return [

@@ -20,21 +20,21 @@ class ModRmAddress implements AddressInterface
      *
      * @var int
      */
-    private $baseAddress;
+    private int $baseAddress;
 
     /**
      * Contains the offset of the base address, taken from the ModRM byte.
      *
      * @var int
      */
-    private $offset;
+    private int $offset;
 
     /**
      * Stores the size of the displacement resulting from the offset.
      *
      * @var int
      */
-    private $displacement;
+    private int $displacement;
 
     /**
      * @param int $baseAddress The address as from the register.
@@ -48,6 +48,9 @@ class ModRmAddress implements AddressInterface
         $this->displacement = $dispSize;
     }
 
+    /**
+     * {@inheritDoc}
+     */
     public function getAddress(int $offset = 0): int
     {
         $disp = $this->offset;
@@ -67,6 +70,9 @@ class ModRmAddress implements AddressInterface
         return $this->baseAddress + $disp + $offset;
     }
 
+    /**
+     * {@inheritDoc}
+     */
     public function getDisplacement(): int
     {
         return $this->displacement;

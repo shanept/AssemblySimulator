@@ -10,7 +10,10 @@ class MovTest extends \PHPUnit\Framework\TestCase
 {
     use MockSimulatorTrait;
 
-    public static function movLoadsImmediate32bitValueDataProvider()
+    /**
+     * @return array<int, array{int, int, int, string, string, RegisterObj, int}>
+     */
+    public static function movLoadsImmediate32bitValueDataProvider(): array
     {
         return [
             [Simulator::LONG_MODE, 0, 0, "\xB8", "\x01\x20\x20\x00", Register::EAX, 0x202001],
@@ -34,16 +37,18 @@ class MovTest extends \PHPUnit\Framework\TestCase
 
     /**
      * @dataProvider movLoadsImmediate32bitValueDataProvider
+     *
+     * @param RegisterObj $register
      */
     public function testMovBxLoadsImmediate32bitValue(
-        $simulatorMode,
-        $rexValue,
-        $prefixValue,
-        $opcode,
-        $address,
-        $register,
-        $expected,
-    ) {
+        int $simulatorMode,
+        int $rexValue,
+        int $prefixValue,
+        string $opcode,
+        string $address,
+        array $register,
+        int $expected,
+    ): void {
         $simulator = $this->getMockSimulator($simulatorMode);
 
         // mov ecx,0x200001
@@ -71,7 +76,7 @@ class MovTest extends \PHPUnit\Framework\TestCase
         $this->assertTrue($move->executeOperandBx());
     }
 
-    public function testMovBxLoadsImmediate8bitValue()
+    public function testMovBxLoadsImmediate8bitValue(): void
     {
         $simulator = $this->getMockSimulator(Simulator::LONG_MODE);
 
@@ -100,7 +105,7 @@ class MovTest extends \PHPUnit\Framework\TestCase
         $this->assertTrue($move->executeOperandBx8());
     }
 
-    public function testMov8bLoadsMemoryAddress()
+    public function testMov8bLoadsMemoryAddress(): void
     {
         $simulator = $this->getMockSimulator(Simulator::LONG_MODE);
 
@@ -135,7 +140,7 @@ class MovTest extends \PHPUnit\Framework\TestCase
         $this->assertTrue($move->executeOperand8b());
     }
 
-    public function testMov88OnRegisterValue()
+    public function testMov88OnRegisterValue(): void
     {
         $simulator = $this->getMockSimulator(Simulator::LONG_MODE);
 
@@ -169,7 +174,7 @@ class MovTest extends \PHPUnit\Framework\TestCase
      * We just want to ensure we move past the SIB value without error and
      * return true.
      */
-    public function testMov88OnSibValue()
+    public function testMov88OnSibValue(): void
     {
         $simulator = $this->getMockSimulator(Simulator::LONG_MODE);
 
@@ -219,7 +224,7 @@ class MovTest extends \PHPUnit\Framework\TestCase
         $this->assertTrue($move->executeOperand88());
     }
 
-    public function testMov88OnNonSibValue()
+    public function testMov88OnNonSibValue(): void
     {
         $simulator = $this->getMockSimulator(Simulator::LONG_MODE);
 
@@ -243,7 +248,7 @@ class MovTest extends \PHPUnit\Framework\TestCase
         $this->assertTrue($move->executeOperand88());
     }
 
-    public function testMov88OnRexRegisterValue()
+    public function testMov88OnRexRegisterValue(): void
     {
         $simulator = $this->getMockSimulator(Simulator::LONG_MODE);
 
@@ -272,7 +277,7 @@ class MovTest extends \PHPUnit\Framework\TestCase
         $this->assertTrue($move->executeOperand88());
     }
 
-    public function testMov89OnRegisterValue()
+    public function testMov89OnRegisterValue(): void
     {
         $simulator = $this->getMockSimulator(Simulator::LONG_MODE);
 
@@ -306,7 +311,7 @@ class MovTest extends \PHPUnit\Framework\TestCase
      * We just want to ensure we move past the SIB value without error and
      * return true.
      */
-    public function testMov89OnSibValue()
+    public function testMov89OnSibValue(): void
     {
         $simulator = $this->getMockSimulator(Simulator::LONG_MODE);
 
@@ -356,7 +361,7 @@ class MovTest extends \PHPUnit\Framework\TestCase
         $this->assertTrue($move->executeOperand89());
     }
 
-    public function testMov89OnNonSibValue()
+    public function testMov89OnNonSibValue(): void
     {
         $simulator = $this->getMockSimulator(Simulator::LONG_MODE);
 
@@ -380,7 +385,7 @@ class MovTest extends \PHPUnit\Framework\TestCase
         $this->assertTrue($move->executeOperand89());
     }
 
-    public function testMov89OnRexRegisterValue()
+    public function testMov89OnRexRegisterValue(): void
     {
         $simulator = $this->getMockSimulator(Simulator::LONG_MODE);
 
@@ -409,7 +414,7 @@ class MovTest extends \PHPUnit\Framework\TestCase
         $this->assertTrue($move->executeOperand89());
     }
 
-    public function testMov8aOnRegisterValue()
+    public function testMov8aOnRegisterValue(): void
     {
         $simulator = $this->getMockSimulator(Simulator::LONG_MODE);
 
@@ -438,7 +443,7 @@ class MovTest extends \PHPUnit\Framework\TestCase
         $this->assertTrue($move->executeOperand8a());
     }
 
-    public function testMov8aOnRexRegisterValue()
+    public function testMov8aOnRexRegisterValue(): void
     {
         $simulator = $this->getMockSimulator(Simulator::LONG_MODE);
 
@@ -467,7 +472,7 @@ class MovTest extends \PHPUnit\Framework\TestCase
         $this->assertTrue($move->executeOperand8a());
     }
 
-    public function testMov8bOnRegisterValue()
+    public function testMov8bOnRegisterValue(): void
     {
         $simulator = $this->getMockSimulator(Simulator::LONG_MODE);
 
@@ -496,7 +501,7 @@ class MovTest extends \PHPUnit\Framework\TestCase
         $this->assertTrue($move->executeOperand8b());
     }
 
-    public function testMov8bOnRexRegisterValue()
+    public function testMov8bOnRexRegisterValue(): void
     {
         $simulator = $this->getMockSimulator(Simulator::LONG_MODE);
 
@@ -526,7 +531,7 @@ class MovTest extends \PHPUnit\Framework\TestCase
     }
 
 
-    public function testMovC6OnAddress()
+    public function testMovC6OnAddress(): void
     {
         // 0xC6 0x05 0x84 0x57 0x32 0x00 0x04
         // mov [rip+0x325784] 0x04
@@ -573,7 +578,7 @@ class MovTest extends \PHPUnit\Framework\TestCase
         $this->assertEquals(7, $iPointer);
     }
 
-    public function testMovC6OnRegister()
+    public function testMovC6OnRegister(): void
     {
         // 0xC6 0xC0 0x04
         // mov al 0x40
@@ -622,7 +627,7 @@ class MovTest extends \PHPUnit\Framework\TestCase
         $this->assertEquals(3, $iPointer);
     }
 
-    public function testMovC7OnAddress()
+    public function testMovC7OnAddress(): void
     {
         // 0xC7 0x05 0x84 0x57 0x32 0x00 0x01 0x02 0x03 0x04
         // mov [rip+0x325784] 0x4030201
@@ -669,7 +674,7 @@ class MovTest extends \PHPUnit\Framework\TestCase
         $this->assertEquals(10, $iPointer);
     }
 
-    public function testMovC7OnRegister()
+    public function testMovC7OnRegister(): void
     {
         // 0xC7 0xC0 0x01 0x02 0x03 0x04
         // mov eax 0x4030201
@@ -715,7 +720,7 @@ class MovTest extends \PHPUnit\Framework\TestCase
         $this->assertEquals(6, $iPointer);
     }
 
-    public function testMovC7WithOp66InProtectedMode()
+    public function testMovC7WithOp66InProtectedMode(): void
     {
         // mov [esi+0x25], 0x0
         // 0x66 0xc7 0x46 0x25 0x00 0x00

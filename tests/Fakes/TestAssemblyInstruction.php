@@ -6,6 +6,9 @@ use shanept\AssemblySimulator\Instruction\AssemblyInstruction;
 
 class TestAssemblyInstruction extends AssemblyInstruction
 {
+    /**
+     * @return callable[]
+     */
     public function register(): array
     {
         return [];

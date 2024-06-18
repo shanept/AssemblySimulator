@@ -11,7 +11,7 @@ class SimulatorFactoryTest extends \PHPUnit\Framework\TestCase
     /**
      * @covers shanept\AssemblySimulator\SimulatorFactory
      */
-    public function testFactoryDefaultInstructionsIncludeAllClasses()
+    public function testFactoryDefaultInstructionsIncludeAllClasses(): void
     {
         // Get the list of all classes from the filesystem.
         $instructionDir = realpath(__DIR__ . '/../../src/Instruction');
@@ -44,7 +44,7 @@ class SimulatorFactoryTest extends \PHPUnit\Framework\TestCase
     /**
      * @covers shanept\AssemblySimulator\SimulatorFactory
      */
-    public function testFactoryReturnsSimulatorInstance()
+    public function testFactoryReturnsSimulatorInstance(): void
     {
         $simulator = SimulatorFactory::createSimulator();
 
@@ -54,7 +54,7 @@ class SimulatorFactoryTest extends \PHPUnit\Framework\TestCase
     /**
      * @covers shanept\AssemblySimulator\SimulatorFactory
      */
-    public function testFactoryRegistersCustomInstructionWithSimulator()
+    public function testFactoryRegistersCustomInstructionWithSimulator(): void
     {
         $simulator = SimulatorFactory::createSimulator(Simulator::LONG_MODE, [
             TestAssemblyInstruction::class,

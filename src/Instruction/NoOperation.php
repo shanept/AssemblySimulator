@@ -19,6 +19,9 @@ namespace shanept\AssemblySimulator\Instruction;
  */
 class NoOperation extends AssemblyInstruction
 {
+    /**
+     * {@inheritDoc}
+     */
     public function register(): array
     {
         return [
@@ -27,6 +30,9 @@ class NoOperation extends AssemblyInstruction
         ];
     }
 
+    /**
+     * Performs a No Operation (NOOP).
+     */
     public function executeOperand90(): bool
     {
         $sim = $this->getSimulator();
@@ -35,6 +41,9 @@ class NoOperation extends AssemblyInstruction
         return true;
     }
 
+    /**
+     * Performs a No Operation (NOOP).
+     */
     public function executeOperand0F1F(): bool
     {
         $sim = $this->getSimulator();

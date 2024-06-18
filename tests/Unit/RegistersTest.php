@@ -7,7 +7,7 @@ use shanept\AssemblySimulator\Simulator;
 
 class RegistersTest extends \PHPUnit\Framework\TestCase
 {
-    public function testEnsureSimulatorSetsUp8RegistersInRealMode()
+    public function testEnsureSimulatorSetsUp8RegistersInRealMode(): void
     {
         $simulator = new Simulator(Simulator::REAL_MODE);
 
@@ -16,7 +16,7 @@ class RegistersTest extends \PHPUnit\Framework\TestCase
         $this->assertEquals(8, count($registers));
     }
 
-    public function testEnsureSimulatorSetsUp8RegistersInProtectedMode()
+    public function testEnsureSimulatorSetsUp8RegistersInProtectedMode(): void
     {
         $simulator = new Simulator(Simulator::PROTECTED_MODE);
 
@@ -25,7 +25,7 @@ class RegistersTest extends \PHPUnit\Framework\TestCase
         $this->assertEquals(8, count($registers));
     }
 
-    public function testEnsureSimulatorSetsUp16RegistersInLongMode()
+    public function testEnsureSimulatorSetsUp16RegistersInLongMode(): void
     {
         $simulator = new Simulator(Simulator::LONG_MODE);
 
@@ -34,7 +34,10 @@ class RegistersTest extends \PHPUnit\Framework\TestCase
         $this->assertEquals(16, count($registers));
     }
 
-    public static function writeRegisterDataProvider()
+    /**
+     * @return array<int, array{RegisterObj, int}>
+     */
+    public static function writeRegisterDataProvider(): array
     {
         return [
             [Register::AX, 135],
@@ -54,8 +57,10 @@ class RegistersTest extends \PHPUnit\Framework\TestCase
 
     /**
      * @dataProvider writeRegisterDataProvider
+     *
+     * @param RegisterObj $register
      */
-    public function testWriteRegister($register, $value)
+    public function testWriteRegister(array $register, int $value): void
     {
         $simulator = new Simulator(Simulator::REAL_MODE);
 
@@ -66,7 +71,7 @@ class RegistersTest extends \PHPUnit\Framework\TestCase
     /**
      * @depends testWriteRegister
      */
-    public function testGetIndexedRegisters()
+    public function testGetIndexedRegisters(): void
     {
         $simulator = new Simulator(Simulator::LONG_MODE);
 
@@ -91,57 +96,42 @@ class RegistersTest extends \PHPUnit\Framework\TestCase
         $this->assertEqualsCanonicalizing($expected, $actual);
     }
 
-    public static function settingDifferentWidthRegistersDataProvider()
+    /**
+     * @return array<int, array{int, RegisterObj, int, RegisterObj, int, int}>
+     */
+    public static function settingDifferentWidthRegistersDataProvider(): array
     {
         return [
-            [   // Set AX then zero AL in Real mode.
-                Simulator::REAL_MODE,
-                Register::AX,
-                65535,
-                Register::AL,
-                0,
-                65280,
-            ],
-            [   // Set EAX then zero AX in Protected mode.
-                Simulator::PROTECTED_MODE,
-                Register::EAX,
-                4294967295,
-                Register::AX,
-                0,
-                4294901760,
-            ],
-            [   // Set RAX then zero AX in Long mode.
-                Simulator::LONG_MODE,
-                Register::RAX,
-                PHP_INT_MAX,
-                Register::AX,
-                0,
-                PHP_INT_MAX - 65535,
-            ],
-            [   // Set RAX then EAX in Long mode. We should be left with the EAX
-                // set value.
-                Simulator::LONG_MODE,
-                Register::RAX,
-                PHP_INT_MAX,
-                Register::EAX,
-                4294967295,
-                4294967295,
-            ],
+            // Set AX then zero AL in Real mode.
+            [Simulator::REAL_MODE, Register::AX, 65535, Register::AL, 0, 65280],
+
+            // Set EAX then zero AX in Protected mode.
+            [Simulator::PROTECTED_MODE, Register::EAX, 4294967295, Register::AX, 0, 4294901760],
+
+            // Set RAX then zero AX in Long mode.
+            [Simulator::LONG_MODE, Register::RAX, PHP_INT_MAX, Register::AX, 0, PHP_INT_MAX - 65535],
+
+            // Set RAX then EAX in Long mode. We should be left with the EAX
+            // set value.
+            [Simulator::LONG_MODE, Register::RAX, PHP_INT_MAX, Register::EAX, 4294967295, 4294967295],
         ];
     }
 
     /**
      * @depends testWriteRegister
      * @dataProvider settingDifferentWidthRegistersDataProvider
+     *
+     * @param RegisterObj $largerRegister
+     * @param RegisterObj $smallerRegister
      */
     public function testSettingDifferentWidthRegisters(
-        $simulatorMode,
-        $largerRegister,
-        $largerRegisterValue,
-        $smallerRegister,
-        $smallerRegisterValue,
-        $expectedValue,
-    ) {
+        int $simulatorMode,
+        array $largerRegister,
+        int $largerRegisterValue,
+        array $smallerRegister,
+        int $smallerRegisterValue,
+        int $expectedValue,
+    ): void {
         $simulator = new Simulator($simulatorMode);
 
         $simulator->writeRegister($largerRegister, $largerRegisterValue);
@@ -154,7 +144,7 @@ class RegistersTest extends \PHPUnit\Framework\TestCase
     /**
      * @depends testWriteRegister
      */
-    public function testSettingEaxThrowsExceptionInRealMode()
+    public function testSettingEaxThrowsExceptionInRealMode(): void
     {
         $simulator = new Simulator(Simulator::REAL_MODE);
 
@@ -165,7 +155,7 @@ class RegistersTest extends \PHPUnit\Framework\TestCase
     /**
      * @depends testWriteRegister
      */
-    public function testSettingRaxThrowsExceptionInProtectedMode()
+    public function testSettingRaxThrowsExceptionInProtectedMode(): void
     {
         $simulator = new Simulator(Simulator::PROTECTED_MODE);
 
@@ -173,7 +163,7 @@ class RegistersTest extends \PHPUnit\Framework\TestCase
         $simulator->writeRegister(Register::RAX, 0);
     }
 
-    public function testRegisterGetCodeReturnsUniformByteRegisterIfOperandNotExtended()
+    public function testRegisterGetCodeReturnsUniformByteRegisterIfOperandNotExtended(): void
     {
         // REX is set but not for this byte
         $register = Register::getByCode(
@@ -186,7 +176,7 @@ class RegistersTest extends \PHPUnit\Framework\TestCase
         $this->assertEquals('%spl', $register['name']);
     }
 
-    public function testRegisterGetCodeReturnsExtendedRegisterIfOperandExtended()
+    public function testRegisterGetCodeReturnsExtendedRegisterIfOperandExtended(): void
     {
         // REX is set but not for this byte
         $register = Register::getByCode(

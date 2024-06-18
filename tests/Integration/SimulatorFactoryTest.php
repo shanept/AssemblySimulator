@@ -9,7 +9,7 @@ class SimulatorFactoryTest extends \PHPUnit\Framework\TestCase
     /**
      * @covers shanept\AssemblySimulator\SimulatorFactory
      */
-    public function testFactoryRegistersInstructionsWithSimulator()
+    public function testFactoryRegistersInstructionsWithSimulator(): void
     {
         $simulator = SimulatorFactory::createSimulator();
 

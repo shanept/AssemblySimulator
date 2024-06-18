@@ -20,26 +20,29 @@ class SibAddress implements AddressInterface
      *
      * @var int[]
      */
-    private $sib;
+    private array $sib;
 
     /**
      * The displacement of the address from the SIB formula.
      *
      * @var int
      */
-    private $displacement;
+    private int $displacement;
 
     /**
      * The size of the SIB byte address in bytes.
      *
      * @var int
      */
-    private $sibSize;
+    private int $sibSize;
 
     /**
      * @param int[]  $sib     The parsed SIB byte.
      * @param int    $disp    The displacement of the address.
      * @param int    $sibSize How many bytes the SIB address consumes.
+     *
+     * @throws \UnexpectedValueException If SIB scale is not 1, 2, 4 or 8.
+     * @throws \UnexpectedValueException If sibSize is not 1, 2 or 5.
      */
     public function __construct(array $sib, int $disp, int $sibSize)
     {
@@ -67,6 +70,9 @@ class SibAddress implements AddressInterface
         $this->sibSize = $sibSize;
     }
 
+    /**
+     * {@inheritDoc}
+     */
     public function getAddress(int $offset = 0): int
     {
         $scale = $this->sib['s'];
@@ -93,6 +99,9 @@ class SibAddress implements AddressInterface
         return $calculatedSib + $offset;
     }
 
+    /**
+     * {@inheritDoc}
+     */
     public function getDisplacement(): int
     {
         return $this->sibSize;

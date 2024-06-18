@@ -10,7 +10,10 @@ class PushTest extends \PHPUnit\Framework\TestCase
 {
     use MockSimulatorTrait;
 
-    public static function pushOnStack5xDataProvider()
+    /**
+     * @return array<int, array{int, string, int, int, RegisterObj, int, RegisterObj, int, string}>
+     */
+    public static function pushOnStack5xDataProvider(): array
     {
         return [
             [Simulator::LONG_MODE, "\x50", 0x49, 0x00, Register::RSP, 32, Register::R8, 43256146, "\x52\x09\x94\x02\x00\x00\x00\x00"],
@@ -47,18 +50,21 @@ class PushTest extends \PHPUnit\Framework\TestCase
 
     /**
      * @dataProvider pushOnStack5xDataProvider
+     *
+     * @param RegisterObj $stackPointer
+     * @param RegisterObj $expectedRegister
      */
     public function testPushOnStack5x(
-        $simulatorMode,
-        $opcode,
-        $rexValue,
-        $prefixValue,
-        $stackPointer,
-        $stackPosition,
-        $expectedRegister,
-        $regValue,
-        $stackValue,
-    ) {
+        int $simulatorMode,
+        string $opcode,
+        int $rexValue,
+        int $prefixValue,
+        array $stackPointer,
+        int $stackPosition,
+        array $expectedRegister,
+        int $regValue,
+        string $stackValue,
+    ): void {
         $simulator = $this->getMockSimulator($simulatorMode);
 
         $simulator->method('getRex')
@@ -101,7 +107,10 @@ class PushTest extends \PHPUnit\Framework\TestCase
         $instruction->executeOperand5x();
     }
 
-    public static function pushOnStack68DataProvider()
+    /**
+     * @return array<int, array{int, int, int, RegisterObj, int, string}>
+     */
+    public static function pushOnStack68DataProvider(): array
     {
         return [
             [Simulator::LONG_MODE, 0x48, 0, Register::RSP, 33, "\x34\x00\x42\x00\x59\x00\x12\x00"],
@@ -112,15 +121,17 @@ class PushTest extends \PHPUnit\Framework\TestCase
 
     /**
      * @dataProvider pushOnStack68DataProvider
+     *
+     * @param RegisterObj $stackPointer
      */
     public function testPushOnStack68(
-        $simulatorMode,
-        $rexValue,
-        $prefixValue,
-        $stackPointer,
-        $stackPosition,
-        $immediate,
-    ) {
+        int $simulatorMode,
+        int $rexValue,
+        int $prefixValue,
+        array $stackPointer,
+        int $stackPosition,
+        string $immediate,
+    ): void {
         $simulator = $this->getMockSimulator($simulatorMode);
 
         $simulator->method('getRex')
@@ -148,7 +159,10 @@ class PushTest extends \PHPUnit\Framework\TestCase
         $instruction->executeOperand68();
     }
 
-    public static function pushOnStack6aDataProvider()
+    /**
+     * @return array<int, array{int, int, int, RegisterObj, int, string}>
+     */
+    public static function pushOnStack6aDataProvider(): array
     {
         return [
             [Simulator::LONG_MODE, 0, 0, Register::RSP, 3, "\x43"],
@@ -159,15 +173,17 @@ class PushTest extends \PHPUnit\Framework\TestCase
 
     /**
      * @dataProvider pushOnStack6aDataProvider
+     *
+     * @param RegisterObj $stackPointer
      */
     public function testPushOnStack6a(
-        $simulatorMode,
-        $rexValue,
-        $prefixValue,
-        $stackPointer,
-        $stackPosition,
-        $immediate,
-    ) {
+        int $simulatorMode,
+        int $rexValue,
+        int $prefixValue,
+        array $stackPointer,
+        int $stackPosition,
+        string $immediate,
+    ): void {
         $simulator = $this->getMockSimulator($simulatorMode);
 
         $simulator->method('getRex')

@@ -35,7 +35,7 @@ abstract class AssemblyInstruction
         64 => "Pimm",
     ];
 
-    private $simulator;
+    private Simulator $simulator;
 
     /**
      * Returns an array of opcode - callback mappings to be registered with the
@@ -45,7 +45,15 @@ abstract class AssemblyInstruction
      */
     abstract public function register(): array;
 
-    public function setSimulator(Simulator $simulator)
+    /**
+     * Sets the Simulator instance on which this instruction will operate. Also
+     * registers this instruction with the simulator.
+     *
+     * @internal
+     *
+     * @param Simulator $simulator The simulator instance.
+     */
+    public function setSimulator(Simulator $simulator): void
     {
         $this->simulator = $simulator;
         $simulator->registerInstructions($this, $this->register());
@@ -138,7 +146,7 @@ abstract class AssemblyInstruction
      * @see https://wiki.osdev.org/X86-64_Instruction_Encoding#SIB
      *
      * @param string $byte  The byte to parse.
-     * @param array  $modrm The ModRM byte (optional).
+     * @param int[]  $modrm The ModRM byte.
      *
      * @return int[] The SIB byte values.
      */
@@ -243,7 +251,7 @@ abstract class AssemblyInstruction
     /**
      * Translates the address for RIP or SIB based addressing modes.
      *
-     * @param array $byte The parsed ModRM byte.
+     * @param int[] $byte The parsed ModRM byte.
      *
      * @return AddressInterface An addressing mode resolver.
      */
@@ -271,7 +279,7 @@ abstract class AssemblyInstruction
      *
      * @internal
      *
-     * @param array $byte The ModRM byte.
+     * @param int[] $byte The ModRM byte.
      */
     private function parseSibAddress(array $byte): SibAddress
     {
@@ -305,7 +313,7 @@ abstract class AssemblyInstruction
      *
      * @internal
      *
-     * @param array $byte The ModRM byte.
+     * @param int[] $byte The ModRM byte.
      */
     private function parseRipAddress(array $byte): RipAddress
     {
@@ -318,6 +326,13 @@ abstract class AssemblyInstruction
         return new RipAddress($instructionPointer, $address);
     }
 
+    /**
+     * Parses the ModRM address at the current position.
+     *
+     * @internal
+     *
+     * @param int[] $byte The ModRM byte.
+     */
     private function parseMemoryOffset(array $byte): ModRmAddress
     {
         $rex = $this->simulator->getRex();
@@ -353,16 +368,17 @@ abstract class AssemblyInstruction
 
     /**
      * Returns the correct stack pointer for the Simulator mode.
+     *
+     * @return RegisterObj The Register for the stack.
      */
-    protected function getStackPointerRegister()
+    protected function getStackPointerRegister(): array
     {
-        $pointers = [
-            null,
+        static $pointers = [
             Register::SP,
             Register::ESP,
             Register::RSP,
         ];
 
-        return $pointers[$this->simulator->getMode()];
+        return $pointers[$this->simulator->getMode() - 1];
     }
 }

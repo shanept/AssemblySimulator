@@ -7,7 +7,7 @@ use shanept\AssemblySimulator\Address\AddressInterface;
 
 class SibAddressTest extends \PHPUnit\Framework\TestCase
 {
-    public function testImplements()
+    public function testImplements(): void
     {
         $sibByte = ['s' => 1,'i' => 0,'b' => 0];
 
@@ -16,7 +16,10 @@ class SibAddressTest extends \PHPUnit\Framework\TestCase
         $this->assertInstanceOf(AddressInterface::class, $sib);
     }
 
-    public static function sibAddressResolvesCorrectly()
+    /**
+     * @return array<int, array{int, int, int, int, int, int}>
+     */
+    public static function sibAddressResolvesCorrectly(): array
     {
         return [
             // positive numbers
@@ -77,14 +80,14 @@ class SibAddressTest extends \PHPUnit\Framework\TestCase
      * @dataProvider sibAddressResolvesCorrectly
      */
     public function testSibAddressResolvesCorrectly(
-        $scale,
-        $index,
-        $base,
-        $displacement,
-        $dispSize,
-        $offset,
-        $expected,
-    ) {
+        int $scale,
+        int $index,
+        int $base,
+        int $displacement,
+        int $dispSize,
+        int $offset,
+        int $expected,
+    ): void {
         $sib = [
             's' => $scale,
             'i' => $index,
@@ -96,7 +99,7 @@ class SibAddressTest extends \PHPUnit\Framework\TestCase
         $this->assertEquals($expected, $sib->getAddress($offset));
     }
 
-    public function testDisplacementReturnsIntFromConstruct()
+    public function testDisplacementReturnsIntFromConstruct(): void
     {
         $sibByte = ['s' => 1,'i' => 0,'b' => 0];
 
@@ -109,7 +112,10 @@ class SibAddressTest extends \PHPUnit\Framework\TestCase
         $this->assertEquals(5, $sib32->getDisplacement());
     }
 
-    public static function invalidDisplacementThrowsExceptionDataProvider()
+    /**
+     * @return array<int, array{int}>
+     */
+    public static function invalidDisplacementThrowsExceptionDataProvider(): array
     {
         return [[-5], [-4], [-3], [-2], [-1], [0], [3], [4], [6], [7], [8], [9], [10]];
     }
@@ -117,7 +123,7 @@ class SibAddressTest extends \PHPUnit\Framework\TestCase
     /**
      * @dataProvider invalidDisplacementThrowsExceptionDataProvider
      */
-    public function testInvalidDisplacementThrowsException($displacementSize)
+    public function testInvalidDisplacementThrowsException(int $displacementSize): void
     {
         $sibByte = ['s' => 1,'i' => 0,'b' => 0];
 
@@ -125,7 +131,10 @@ class SibAddressTest extends \PHPUnit\Framework\TestCase
         $sib0 = new SibAddress($sibByte, 0, $displacementSize);
     }
 
-    public static function invalidScaleThrowsExceptionDataProvider()
+    /**
+     * @return array<int, array{int}>
+     */
+    public static function invalidScaleThrowsExceptionDataProvider(): array
     {
         return [[-5], [-4], [-3], [-2], [-1], [0], [3], [5], [6], [7], [9], [10]];
     }
@@ -133,7 +142,7 @@ class SibAddressTest extends \PHPUnit\Framework\TestCase
     /**
      * @dataProvider invalidScaleThrowsExceptionDataProvider
      */
-    public function testInvalidScaleThrowsException($scale)
+    public function testInvalidScaleThrowsException(int $scale): void
     {
         $sibByte = ['s' => $scale,'i' => 0,'b' => 0];
 

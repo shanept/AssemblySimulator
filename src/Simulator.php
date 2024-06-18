@@ -34,35 +34,35 @@ class Simulator
      *
      * @var int[]
      */
-    private $registers = [];
+    private array $registers = [];
 
     /**
      * A binary string representing the stack.
      *
      * @var string
      */
-    private $stack = '';
+    private string $stack = '';
 
     /**
      * Contains the address for the start of our stack.
      *
      * @var int
      */
-    private $stackAddress;
+    private int $stackAddress = 0;
 
     /**
      * Specifies the maximum permissible size of the stack, in bytes.
      *
      * @var int
      */
-    private $stackSize;
+    private int $stackSize = 0;
 
     /**
      * 32-bit register to store extended flags.
      *
      * @var int
      */
-    private $eFlags = 0;
+    private int $eFlags = 0;
 
     /**
      * This is our instruction pointer.
@@ -70,14 +70,14 @@ class Simulator
      *
      * @var int
      */
-    private $iPointer = 0;
+    private int $iPointer = 0;
 
     /**
      * Stores the *real* offset for the address loaded by the LEA operand.
      *
      * @var int
      */
-    private $addressBase = 0;
+    private int $addressBase = 0;
 
     /**
      * Defines the modes that we may operate within.
@@ -102,7 +102,7 @@ class Simulator
      *
      * @var int
      */
-    private $mode;
+    private int $mode;
 
     /**
     * Defines the REX instruction offset. Set in long mode if an instruction is
@@ -145,28 +145,28 @@ class Simulator
      *
      * @var int
      */
-    private $rex = 0;
+    private int $rex = 0;
 
     /**
      * Contains any array of prefixes for the current instruction.
      *
      * @var int[]
      */
-    private $prefixes = [];
+    private array $prefixes = [];
 
     /**
      * Stores the currently simulated assembly code.
      *
      * @var string
      */
-    private $buffer = "";
+    private string $buffer = "";
 
     /**
      * Stores whether or not the state has changed since last reset.
      *
      * @var bool
      */
-    private $tainted = false;
+    private bool $tainted = false;
 
     /**
      * Stores a list of opcode - callback mappings, thus the consumer may supply
@@ -175,12 +175,12 @@ class Simulator
      *
      * @var callable[]
      */
-    private $registeredInstructions = [];
+    private array $registeredInstructions = [];
 
     /**
      * @param ?int $mode The machine mode to operate in.
      */
-    public function __construct($mode = null)
+    public function __construct(?int $mode = null)
     {
         $this->mode = $mode ?? self::REAL_MODE;
 
@@ -211,17 +211,15 @@ class Simulator
     public function registerInstructions(
         AssemblyInstruction $reference,
         array $mappings,
-    ) {
+    ): void {
         $record = compact('reference', 'mappings');
         array_unshift($this->registeredInstructions, $record);
     }
 
     /**
      * Clears our registers and lets us run again.
-     *
-     * @return void
      */
-    public function reset()
+    public function reset(): void
     {
         $this->tainted = false;
 
@@ -243,20 +241,16 @@ class Simulator
 
     /**
      * Returns the mode under which we are operating.
-     *
-     * @return int
      */
-    public function getMode()
+    public function getMode(): int
     {
         return $this->mode;
     }
 
     /**
      * Returns a user-readable name for the mode under which we are operating.
-     *
-     * @return string
      */
-    public function getModeName()
+    public function getModeName(): string
     {
         return self::MODE_NAMES[$this->mode];
     }
@@ -265,10 +259,8 @@ class Simulator
      * Sets the operating mode. ALWAYS reset the machine after doing this!
      *
      * @param int $mode The machine mode to operate in.
-     *
-     * @return void
      */
-    public function setMode(int $mode)
+    public function setMode(int $mode): void
     {
         $this->tainted = true;
 
@@ -279,10 +271,8 @@ class Simulator
      * Sets the address of the stack. ALWAYS reset the machine after doing this!
      *
      * @param int $address The starting address of the stack.
-     *
-     * @return void
      */
-    public function setStackAddress(int $address)
+    public function setStackAddress(int $address): void
     {
         $this->tainted = true;
 
@@ -293,10 +283,8 @@ class Simulator
      * Sets the maximum size of the stack. ALWAYS reset the machine after doing this!
      *
      * @param int $size The maximum size for the stack.
-     *
-     * @return void
      */
-    public function setStackSize(int $size)
+    public function setStackSize(int $size): void
     {
         $this->tainted = true;
 
@@ -327,10 +315,8 @@ class Simulator
      *
      * @param int $flag  The flag to be set.
      * @param int $value The value to set the flag to.
-     *
-     * @return void
      */
-    public function setFlag(int $flag, int $value)
+    public function setFlag(int $flag, int $value): void
     {
         $factor = $flag & -$flag;
 
@@ -381,10 +367,8 @@ class Simulator
     * Sets the base memory address.
      *
      * @param int $base The address base.
-     *
-     * @return void
      */
-    public function setAddressBase(int $base)
+    public function setAddressBase(int $base): void
     {
         $this->addressBase = $base;
     }
@@ -436,8 +420,8 @@ class Simulator
     /**
      * Returns the value for the specified register.
      *
-     * @param array $register The register reference
-     * @param ?int  $size     The parameter width, if required
+     * @param RegisterObj $register The register reference
+     * @param ?int        $size     The parameter width, if required
      *
      * @return int
      */
@@ -471,16 +455,14 @@ class Simulator
     /**
      * Writes a value to the specified register.
      *
-     * @param array $register The register we are going to write to.
-     * @param int   $value    The value to write to be written.
+     * @param RegisterObj $register The register we are going to write to.
+     * @param int         $value    The value to write to be written.
      *
      * @throws \LogicException if we are attempting to write to a register too
      *                         large for our simulation mode. (i.e. writing to
      *                         64-bit register in 16-bit REAL mode).
-     *
-     * @return void
      */
-    public function writeRegister(array $register, int $value)
+    public function writeRegister(array $register, int $value): void
     {
         $this->taintProtection();
 
@@ -531,8 +513,6 @@ class Simulator
 
     /**
      * Returns a copy of the internal representation of the stack.
-     *
-     * @return string
      */
     public function getStack(): string
     {
@@ -584,10 +564,8 @@ class Simulator
      *
      * @param int    $offset The stack offset at which to write the value.
      * @param string $value  The value to write to the stack, as a binary string.
-     *
-     * @return void
      */
-    public function writeStackAt(int $offset, string $value)
+    public function writeStackAt(int $offset, string $value): void
     {
         if ($offset > $this->stackAddress) {
             $message = sprintf(
@@ -637,10 +615,8 @@ class Simulator
      *
      * @param int $offset The offset to clear.
      * @param int $bytes  The amount of bytes to clear (between offset and stackAddress).
-     *
-     * @return void
      */
-    public function clearStackAt(int $offset, int $bytes)
+    public function clearStackAt(int $offset, int $bytes): void
     {
         if ($offset > $this->stackAddress) {
             $message = sprintf(
@@ -721,10 +697,8 @@ class Simulator
      * this function during a simulation would result in undefined behaviour.
      *
      * @param string $buffer The code buffer to be simulated.
-     *
-     * @return void
      */
-    public function setCodeBuffer(string $buffer)
+    public function setCodeBuffer(string $buffer): void
     {
         $this->buffer = $buffer;
     }
@@ -749,10 +723,8 @@ class Simulator
      * Sets the absolute value of the instruction pointer.
      *
      * @param int $instructionPointer The new value of the instruction pointer.
-     *
-     * @return void
      */
-    public function setInstructionPointer(int $instructionPointer)
+    public function setInstructionPointer(int $instructionPointer): void
     {
         $this->iPointer = $instructionPointer;
     }
@@ -761,10 +733,8 @@ class Simulator
      * Advances the instruction pointer, relative to its current position.
      *
      * @param int $amount The amount of bytes to advance the pointer by.
-     *
-     * @return void
      */
-    public function advanceInstructionPointer(int $amount)
+    public function advanceInstructionPointer(int $amount): void
     {
         $this->iPointer += $amount;
     }
@@ -773,10 +743,8 @@ class Simulator
      * Throws an exception if we are trying to operate a tainted environment.
      *
      * @throws Exception\Tainted
-     *
-     * @return void
      */
-    private function taintProtection()
+    private function taintProtection(): void
     {
         $message = 'Attempted to operate a tainted environment. Did you ' .
             'change modes and forget to reset?';
@@ -816,9 +784,9 @@ class Simulator
      *
      * @param int $opcode The opcode to process.
      *
-     * @return bool Whether or not an instruction processed the opcode.
+     * @return bool Whether or not any instruction processed the opcode.
      */
-    private function processOpcodeWithRegisteredInstruction(int $opcode): bool
+    private function processOpcodeWithRegisteredInstructions(int $opcode): bool
     {
         // Add our two-byte instruction prefix.
         if ($this->hasPrefix(0x0F)) {
@@ -856,11 +824,14 @@ class Simulator
      *
      * @internal
      *
-     * @see processOpcodeWithRegisteredInstruction()
+     * @see processOpcodeWithRegisteredInstructions()
+     *
+     * @param callable $callback The instruction callback that was triggered.
+     * @param mixed    $response The invalid response we received.
      *
      * @throws \LogicException
      */
-    private function triggerInstructionHandlerException($callback, $response)
+    private function triggerInstructionHandlerException(callable $callback, $response): void
     {
         // Default for string functions. Will most likely be overwritten.
         $instructionName = $callback;
@@ -886,12 +857,8 @@ class Simulator
 
     /**
      * Parses a binary string of assembly to move values around in registers.
-     *
-     * @see http://ref.x86asm.net/coder64.html#gen_note_90_NOP
-     *
-     * @return void
      */
-    public function simulate()
+    public function simulate(): void
     {
         $this->taintProtection();
 
@@ -932,7 +899,7 @@ class Simulator
                     continue 2;
 
                 case ($this->hasRegisteredInstruction($op) &&
-                      $this->processOpcodeWithRegisteredInstruction($op)):
+                      $this->processOpcodeWithRegisteredInstructions($op)):
 
                     /**
                      * We have identified that we are passing a registered

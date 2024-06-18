@@ -8,7 +8,7 @@ use shanept\AssemblySimulator\Instruction\ExclusiveOr;
 
 class LongModeTest extends \PHPUnit\Framework\TestCase
 {
-    public function testOp66Uses16bitRegister()
+    public function testOp66Uses16bitRegister(): void
     {
         $simulator = new Simulator(Simulator::LONG_MODE);
         $operation = new ExclusiveOr();

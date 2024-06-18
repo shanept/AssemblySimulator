@@ -6,11 +6,14 @@ use shanept\AssemblySimulator\Instruction\AssemblyInstruction;
 
 class TestVoidInstruction extends AssemblyInstruction
 {
+    /**
+     * @return callable[]
+     */
     public function register(): array
     {
         return [];
     }
 
-    public function returnVoid() {}
-    public static function returnVoidStatic() {}
+    public function returnVoid(): void {}
+    public static function returnVoidStatic(): void {}
 }

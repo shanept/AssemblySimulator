@@ -20,14 +20,14 @@ class RipAddress implements AddressInterface
      *
      * @var int
      */
-    private $rip;
+    private int $rip;
 
     /**
      * Contains the relative address, pointing to the end of the instruction.
      *
      * @var int
      */
-    private $address;
+    private int $address;
 
     /**
      * The instruction displacement. It is always 32-bits (4 bytes) for RIP
@@ -35,7 +35,7 @@ class RipAddress implements AddressInterface
      *
      * @var int
      */
-    private $displacement = 4;
+    private int $displacement = 4;
 
     /**
      * @param int $ripRegister The contents of the instruction pointer register.
@@ -47,6 +47,9 @@ class RipAddress implements AddressInterface
         $this->address = $address;
     }
 
+    /**
+     * {@inheritDoc}
+     */
     public function getAddress(int $offset = 0): int
     {
         // Handle two's compliment addresses.
@@ -62,6 +65,9 @@ class RipAddress implements AddressInterface
         return ($this->rip + $this->displacement) + $address + $offset;
     }
 
+    /**
+     * {@inheritDoc}
+     */
     public function getDisplacement(): int
     {
         return $this->displacement;

@@ -8,7 +8,7 @@ use shanept\AssemblySimulator\Instruction\ExclusiveOr;
 
 class RexTest extends \PHPUnit\Framework\TestCase
 {
-    public function testNonRexOpAfterRexOp()
+    public function testNonRexOpAfterRexOp(): void
     {
         $simulator = new Simulator(Simulator::LONG_MODE);
         $xor = new ExclusiveOr();

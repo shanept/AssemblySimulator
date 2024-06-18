@@ -7,14 +7,17 @@ use shanept\AssemblySimulator\Address\AddressInterface;
 
 class RipAddressTest extends \PHPUnit\Framework\TestCase
 {
-    public function testImplements()
+    public function testImplements(): void
     {
         $rip = new RipAddress(0, 0);
 
         $this->assertInstanceOf(AddressInterface::class, $rip);
     }
 
-    public static function ripAddressResolvesCorrectly()
+    /**
+     * @return array<int, array{int, int, int}>
+     */
+    public static function ripAddressResolvesCorrectly(): array
     {
         return [
             // positive numbers
@@ -31,16 +34,16 @@ class RipAddressTest extends \PHPUnit\Framework\TestCase
      * @dataProvider ripAddressResolvesCorrectly
      */
     public function testRipAddressResolvesCorrectly(
-        $ripPointer,
-        $address,
-        $expected,
-    ) {
+        int $ripPointer,
+        int $address,
+        int $expected,
+    ): void {
         $rip = new RipAddress($ripPointer, $address);
 
         $this->assertEquals($expected, $rip->getAddress());
     }
 
-    public function testRipDisplacementIs32bit()
+    public function testRipDisplacementIs32bit(): void
     {
         $rip = new RipAddress(0, 0);
 

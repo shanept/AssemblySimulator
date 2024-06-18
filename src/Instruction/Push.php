@@ -22,6 +22,9 @@ use shanept\AssemblySimulator\Simulator;
  */
 class Push extends AssemblyInstruction
 {
+    /**
+     * {@inheritDoc}
+     */
     public function register(): array
     {
         return [

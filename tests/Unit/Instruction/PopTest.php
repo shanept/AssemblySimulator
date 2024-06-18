@@ -10,7 +10,10 @@ class PopTest extends \PHPUnit\Framework\TestCase
 {
     use MockSimulatorTrait;
 
-    public static function popOffStackDataProvider()
+    /**
+     * @return array<int, array{int, string, int, int, RegisterObj, RegisterObj, int, string}>
+     */
+    public static function popOffStackDataProvider(): array
     {
         return [
             [Simulator::LONG_MODE, "\x58", 0x49, 0x00, Register::RSP, Register::R8, 23452, "\x9C\x5B\x00\x00\x00\x00\x00\x00"],
@@ -47,17 +50,20 @@ class PopTest extends \PHPUnit\Framework\TestCase
 
     /**
      * @dataProvider popOffStackDataProvider
+     *
+     * @param RegisterObj $stackPointerRegister
+     * @param RegisterObj $destinationRegister
      */
     public function testPopOffStack(
-        $simulatorMode,
-        $opcode,
-        $rexValue,
-        $prefixValue,
-        $stackPointerRegister,
-        $destinationRegister,
-        $expectedInt,
-        $expectedBin,
-    ) {
+        int $simulatorMode,
+        string $opcode,
+        int $rexValue,
+        int $prefixValue,
+        array $stackPointerRegister,
+        array $destinationRegister,
+        int $expectedInt,
+        string $expectedBin,
+    ): void {
         $simulator = $this->getMockSimulator($simulatorMode);
 
         $simulator->method('getRex')

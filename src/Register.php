@@ -707,17 +707,17 @@ class Register
      *
      * @param int  $id      The opcode for this register.
      * @param int  $size    The width of the register to return.
-     * @param bool $rexSet  Is REX set for this operation.
-     * @param bool $rExtend Is this opcode field being extended.
+     * @param bool $rexSet  Is REX set for this operation? Default: false
+     * @param bool $rExtend Is this opcode field being extended? Default: false
      *
-     * @return array
+     * @return RegisterObj An array representing the requested register.
      */
     public static function getByCode(
         int $id,
         int $size,
         bool $rexSet = false,
         bool $rExtend = false,
-    ) {
+    ): array {
         if ($rexSet & $rExtend) {
             return self::REX_ID_MAP[$id][$size];
         }

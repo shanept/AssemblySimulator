@@ -11,7 +11,7 @@ class CallInstructionTest extends \PHPUnit\Framework\TestCase
 {
     use MockSimulatorTrait;
 
-    public function testCallInstructionParsesInput()
+    public function testCallInstructionParsesInput(): void
     {
         $simulator = $this->getMockSimulator(Simulator::PROTECTED_MODE);
 
@@ -54,7 +54,7 @@ class CallInstructionTest extends \PHPUnit\Framework\TestCase
         $this->assertEquals(5, $iPointer);
     }
 
-    public function testCallInstructionThrowsExceptionOnInvalidCallback()
+    public function testCallInstructionThrowsExceptionOnInvalidCallback(): void
     {
         $callback = $this->getMockBuilder(TestAssemblyInstruction::class)
                          ->addMethods(['addressCallback'])
@@ -70,7 +70,7 @@ class CallInstructionTest extends \PHPUnit\Framework\TestCase
         $call = new CallInstruction([null, 'addressCallback']);
     }
 
-    public function testCallInstructionParsesPositiveAddress()
+    public function testCallInstructionParsesPositiveAddress(): void
     {
         $simulator = $this->getMockSimulator(Simulator::PROTECTED_MODE);
 
@@ -119,7 +119,7 @@ class CallInstructionTest extends \PHPUnit\Framework\TestCase
         $this->assertEquals(5, $iPointer);
     }
 
-    public function testCallInstructionParsesNegativeAddress()
+    public function testCallInstructionParsesNegativeAddress(): void
     {
         $simulator = $this->getMockSimulator(Simulator::PROTECTED_MODE);
 

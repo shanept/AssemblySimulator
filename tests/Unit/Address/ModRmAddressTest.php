@@ -7,14 +7,17 @@ use shanept\AssemblySimulator\Address\AddressInterface;
 
 class ModRmAddressTest extends \PHPUnit\Framework\TestCase
 {
-    public function testImplements()
+    public function testImplements(): void
     {
         $modrm = new ModRmAddress(0, 0, 1);
 
         $this->assertInstanceOf(AddressInterface::class, $modrm);
     }
 
-    public static function modRmAddressResolvesCorrectly()
+    /**
+     * @return array<int, array{int, int, int, int}>
+     */
+    public static function modRmAddressResolvesCorrectly(): array
     {
         return [
             // positive numbers
@@ -66,18 +69,18 @@ class ModRmAddressTest extends \PHPUnit\Framework\TestCase
      * @dataProvider modRmAddressResolvesCorrectly
      */
     public function testModRmAddressResolvesCorrectly(
-        $baseAddress,
-        $displacement,
-        $dispSize,
-        $offset,
-        $expected,
-    ) {
+        int $baseAddress,
+        int $displacement,
+        int $dispSize,
+        int $offset,
+        int $expected,
+    ): void {
         $modrm = new ModRmAddress($baseAddress, $displacement, $dispSize);
 
         $this->assertEquals($expected, $modrm->getAddress($offset));
     }
 
-    public function testDisplacementReturnsIntFromConstruct()
+    public function testDisplacementReturnsIntFromConstruct(): void
     {
         $modrm1 = new ModRmAddress(0, 0, 5);
         $modrm2 = new ModRmAddress(0, 0, 3);

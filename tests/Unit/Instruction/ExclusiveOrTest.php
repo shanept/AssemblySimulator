@@ -11,7 +11,10 @@ class ExclusiveOrTest extends \PHPUnit\Framework\TestCase
 {
     use MockSimulatorTrait;
 
-    public static function xorRegisterAgainstItselfIsEmptyDataProvider()
+    /**
+     * @return array<int, array{int, int, int, RegisterObj, int, string}>
+     */
+    public static function xorRegisterAgainstItselfIsEmptyDataProvider(): array
     {
         return [
             // REX.RB xor r9d,r9d
@@ -28,7 +31,7 @@ class ExclusiveOrTest extends \PHPUnit\Framework\TestCase
         ];
     }
 
-    public function testXor30RegisterAgainstItselfIsEmpty()
+    public function testXor30RegisterAgainstItselfIsEmpty(): void
     {
         $simulator = $this->getMockSimulator(Simulator::LONG_MODE);
 
@@ -57,15 +60,17 @@ class ExclusiveOrTest extends \PHPUnit\Framework\TestCase
 
     /**
      * @dataProvider xorRegisterAgainstItselfIsEmptyDataProvider
+     *
+     * @param RegisterObj $register
      */
     public function testXor31RegisterAgainstItselfIsEmpty(
-        $simulatorMode,
-        $rexValue,
-        $prefixValue,
-        $register,
-        $regValue,
-        $instruction,
-    ) {
+        int $simulatorMode,
+        int $rexValue,
+        int $prefixValue,
+        array $register,
+        int $regValue,
+        string $instruction,
+    ): void {
         $simulator = $this->getMockSimulator($simulatorMode);
 
         $simulator->method('getRex')
@@ -93,7 +98,7 @@ class ExclusiveOrTest extends \PHPUnit\Framework\TestCase
         $xor->executeOperand31();
     }
 
-    public function testXor32RegisterAgainstItselfIsEmpty()
+    public function testXor32RegisterAgainstItselfIsEmpty(): void
     {
         $simulator = $this->getMockSimulator(Simulator::LONG_MODE);
 
@@ -122,15 +127,17 @@ class ExclusiveOrTest extends \PHPUnit\Framework\TestCase
 
     /**
      * @dataProvider xorRegisterAgainstItselfIsEmptyDataProvider
+     *
+     * @param RegisterObj $register
      */
     public function testXor33RegisterAgainstItselfIsEmpty(
-        $simulatorMode,
-        $rexValue,
-        $prefixValue,
-        $register,
-        $regValue,
-        $instruction,
-    ) {
+        int $simulatorMode,
+        int $rexValue,
+        int $prefixValue,
+        array $register,
+        int $regValue,
+        string $instruction,
+    ): void {
         $simulator = $this->getMockSimulator($simulatorMode);
 
         $simulator->method('getRex')
@@ -158,7 +165,10 @@ class ExclusiveOrTest extends \PHPUnit\Framework\TestCase
         $xor->executeOperand33();
     }
 
-    public static function twoRegistersDataProvider()
+    /**
+     * @return array<int, array{int, int, int, RegisterObj, int, RegisterObj, int, string}>
+     */
+    public static function twoRegistersDataProvider(): array
     {
         return [
             // REX.RB xor r8d,r9d
@@ -177,17 +187,20 @@ class ExclusiveOrTest extends \PHPUnit\Framework\TestCase
 
     /**
      * @dataProvider twoRegistersDataProvider
+     *
+     * @param RegisterObj $firstRegister
+     * @param RegisterObj $secondRegister
      */
     public function testXor31TwoRegisters(
-        $simulatorMode,
-        $rexValue,
-        $prefixValue,
-        $firstRegister,
-        $firstRegValue,
-        $secondRegister,
-        $secondRegValue,
-        $instruction,
-    ) {
+        int $simulatorMode,
+        int $rexValue,
+        int $prefixValue,
+        array $firstRegister,
+        int $firstRegValue,
+        array $secondRegister,
+        int $secondRegValue,
+        string $instruction,
+    ): void {
         $simulator = $this->getMockSimulator($simulatorMode);
         $simulator = $this->mockSimulatorRegisters($simulator, [
             $firstRegister['offset'] => $firstRegValue,
@@ -216,17 +229,20 @@ class ExclusiveOrTest extends \PHPUnit\Framework\TestCase
 
     /**
      * @dataProvider twoRegistersDataProvider
+     *
+     * @param RegisterObj $firstRegister
+     * @param RegisterObj $secondRegister
      */
     public function testXor33TwoRegisters(
-        $simulatorMode,
-        $rexValue,
-        $prefixValue,
-        $firstRegister,
-        $firstRegValue,
-        $secondRegister,
-        $secondRegValue,
-        $instruction,
-    ) {
+        int $simulatorMode,
+        int $rexValue,
+        int $prefixValue,
+        array $firstRegister,
+        int $firstRegValue,
+        array $secondRegister,
+        int $secondRegValue,
+        string $instruction,
+    ): void {
         $simulator = $this->getMockSimulator($simulatorMode);
         $simulator = $this->mockSimulatorRegisters($simulator, [
             $firstRegister['offset'] => $firstRegValue,
@@ -253,7 +269,7 @@ class ExclusiveOrTest extends \PHPUnit\Framework\TestCase
         $this->assertEquals($expected, $simulator->readRegister($secondRegister));
     }
 
-    public function testXorClearsFlagsAfterExecution()
+    public function testXorClearsFlagsAfterExecution(): void
     {
         $simulator = $this->getMockSimulator(Simulator::LONG_MODE);
 
@@ -322,7 +338,7 @@ class ExclusiveOrTest extends \PHPUnit\Framework\TestCase
         $xor->executeOperand31();
     }
 
-    public function testXorWithIncorrectModByteFails()
+    public function testXorWithIncorrectModByteFails(): void
     {
         $simulator = $this->getMockSimulator(Simulator::LONG_MODE);
         $simulator = $this->mockSimulatorRegisters($simulator, [
