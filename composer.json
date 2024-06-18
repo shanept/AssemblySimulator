@@ -3,9 +3,11 @@
     "description": "Allows stepping through compiled assembly code. Provides access to registers and the stack for easy querying of values.",
     "type": "library",
     "version" : "0.1.0",
-    "require": {},
+    "require": {
+        "php": ">=7.4"
+    },
     "require-dev": {
-        "phpunit/phpunit": "^10",
+        "phpunit/phpunit": "9.3 - 10",
         "friendsofphp/php-cs-fixer": "^3.5"
     },
     "license": "MIT",

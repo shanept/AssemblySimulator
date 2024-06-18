@@ -6,7 +6,7 @@
 	failOnWarning="true"
 	failOnRisky="true"
 	xsi:noNamespaceSchemaLocation="https://schema.phpunit.de/10.5/phpunit.xsd">
-    <source>
+	<source>
 		<include>
 			<directory suffix=".php">src/</directory>
 		</include>
