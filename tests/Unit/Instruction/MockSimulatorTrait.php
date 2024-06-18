@@ -10,7 +10,7 @@ use shanept\AssemblySimulator\Simulator;
 trait MockSimulatorTrait
 {
     /**
-     * @return mixed
+     * @return MockSimulator
      */
     public function getMockSimulator(int $mode = Simulator::REAL_MODE)
     {
@@ -26,10 +26,10 @@ trait MockSimulatorTrait
     }
 
     /**
-     * @param mixed $simulator
+     * @param MockSimulator $simulator
      * @param array<int, int> $initialRegisters
      *
-     * @return mixed
+     * @return MockSimulator
      */
     public function mockSimulatorRegisters($simulator, array $initialRegisters = [])
     {

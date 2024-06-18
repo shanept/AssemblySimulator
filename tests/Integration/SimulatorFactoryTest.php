@@ -17,6 +17,11 @@ class SimulatorFactoryTest extends \PHPUnit\Framework\TestCase
         // Convert to a list of class names, for comparison with our defaults.
         $reflectionInstructions = new \ReflectionProperty($simulator, 'registeredInstructions');
         $registered = $reflectionInstructions->getValue($simulator);
+
+        if (! is_array($registered)) {
+            $this->fail('Simulator::$registeredInstructions returned non-array.');
+        }
+
         $registered = array_column($registered, 'reference');
         $registered = array_map('get_class', $registered);
 

@@ -6,6 +6,7 @@ use ReflectionMethod;
 use shanept\AssemblySimulator\Register;
 use shanept\AssemblySimulator\Simulator;
 use shanept\AssemblySimulator\Address\RipAddress;
+use shanept\AssemblySimulator\Address\SibAddress;
 use shanept\AssemblySimulator\Address\ModRmAddress;
 use shanept\AssemblySimulatorTests\Fakes\TestAssemblyInstruction;
 
@@ -148,6 +149,7 @@ class AssemblyInstructionTest extends \PHPUnit\Framework\TestCase
         $byte = compact('mod', 'reg', 'rm');
         $address = $method->invoke($instruction, $byte);
 
+        $this->assertInstanceOf(ModRmAddress::class, $address);
         $this->assertEquals($expect, $address->getAddress());
         $this->assertEquals($dispSize, $address->getDisplacement());
     }
@@ -203,6 +205,7 @@ class AssemblyInstructionTest extends \PHPUnit\Framework\TestCase
         ];
         $address = $method->invoke($instruction, $byte);
 
+        $this->assertInstanceOf(ModRmAddress::class, $address);
         $this->assertEquals(0x10722a80, $address->getAddress());
         $this->assertEquals(4, $address->getDisplacement());
     }
@@ -385,7 +388,6 @@ class AssemblyInstructionTest extends \PHPUnit\Framework\TestCase
         $instruction = new TestAssemblyInstruction();
         $instruction->setSimulator($simulator);
 
-        $parseAddress = new ReflectionMethod($instruction, "parseAddress");
 
         $byte = [
             "mod" => $mod,
@@ -393,7 +395,10 @@ class AssemblyInstructionTest extends \PHPUnit\Framework\TestCase
             "rm" => $rm,
         ];
 
+        $parseAddress = new ReflectionMethod($instruction, "parseAddress");
         $address = $parseAddress->invoke($instruction, $byte);
+
+        $this->assertInstanceOf(SibAddress::class, $address);
         $this->assertEquals($expected, $address->getAddress());
         $this->assertEquals(1 + $dispByteLen, $address->getDisplacement());
     }
@@ -422,15 +427,16 @@ class AssemblyInstructionTest extends \PHPUnit\Framework\TestCase
         $instruction = new TestAssemblyInstruction();
         $instruction->setSimulator($simulator);
 
-        $parseAddress = new ReflectionMethod($instruction, "parseAddress");
-
         $byte = [
             "mod" => 0,
             "reg" => 0,
             "rm" => 0b100,
         ];
 
+        $parseAddress = new ReflectionMethod($instruction, "parseAddress");
         $address = $parseAddress->invoke($instruction, $byte);
+
+        $this->assertInstanceOf(SibAddress::class, $address);
         $this->assertEquals(40, $address->getAddress());
         $this->assertEquals(5, $address->getDisplacement());
     }

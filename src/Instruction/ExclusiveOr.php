@@ -85,7 +85,7 @@ class ExclusiveOr extends AssemblyInstruction
     /**
      * @throws \RuntimeException If MOD byte is not 0x3.
      *
-     * @return mixed[]
+     * @return array{"reg": RegisterObj, "rm": RegisterObj}
      */
     private function preExecXorModRM(int $opSize): array
     {

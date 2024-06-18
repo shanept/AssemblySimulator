@@ -13,7 +13,7 @@ use shanept\AssemblySimulatorTests\Fakes\TestAssemblyInstruction;
 class SimulatorTest extends \PHPUnit\Framework\TestCase
 {
     /**
-     * @param mixed $simulator
+     * @param MockSimulator $simulator
      */
     public function registerNopMock($simulator): void
     {
