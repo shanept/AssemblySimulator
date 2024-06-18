@@ -159,7 +159,7 @@ class Simulator
      *
      * @var string
      */
-    private $buffer = false;
+    private $buffer = "";
 
     /**
      * Stores whether or not the state has changed since last reset.
@@ -227,7 +227,7 @@ class Simulator
 
         $this->rex = 0;
         $this->prefixes = [];
-        $this->buffer = false;
+        $this->buffer = "";
 
 
         $this->eFlags = 0;
