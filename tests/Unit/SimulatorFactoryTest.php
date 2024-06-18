@@ -10,7 +10,8 @@ class SimulatorFactoryTest extends \PHPUnit\Framework\TestCase
     /**
      * @covers shanept\AssemblySimulator\SimulatorFactory
      */
-    public function testFactoryDefaultInstructionsIncludeAllClasses(): void {
+    public function testFactoryDefaultInstructionsIncludeAllClasses(): void
+    {
         // Get the list of all classes from the filesystem.
         $instructionDir = realpath(__DIR__ . '/../../src/Instruction');
         $files = glob($instructionDir . '/*.php');
