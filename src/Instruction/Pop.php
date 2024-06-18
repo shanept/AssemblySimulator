@@ -64,7 +64,7 @@ class Pop extends AssemblyInstruction
         $value = $this->unpackImmediate($value, $opSize);
 
         $sim->writeRegister($stackPointer, $stackPosition + $opSize);
-        $sim->writeRegister($register, $value, $opSize);
+        $sim->writeRegister($register, $value);
 
         return true;
     }

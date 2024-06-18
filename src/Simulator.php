@@ -100,7 +100,7 @@ class Simulator
     /**
      * Defines the mode in which we operate.
      *
-     * @param int
+     * @var int
      */
     private $mode;
 
@@ -474,9 +474,9 @@ class Simulator
      * @param array $register The register we are going to write to.
      * @param int   $value    The value to write to be written.
      *
-     * @throws LogicException if we are attempting to write to a register too
-     *                        large for our simulation mode. (i.e. writing to
-     *                        64-bit register in 16-bit REAL mode).
+     * @throws \LogicException if we are attempting to write to a register too
+     *                         large for our simulation mode. (i.e. writing to
+     *                         64-bit register in 16-bit REAL mode).
      *
      * @return void
      */
@@ -772,7 +772,7 @@ class Simulator
     /**
      * Throws an exception if we are trying to operate a tainted environment.
      *
-     * @throws shanept\AssemblySimulator\Exception\Tainted
+     * @throws Exception\Tainted
      *
      * @return void
      */

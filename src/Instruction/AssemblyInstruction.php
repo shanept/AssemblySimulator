@@ -245,7 +245,7 @@ abstract class AssemblyInstruction
      *
      * @param array $byte The parsed ModRM byte.
      *
-     * @return int An addressing mode resolver.
+     * @return AddressInterface An addressing mode resolver.
      */
     protected function parseAddress(array $byte): AddressInterface
     {

@@ -113,7 +113,7 @@ class Push extends AssemblyInstruction
         $stackPointer = $this->getStackPointerRegister();
         $stackPosition = $sim->readRegister($stackPointer, $opSize) - 1;
 
-        $sim->writeRegister($stackPointer, $stackPosition, $opSize);
+        $sim->writeRegister($stackPointer, $stackPosition);
         $sim->writeStackAt($stackPosition, $value);
 
         return true;
