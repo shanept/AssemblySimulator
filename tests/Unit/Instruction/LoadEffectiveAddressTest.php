@@ -23,7 +23,8 @@ class LoadEffectiveAddressTest extends \PHPUnit\Framework\TestCase
         $simulator->method('getPrefixes')
                   ->willReturn([]);
 
-        $simulator->method('getCodeAtInstruction')
+        $simulator->expects($this->atLeastOnce())
+                  ->method('getCodeAtInstruction')
                   ->willReturnCallback(function ($length) {
                       $values = [
                           1 => "\x3D",
@@ -32,15 +33,21 @@ class LoadEffectiveAddressTest extends \PHPUnit\Framework\TestCase
                       return $values[$length];
                   });
 
+        $iPointer = 3;
+        $simulator->method('advanceInstructionPointer')
+                  ->willReturnCallback(function ($amount) use (&$iPointer) {
+                      $iPointer += $amount;
+                  });
+
         $simulator->method('getInstructionPointer')
-                  ->willReturn(3);
+                  ->willReturn($iPointer);
 
         $lea = new LoadEffectiveAddress();
         $lea->setSimulator($simulator);
 
-        $lea->executeOperand8d();
-
+        $this->assertTrue($lea->executeOperand8d());
         $this->assertEquals(0xf1917e7, $simulator->readRegister(Register::RDI));
+        $this->assertEquals(9, $iPointer);
     }
 
     public function testLeaLoadsAddressWithDisplacement(): void
@@ -55,18 +62,22 @@ class LoadEffectiveAddressTest extends \PHPUnit\Framework\TestCase
         $simulator->method('hasPrefix')
                   ->willReturn(false);
 
-        $simulator->method('readRegister')
+        $simulator->expects($this->once())
+                  ->method('readRegister')
                   ->willReturn(1)
                   ->with(Register::R9D);
 
-        $simulator->method('writeRegister')
+        $simulator->expects($this->once())
+                  ->method('writeRegister')
                   ->with(Register::EDX, 0x18);
 
-        $simulator->method('getCodeAtInstruction')
+        $simulator->expects($this->once())
+                  ->method('getCodeAtInstruction')
                   ->willReturn("\x51")
                   ->with(1);
 
-        $simulator->method('getCodeBuffer')
+        $simulator->expects($this->once())
+                  ->method('getCodeBuffer')
                   ->willReturn("\x17")
                   ->with(3, 1);
 
@@ -76,9 +87,7 @@ class LoadEffectiveAddressTest extends \PHPUnit\Framework\TestCase
         $lea = new LoadEffectiveAddress();
         $lea->setSimulator($simulator);
 
-        $this->expectNotToPerformAssertions();
-
-        $lea->executeOperand8d();
+        $this->assertTrue($lea->executeOperand8d());
     }
 
     public function testLeaThrowsExceptionOnInvalidModBit(): void
@@ -102,6 +111,9 @@ class LoadEffectiveAddressTest extends \PHPUnit\Framework\TestCase
         $lea->setSimulator($simulator);
 
         $this->expectException(\RuntimeException::class);
+        $this->expectExceptionMessage(
+            'LEA expected modrm mod byte to be a memory operand, register operand 0x3 received instead.',
+        );
         $lea->executeOperand8d();
     }
 }

@@ -25,7 +25,8 @@ class CallInstructionTest extends \PHPUnit\Framework\TestCase
                   ->willReturn(false);
 
         $simulator->method('getCodeAtInstruction')
-                  ->willReturn($stringPointer);
+                  ->willReturn($stringPointer)
+                  ->with(4);
 
         $simulator->method('readRegister')
                   ->willReturn(128)
@@ -79,17 +80,24 @@ class CallInstructionTest extends \PHPUnit\Framework\TestCase
                   ->willReturn(false);
 
         $simulator->method('getCodeAtInstruction')
+                  ->with(4)
                   ->willReturn("\x10\x20\x30\x40");
 
         $simulator->method('getAddressBase')
                   ->willReturn(0xF3);
 
-        $iPointer = 0;
+        $iPointer = 5;
         $simulator->expects($this->atLeastOnce())
                   ->method('advanceInstructionPointer')
                   ->willReturnCallback(function ($amount) use (&$iPointer) {
                       $iPointer += $amount;
                   });
+
+        $simulator->method('getInstructionPointer')
+                  ->willReturnCallback(function () use ($iPointer) {
+                      return $iPointer;
+                  });
+
 
         /**
          * We are only using the TestAssemblyInstruction here because mocking
@@ -104,7 +112,7 @@ class CallInstructionTest extends \PHPUnit\Framework\TestCase
         $callback->expects($this->once())
                  ->method('mockableCallback')
                  ->willReturnCallback(function ($address): bool {
-                     $this->assertEquals(0x40302103, $address);
+                     $this->assertEquals(0x40302108, $address);
                      return true;
                  });
 
@@ -112,8 +120,7 @@ class CallInstructionTest extends \PHPUnit\Framework\TestCase
         $call->setSimulator($simulator);
 
         $this->assertTrue($call->executeOperandE8());
-
-        $this->assertEquals(5, $iPointer);
+        $this->assertEquals(10, $iPointer);
     }
 
     public function testCallInstructionParsesNegativeAddress(): void
@@ -127,16 +134,22 @@ class CallInstructionTest extends \PHPUnit\Framework\TestCase
                   ->willReturn(false);
 
         $simulator->method('getCodeAtInstruction')
+                  ->with(4)
                   ->willReturn("\x10\x20\x30\xC0");
 
         $simulator->method('getAddressBase')
                   ->willReturn(0xFF);
 
-        $iPointer = 0;
+        $iPointer = 3;
         $simulator->expects($this->atLeastOnce())
                   ->method('advanceInstructionPointer')
                   ->willReturnCallback(function ($amount) use (&$iPointer) {
                       $iPointer += $amount;
+                  });
+
+        $simulator->method('getInstructionPointer')
+                  ->willReturnCallback(function () use ($iPointer) {
+                      return $iPointer;
                   });
 
         /**
@@ -152,7 +165,7 @@ class CallInstructionTest extends \PHPUnit\Framework\TestCase
         $callback->expects($this->once())
                  ->method('mockableCallback')
                  ->willReturnCallback(function ($address): bool {
-                     $this->assertEquals(-0x3FCFDEF1, $address);
+                     $this->assertEquals(-0x3FCFDEEE, $address);
                      return true;
                  });
 
@@ -160,7 +173,6 @@ class CallInstructionTest extends \PHPUnit\Framework\TestCase
         $call->setSimulator($simulator);
 
         $this->assertTrue($call->executeOperandE8());
-
-        $this->assertEquals(5, $iPointer);
+        $this->assertEquals(8, $iPointer);
     }
 }

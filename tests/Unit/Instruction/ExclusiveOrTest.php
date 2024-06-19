@@ -41,15 +41,17 @@ class ExclusiveOrTest extends \PHPUnit\Framework\TestCase
         $simulator->method('hasPrefix')
                   ->willReturn(false);
 
-        $simulator->method('readRegister')
-                  ->willReturn(1234)
-                  ->with(Register::R9B);
+        $simulator->expects($this->exactly(2))
+                  ->method('readRegister')
+                  ->with(Register::R9B)
+                  ->willReturn(1234);
 
         $simulator->expects($this->once())
                   ->method('writeRegister')
                   ->with(Register::R9B, 0);
 
         $simulator->method('getCodeAtInstruction')
+                  ->with(1)
                   ->willReturn("\xC9");
 
         $xor = new ExclusiveOr();
@@ -81,7 +83,8 @@ class ExclusiveOrTest extends \PHPUnit\Framework\TestCase
                       return $requested === $prefixValue;
                   });
 
-        $simulator->method('readRegister')
+        $simulator->expects($this->exactly(2))
+                  ->method('readRegister')
                   ->willReturn($regValue)
                   ->with($register);
 
@@ -90,6 +93,7 @@ class ExclusiveOrTest extends \PHPUnit\Framework\TestCase
                   ->with($register, 0);
 
         $simulator->method('getCodeAtInstruction')
+                  ->with(1)
                   ->willReturn($instruction);
 
         $xor = new ExclusiveOr();
@@ -108,15 +112,17 @@ class ExclusiveOrTest extends \PHPUnit\Framework\TestCase
         $simulator->method('hasPrefix')
                   ->willReturn(false);
 
-        $simulator->method('readRegister')
-                  ->willReturn(1234)
-                  ->with(Register::R9B);
+        $simulator->expects($this->exactly(2))
+                  ->method('readRegister')
+                  ->with(Register::R9B)
+                  ->willReturn(1234);
 
         $simulator->expects($this->once())
                   ->method('writeRegister')
                   ->with(Register::R9B, 0);
 
         $simulator->method('getCodeAtInstruction')
+                  ->with(1)
                   ->willReturn("\xC9");
 
         $xor = new ExclusiveOr();
@@ -148,15 +154,18 @@ class ExclusiveOrTest extends \PHPUnit\Framework\TestCase
                       return $requested === $prefixValue;
                   });
 
-        $simulator->method('readRegister')
-                  ->willReturn($regValue)
-                  ->with($register);
+        $simulator->expects($this->exactly(2))
+                  ->method('readRegister')
+                  ->with($register)
+                  ->willReturn($regValue);
 
         $simulator->expects($this->once())
                   ->method('writeRegister')
                   ->with($register, 0);
 
-        $simulator->method('getCodeAtInstruction')
+        $simulator->expects($this->once())
+                  ->method('getCodeAtInstruction')
+                  ->with(1)
                   ->willReturn($instruction);
 
         $xor = new ExclusiveOr();
@@ -168,7 +177,7 @@ class ExclusiveOrTest extends \PHPUnit\Framework\TestCase
     /**
      * @return array<int, array{int, int, int, RegisterObj, int, RegisterObj, int, string}>
      */
-    public static function twoRegistersDataProvider(): array
+    public static function xorWithTwoRegistersDataProvider(): array
     {
         return [
             // REX.RB xor r8d,r9d
@@ -181,17 +190,17 @@ class ExclusiveOrTest extends \PHPUnit\Framework\TestCase
 
             // 0x66 REX.RB xor r8w,r9w
             // 0x66 0x4D 0x31 0xC8
-            [Simulator::LONG_MODE, 0x4D, 0x66, Register::R8W, 9374, Register::R9W, 4527, "\xC8"],
+            [Simulator::LONG_MODE, 0x45, 0x66, Register::R8W, 9374, Register::R9W, 4527, "\xC8"],
         ];
     }
 
     /**
-     * @dataProvider twoRegistersDataProvider
+     * @dataProvider xorWithTwoRegistersDataProvider
      *
      * @param RegisterObj $firstRegister
      * @param RegisterObj $secondRegister
      */
-    public function testXor31TwoRegisters(
+    public function testXor31WithTwoRegisters(
         int $simulatorMode,
         int $rexValue,
         int $prefixValue,
@@ -202,10 +211,6 @@ class ExclusiveOrTest extends \PHPUnit\Framework\TestCase
         string $instruction,
     ): void {
         $simulator = $this->getMockSimulator($simulatorMode);
-        $simulator = $this->mockSimulatorRegisters($simulator, [
-            $firstRegister['offset'] => $firstRegValue,
-            $secondRegister['offset'] => $secondRegValue,
-        ]);
 
         $simulator->method('getRex')
                   ->willReturn($rexValue);
@@ -215,25 +220,51 @@ class ExclusiveOrTest extends \PHPUnit\Framework\TestCase
                       return $requested === $prefixValue;
                   });
 
-        $simulator->method('getCodeAtInstruction')
+        $simulator->expects($this->exactly(2))
+                  ->method('readRegister')
+                  ->willReturnCallback(function ($register) use (
+                      $firstRegister,
+                      $firstRegValue,
+                      $secondRegister,
+                      $secondRegValue
+                  ): int {
+                      if ($register === $firstRegister) {
+                          return $firstRegValue;
+                      } elseif ($register === $secondRegister) {
+                          return $secondRegValue;
+                      }
+
+                      $message = sprintf(
+                          'Request made for incorrect register "%s".',
+                          $register['name'],
+                      );
+
+                      $this->fail($message);
+                  });
+
+        $expected = $firstRegValue ^ $secondRegValue;
+        $simulator->expects($this->once())
+                  ->method('writeRegister')
+                  ->with($firstRegister, $expected);
+
+        $simulator->expects($this->once())
+                  ->method('getCodeAtInstruction')
+                  ->with(1)
                   ->willReturn($instruction);
 
         $xor = new ExclusiveOr();
         $xor->setSimulator($simulator);
 
         $xor->executeOperand31();
-
-        $expected = $firstRegValue ^ $secondRegValue;
-        $this->assertEquals($expected, $simulator->readRegister($firstRegister));
     }
 
     /**
-     * @dataProvider twoRegistersDataProvider
+     * @dataProvider xorWithTwoRegistersDataProvider
      *
      * @param RegisterObj $firstRegister
      * @param RegisterObj $secondRegister
      */
-    public function testXor33TwoRegisters(
+    public function testXor33WithTwoRegisters(
         int $simulatorMode,
         int $rexValue,
         int $prefixValue,
@@ -244,10 +275,6 @@ class ExclusiveOrTest extends \PHPUnit\Framework\TestCase
         string $instruction,
     ): void {
         $simulator = $this->getMockSimulator($simulatorMode);
-        $simulator = $this->mockSimulatorRegisters($simulator, [
-            $firstRegister['offset'] => $firstRegValue,
-            $secondRegister['offset'] => $secondRegValue,
-        ]);
 
         $simulator->method('getRex')
                   ->willReturn($rexValue);
@@ -257,16 +284,42 @@ class ExclusiveOrTest extends \PHPUnit\Framework\TestCase
                       return $requested === $prefixValue;
                   });
 
-        $simulator->method('getCodeAtInstruction')
+        $simulator->expects($this->exactly(2))
+                  ->method('readRegister')
+                  ->willReturnCallback(function ($register) use (
+                      $firstRegister,
+                      $firstRegValue,
+                      $secondRegister,
+                      $secondRegValue
+                  ): int {
+                      if ($register === $firstRegister) {
+                          return $firstRegValue;
+                      } elseif ($register === $secondRegister) {
+                          return $secondRegValue;
+                      }
+
+                      $message = sprintf(
+                          'Request made for incorrect register "%s".',
+                          $register['name'],
+                      );
+
+                      $this->fail($message);
+                  });
+
+        $expected = $secondRegValue ^ $firstRegValue;
+        $simulator->expects($this->once())
+                  ->method('writeRegister')
+                  ->with($secondRegister, $expected);
+
+        $simulator->expects($this->once())
+                  ->method('getCodeAtInstruction')
+                  ->with(1)
                   ->willReturn($instruction);
 
         $xor = new ExclusiveOr();
         $xor->setSimulator($simulator);
 
         $xor->executeOperand33();
-
-        $expected = $secondRegValue ^ $firstRegValue;
-        $this->assertEquals($expected, $simulator->readRegister($secondRegister));
     }
 
     public function testXorClearsFlagsAfterExecution(): void
@@ -330,6 +383,7 @@ class ExclusiveOrTest extends \PHPUnit\Framework\TestCase
                   ->willReturn(false);
 
         $simulator->method('getCodeAtInstruction')
+                  ->with(1)
                   ->willReturn("\xC9");
 
         $xor = new ExclusiveOr();
@@ -341,10 +395,6 @@ class ExclusiveOrTest extends \PHPUnit\Framework\TestCase
     public function testXorWithIncorrectModByteFails(): void
     {
         $simulator = $this->getMockSimulator(Simulator::LONG_MODE);
-        $simulator = $this->mockSimulatorRegisters($simulator, [
-            Register::R9D['offset'] => 1234,
-            Register::R8D['offset'] => 4321,
-        ]);
 
         // REX.RB xor r9d,r9d, (mod 2 - incorrect)
         // 0x45 0x31 0x89 (mod 2 - incorrect)
@@ -354,7 +404,9 @@ class ExclusiveOrTest extends \PHPUnit\Framework\TestCase
         $simulator->method('hasPrefix')
                   ->willReturn(false);
 
-        $simulator->method('getCodeAtInstruction')
+        $simulator->expects($this->once())
+                  ->method('getCodeAtInstruction')
+                  ->with(1)
                   ->willReturn("\x89");
 
         $xor = new ExclusiveOr();

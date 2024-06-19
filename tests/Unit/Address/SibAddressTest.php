@@ -128,6 +128,11 @@ class SibAddressTest extends \PHPUnit\Framework\TestCase
         $sibByte = ['s' => 1,'i' => 0,'b' => 0];
 
         $this->expectException(\UnexpectedValueException::class);
+        $this->expectExceptionMessage(sprintf(
+            'Invalid SIB address length %d. Expected 1 (no displacement), ' .
+            '2 (8-bit displacement) or 5 (32-bit displacement).',
+            $displacementSize,
+        ));
         $sib0 = new SibAddress($sibByte, 0, $displacementSize);
     }
 
@@ -147,6 +152,10 @@ class SibAddressTest extends \PHPUnit\Framework\TestCase
         $sibByte = ['s' => $scale,'i' => 0,'b' => 0];
 
         $this->expectException(\UnexpectedValueException::class);
+        $this->expectExceptionMessage(sprintf(
+            'Invalid SIB scale value %d. Expected 1, 2, 4 or 8.',
+            $scale,
+        ));
         $sib0 = new SibAddress($sibByte, 0, 1);
     }
 }

@@ -150,7 +150,7 @@ abstract class AssemblyInstruction
      *
      * @return int[] The SIB byte values.
      */
-    protected function parseSibByte(string $byte, array $modrm): array
+    private function parseSibByte(string $byte, array $modrm): array
     {
         $byte = ord($byte);
         $sib = [
