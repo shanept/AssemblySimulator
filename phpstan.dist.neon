@@ -1,5 +1,6 @@
 includes:
   - vendor/phpstan/phpstan-deprecation-rules/rules.neon
+  - vendor/phpstan/phpstan-strict-rules/rules.neon
 parameters:
   level: 9
   paths:
@@ -9,6 +10,8 @@ parameters:
     RegisterObj: 'array{"offset": int, "code": int, "name": string, "width": int, "mask": int}'
     MockSimulator: '\shanept\AssemblySimulator\Simulator&\PHPUnit\Framework\MockObject\MockObject'
   treatPhpDocTypesAsCertain: false
+  strictRules:
+    booleansInConditions: false
   ignoreErrors:
     # We have already filtered out all callables here.
     - message: '/^Parameter #2 \.\.\.\$values of function sprintf expects bool\|float\|int\|string\|null, \(callable\)\|string given\.$/'
@@ -22,5 +25,10 @@ parameters:
 
     # We create multiple mock callbacks in this fashion, we shall ignore the errors.
     - message: "/expects (array<callable\\(\\): mixed>|\\(callable\\(\\): mixed\\)\\|null), .*?(TestAssemblyInstruction|null), '[a-zA-Z0-9_]+'}}? given.$/"
+      paths:
+        - tests
+
+    # We don't care about dynamic assertion calls, as PHPUnit does it the same way.
+    - message: "/^Dynamic call to static method PHPUnit\\\\Framework\\\\/"
       paths:
         - tests

@@ -220,7 +220,7 @@ class SimulatorTest extends \PHPUnit\Framework\TestCase
      *
      * @param array<int, string> $values
      */
-    public function testReadStackAt(array $values, string $expected): void
+    public function testReadStackAt(array $values, string $unused): void
     {
         $simulator = new Simulator(Simulator::REAL_MODE);
 

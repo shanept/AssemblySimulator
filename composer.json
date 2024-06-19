@@ -11,7 +11,8 @@
         "friendsofphp/php-cs-fixer": "^3.5",
         "phpstan/phpstan": "^1.11",
         "phpstan/phpstan-phpunit": "^1.4",
-        "phpstan/phpstan-deprecation-rules": "^1.2"
+        "phpstan/phpstan-deprecation-rules": "^1.2",
+        "phpstan/phpstan-strict-rules": "^1.6"
     },
     "license": "MIT",
     "autoload": {

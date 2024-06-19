@@ -46,7 +46,7 @@ class SibAddress implements AddressInterface
      */
     public function __construct(array $sib, int $disp, int $sibSize)
     {
-        if (! in_array($sib['s'], [1, 2, 4, 8])) {
+        if (! in_array($sib['s'], [1, 2, 4, 8], true)) {
             $message = sprintf(
                 'Invalid SIB scale value %d. Expected 1, 2, 4 or 8.',
                 $sib['s'],
@@ -55,7 +55,7 @@ class SibAddress implements AddressInterface
             throw new \UnexpectedValueException($message);
         }
 
-        if (! in_array($sibSize, [1, 2, 5])) {
+        if (! in_array($sibSize, [1, 2, 5], true)) {
             $message = sprintf(
                 'Invalid SIB address length %d. Expected 1 (no displacement), ' .
                 '2 (8-bit displacement) or 5 (32-bit displacement).',
