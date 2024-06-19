@@ -4,14 +4,14 @@ namespace shanept\AssemblySimulatorTests\Unit\Instruction;
 
 use shanept\AssemblySimulator\Register;
 use shanept\AssemblySimulator\Simulator;
-use shanept\AssemblySimulator\Instruction\CallInstruction;
+use shanept\AssemblySimulator\Instruction\Call;
 use shanept\AssemblySimulatorTests\Fakes\TestAssemblyInstruction;
 
-class CallInstructionTest extends \PHPUnit\Framework\TestCase
+class CallTest extends \PHPUnit\Framework\TestCase
 {
     use MockSimulatorTrait;
 
-    public function testCallInstructionParsesInput(): void
+    public function testCallParsesInput(): void
     {
         $simulator = $this->getMockSimulator(Simulator::PROTECTED_MODE);
 
@@ -47,7 +47,7 @@ class CallInstructionTest extends \PHPUnit\Framework\TestCase
                       $iPointer += $amount;
                   });
 
-        $call = new CallInstruction();
+        $call = new Call();
         $call->setSimulator($simulator);
 
         $this->assertTrue($call->executeOperandE8());
@@ -55,7 +55,7 @@ class CallInstructionTest extends \PHPUnit\Framework\TestCase
         $this->assertEquals(5, $iPointer);
     }
 
-    public function testCallInstructionThrowsExceptionOnInvalidCallback(): void
+    public function testCallThrowsExceptionOnInvalidCallback(): void
     {
         $callback = $this->createMock(TestAssemblyInstruction::class);
 
@@ -66,10 +66,10 @@ class CallInstructionTest extends \PHPUnit\Framework\TestCase
                  });
 
         $this->expectException(\LogicException::class);
-        $call = new CallInstruction([null, 'mockableCallback']);
+        $call = new Call([null, 'mockableCallback']);
     }
 
-    public function testCallInstructionParsesPositiveAddress(): void
+    public function testCallParsesPositiveAddress(): void
     {
         $simulator = $this->getMockSimulator(Simulator::PROTECTED_MODE);
 
@@ -116,14 +116,14 @@ class CallInstructionTest extends \PHPUnit\Framework\TestCase
                      return true;
                  });
 
-        $call = new CallInstruction([$callback, 'mockableCallback']);
+        $call = new Call([$callback, 'mockableCallback']);
         $call->setSimulator($simulator);
 
         $this->assertTrue($call->executeOperandE8());
         $this->assertEquals(10, $iPointer);
     }
 
-    public function testCallInstructionParsesNegativeAddress(): void
+    public function testCallParsesNegativeAddress(): void
     {
         $simulator = $this->getMockSimulator(Simulator::PROTECTED_MODE);
 
@@ -169,7 +169,7 @@ class CallInstructionTest extends \PHPUnit\Framework\TestCase
                      return true;
                  });
 
-        $call = new CallInstruction([$callback, 'mockableCallback']);
+        $call = new Call([$callback, 'mockableCallback']);
         $call->setSimulator($simulator);
 
         $this->assertTrue($call->executeOperandE8());

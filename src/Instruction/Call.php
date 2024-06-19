@@ -21,7 +21,7 @@ use shanept\AssemblySimulator\Simulator;
  *
  * @author Shane Thompson
  */
-class CallInstruction extends AssemblyInstruction
+class Call extends AssemblyInstruction
 {
     /**
      * @var ?callable

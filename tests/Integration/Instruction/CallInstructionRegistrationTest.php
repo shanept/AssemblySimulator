@@ -2,7 +2,7 @@
 
 namespace shanept\AssemblySimulatorTests\Integration\Instruction;
 
-use shanept\AssemblySimulator\Instruction\CallInstruction;
+use shanept\AssemblySimulator\Instruction\Call;
 
 class CallInstructionRegistrationTest extends InstructionRegistrationTestBase
 {
@@ -11,7 +11,7 @@ class CallInstructionRegistrationTest extends InstructionRegistrationTestBase
      */
     public static function getClassFqdn(): string
     {
-        return CallInstruction::class;
+        return Call::class;
     }
 
     /**
@@ -20,7 +20,7 @@ class CallInstructionRegistrationTest extends InstructionRegistrationTestBase
     public static function registrationForOperandDataProvider(): array
     {
         return [
-            [CallInstruction::class, 0xE8],
+            [Call::class, 0xE8],
         ];
     }
 }
