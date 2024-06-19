@@ -212,7 +212,7 @@ class Simulator
         AssemblyInstruction $reference,
         array $mappings,
     ): void {
-        $record = compact('reference', 'mappings');
+        $record = ['reference' => $reference, 'mappings' => $mappings];
         array_unshift($this->registeredInstructions, $record);
     }
 

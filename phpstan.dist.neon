@@ -1,6 +1,7 @@
 includes:
   - vendor/phpstan/phpstan-deprecation-rules/rules.neon
   - vendor/phpstan/phpstan-strict-rules/rules.neon
+  - vendor/ergebnis/phpstan-rules/rules.neon
 parameters:
   level: 9
   paths:
@@ -12,6 +13,25 @@ parameters:
   treatPhpDocTypesAsCertain: false
   strictRules:
     booleansInConditions: false
+  ergebnis:
+    final:
+      enabled: false
+    noExtends:
+      enabled: false
+    noParameterWithNullableTypeDeclaration:
+      enabled: false
+    noParameterWithNullDefaultValue:
+      enabled: false
+    noErrorSuppression:
+      enabled: false
+    finalInAbstractClass:
+      enabled: false
+    noConstructorParameterWithDefaultValue:
+      enabled: false
+    privateInFinalClass:
+      enabled: false
+    noSwitch:
+      enabled: false
   ignoreErrors:
     # We have already filtered out all callables here.
     - message: '/^Parameter #2 \.\.\.\$values of function sprintf expects bool\|float\|int\|string\|null, \(callable\)\|string given\.$/'
@@ -30,5 +50,9 @@ parameters:
 
     # We don't care about dynamic assertion calls, as PHPUnit does it the same way.
     - message: "/^Dynamic call to static method PHPUnit\\\\Framework\\\\/"
+      paths:
+        - tests
+
+    - message: "/^File is missing a \"declare\\(strict_types=1\\)\" declaration\\.$/"
       paths:
         - tests

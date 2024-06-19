@@ -146,7 +146,11 @@ class AssemblyInstructionTest extends \PHPUnit\Framework\TestCase
 
         $method = new ReflectionMethod($instruction, "parseAddress");
 
-        $byte = compact('mod', 'reg', 'rm');
+        $byte = [
+            'mod' => $mod,
+            'reg' => $reg,
+            'rm' => $rm,
+        ];
         $address = $method->invoke($instruction, $byte);
 
         $this->assertInstanceOf(ModRmAddress::class, $address);
