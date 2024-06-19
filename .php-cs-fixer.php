@@ -1,4 +1,5 @@
 <?php
+use PhpCsFixer\Runner\Parallel\ParallelConfigFactory;
 
 $finder = (new \PhpCsFixer\Finder())
 	->in(__DIR__)
@@ -8,6 +9,7 @@ $finder = (new \PhpCsFixer\Finder())
 	->name('*.php');
 
 return (new PhpCsFixer\Config())
+        ->setParallelConfig(ParallelConfigFactory::detect())
 	->setRules([
 		'@PER-CS2.0' => true,
 		'array_syntax' => ['syntax' => 'short'],
