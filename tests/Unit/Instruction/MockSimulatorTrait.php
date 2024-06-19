@@ -46,10 +46,10 @@ trait MockSimulatorTrait
         };
 
         $simulator->method('readRegister')
-                  ->will($this->returnCallback($readRegisterCb));
+                  ->willReturnCallback($readRegisterCb);
 
         $simulator->method('writeRegister')
-                  ->will($this->returnCallback($writeRegisterCb));
+                  ->willReturnCallback($writeRegisterCb);
 
         return $simulator;
     }

@@ -17,19 +17,17 @@ class SimulatorTest extends \PHPUnit\Framework\TestCase
      */
     public function registerNopMock($simulator): void
     {
-        $nopMock = $this->getMockBuilder(TestAssemblyInstruction::class)
-                        ->addMethods(['executeOperand90'])
-                        ->getMock();
+        $nopMock = $this->createMock(TestAssemblyInstruction::class);
 
         $nopMock->expects($this->once())
-                ->method('executeOperand90')
+                ->method('mockableCallback')
                 ->willReturnCallback(function () use ($simulator) {
                     $simulator->advanceInstructionPointer(1);
                     return true;
                 });
 
         $simulator->registerInstructions($nopMock, [
-            0x90 => [$nopMock, 'executeOperand90'],
+            0x90 => [$nopMock, 'mockableCallback'],
         ]);
     }
 
@@ -491,23 +489,21 @@ class SimulatorTest extends \PHPUnit\Framework\TestCase
     {
         $simulator = new Simulator(Simulator::LONG_MODE);
 
-        $twoByte = $this->getMockBuilder(TestAssemblyInstruction::class)
-                        ->addMethods(['executeOperand0F90'])
-                        ->getMock();
+        $twoByte = $this->createMock(TestAssemblyInstruction::class);
 
+        // This instruction will work for operand 0F90. We want this one to be called.
         $twoByte->expects($this->once())
-                ->method('executeOperand0F90')
+                ->method('mockableCallback')
                 ->willReturnCallback(function () use ($simulator) {
                     $simulator->advanceInstructionPointer(1);
                     return true;
                 });
 
-        $oneByte = $this->getMockBuilder(TestAssemblyInstruction::class)
-                        ->addMethods(['executeOperand90'])
-                        ->getMock();
+        // This instruction will work for operand 90. We don't want this instruction called.
+        $oneByte = $this->createMock(TestAssemblyInstruction::class);
 
         $oneByte->expects($this->never())
-                ->method('executeOperand90')
+                ->method('mockableCallback')
                 ->willReturnCallback(function () use ($simulator) {
                     $simulator->advanceInstructionPointer(1);
                     return true;
@@ -520,11 +516,11 @@ class SimulatorTest extends \PHPUnit\Framework\TestCase
          * it should hit the higher priority function first, failing the test.
          */
         $simulator->registerInstructions($twoByte, [
-            0x0F90 => [$twoByte, 'executeOperand0F90'],
+            0x0F90 => [$twoByte, 'mockableCallback'],
         ]);
 
         $simulator->registerInstructions($oneByte, [
-            0x90 => [$oneByte, 'executeOperand90'],
+            0x90 => [$oneByte, 'mockableCallback'],
         ]);
 
         $simulator->setCodeBuffer("\x0F\x90");
@@ -566,16 +562,14 @@ class SimulatorTest extends \PHPUnit\Framework\TestCase
             0x01 => $mockFunctionOld,
         ]);
 
-        $mockInstructionNew = $this->getMockBuilder(TestAssemblyInstruction::class)
-                                   ->addMethods(['executeOperand3'])
-                                   ->getMock();
+        $mockInstructionNew = $this->createMock(TestAssemblyInstruction::class);
 
         $mockInstructionNew->expects($this->never())
-                           ->method('executeOperand3')
+                           ->method('mockableCallback')
                            ->willReturn(false);
 
         $simulator->registerInstructions($mockInstructionNew, [
-            0x03 => [$mockInstructionNew, 'executeOperand3'],
+            0x03 => [$mockInstructionNew, 'mockableCallback'],
         ]);
 
         $simulator->setCodeBuffer("\x01");
@@ -639,16 +633,14 @@ class SimulatorTest extends \PHPUnit\Framework\TestCase
     {
         $simulator = new Simulator(Simulator::LONG_MODE);
 
-        $mockInstructionOld = $this->getMockBuilder(TestAssemblyInstruction::class)
-                                   ->addMethods(['executeOperand1'])
-                                   ->getMock();
+        $mockInstructionOld = $this->createMock(TestAssemblyInstruction::class);
 
         $mockInstructionOld->expects($this->never())
-                           ->method('executeOperand1')
+                           ->method('mockableCallback')
                            ->willReturn(false);
 
         $simulator->registerInstructions($mockInstructionOld, [
-            0x01 => [$mockInstructionOld, 'executeOperand1'],
+            0x01 => [$mockInstructionOld, 'mockableCallback'],
         ]);
 
         $mockInstructionNew = $this->createMock(AssemblyInstruction::class);
@@ -681,16 +673,14 @@ class SimulatorTest extends \PHPUnit\Framework\TestCase
             0x01 => $mockFunctionOld,
         ]);
 
-        $mockInstructionNew = $this->getMockBuilder(TestAssemblyInstruction::class)
-                                   ->addMethods(['executeOperand1'])
-                                   ->getMock();
+        $mockInstructionNew = $this->createMock(TestAssemblyInstruction::class);
 
         $mockInstructionNew->expects($this->once())
-                           ->method('executeOperand1')
+                           ->method('mockableCallback')
                            ->willReturn(false);
 
         $simulator->registerInstructions($mockInstructionNew, [
-            0x01 => [$mockInstructionNew, 'executeOperand1'],
+            0x01 => [$mockInstructionNew, 'mockableCallback'],
         ]);
 
         $simulator->setCodeBuffer("\x01");

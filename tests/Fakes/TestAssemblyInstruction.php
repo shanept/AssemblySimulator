@@ -13,4 +13,9 @@ class TestAssemblyInstruction extends AssemblyInstruction
     {
         return [];
     }
+
+    public function mockableCallback(): bool
+    {
+        return false;
+    }
 }

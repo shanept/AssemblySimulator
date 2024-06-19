@@ -56,18 +56,16 @@ class CallInstructionTest extends \PHPUnit\Framework\TestCase
 
     public function testCallInstructionThrowsExceptionOnInvalidCallback(): void
     {
-        $callback = $this->getMockBuilder(TestAssemblyInstruction::class)
-                         ->addMethods(['addressCallback'])
-                         ->getMock();
+        $callback = $this->createMock(TestAssemblyInstruction::class);
 
         $callback->expects($this->never())
-                 ->method('addressCallback')
+                 ->method('mockableCallback')
                  ->willReturnCallback(function ($address) {
                      $this->assertEquals(0x40302010, $address);
                  });
 
         $this->expectException(\LogicException::class);
-        $call = new CallInstruction([null, 'addressCallback']);
+        $call = new CallInstruction([null, 'mockableCallback']);
     }
 
     public function testCallInstructionParsesPositiveAddress(): void
@@ -101,17 +99,16 @@ class CallInstructionTest extends \PHPUnit\Framework\TestCase
          * test may pass if the callback is not called. We have to ensure the
          * callback is called, otherwise it is a failure of this test.
          */
-        $callback = $this->getMockBuilder(TestAssemblyInstruction::class)
-                         ->addMethods(['addressCallback'])
-                         ->getMock();
+        $callback = $this->createMock(TestAssemblyInstruction::class);
 
         $callback->expects($this->once())
-                 ->method('addressCallback')
-                 ->willReturnCallback(function ($address) {
+                 ->method('mockableCallback')
+                 ->willReturnCallback(function ($address): bool {
                      $this->assertEquals(0x40302103, $address);
+                     return true;
                  });
 
-        $call = new CallInstruction([$callback, 'addressCallback']);
+        $call = new CallInstruction([$callback, 'mockableCallback']);
         $call->setSimulator($simulator);
 
         $this->assertTrue($call->executeOperandE8());
@@ -150,17 +147,16 @@ class CallInstructionTest extends \PHPUnit\Framework\TestCase
          * test may pass if the callback is not called. We have to ensure the
          * callback is called, otherwise it is a failure of this test.
          */
-        $callback = $this->getMockBuilder(TestAssemblyInstruction::class)
-                         ->addMethods(['addressCallback'])
-                         ->getMock();
+        $callback = $this->createMock(TestAssemblyInstruction::class);
 
         $callback->expects($this->once())
-                 ->method('addressCallback')
-                 ->willReturnCallback(function ($address) {
+                 ->method('mockableCallback')
+                 ->willReturnCallback(function ($address): bool {
                      $this->assertEquals(-0x3FCFDEF1, $address);
+                     return true;
                  });
 
-        $call = new CallInstruction([$callback, 'addressCallback']);
+        $call = new CallInstruction([$callback, 'mockableCallback']);
         $call->setSimulator($simulator);
 
         $this->assertTrue($call->executeOperandE8());
