@@ -72,14 +72,7 @@ jobs:
         with:
           command: "update"
           php_version: ${{ matrix.php_version }}
-          args: ${{ matrix.composer_args }} --ignore-platform-req=php
-
-      - name: Make PHPUnit respect platform requirements
-        uses: php-actions/composer@v6
-        with:
-          command: "update phpunit/phpunit"
-          php_version: ${{ matrix.php_version }}
-          args: "--with-all-dependencies ${{ matrix.composer_args }}"
+          args: ${{ matrix.composer_args }}
 
       - name: Run PHPUnit Tests
         run: "vendor/bin/phpunit --no-coverage -c phpunit.dist.xml"

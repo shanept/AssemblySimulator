@@ -1,7 +1,6 @@
 includes:
   - vendor/phpstan/phpstan-deprecation-rules/rules.neon
   - vendor/phpstan/phpstan-strict-rules/rules.neon
-  - vendor/ergebnis/phpstan-rules/rules.neon
 parameters:
   level: 9
   paths:
