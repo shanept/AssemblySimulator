@@ -12,7 +12,8 @@
         "phpstan/phpstan": "^1.11",
         "phpstan/phpstan-phpunit": "^1.4",
         "phpstan/phpstan-deprecation-rules": "^1.2",
-        "phpstan/phpstan-strict-rules": "^1.6"
+        "phpstan/phpstan-strict-rules": "^1.6",
+        "infection/infection": ">=0.18"
     },
     "license": "MIT",
     "autoload": {
@@ -35,6 +36,12 @@
         "test": "vendor/bin/phpunit",
         "analyse": "vendor/bin/phpstan",
         "format": "vendor/bin/php-cs-fixer fix",
-        "check-format": "vendor/bin/php-cs-fixer check"
+        "check-format": "vendor/bin/php-cs-fixer check",
+        "infect": "vendor/bin/infection --threads=4"
+    },
+    "config": {
+        "allow-plugins": {
+            "infection/extension-installer": false
+        }
     }
 }

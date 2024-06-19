@@ -3,3 +3,4 @@ vendor/
 *.cache
 phpstan.neon
 phpunit.xml
+infection.json5
