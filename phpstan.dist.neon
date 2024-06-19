@@ -32,7 +32,3 @@ parameters:
     - message: "/^Dynamic call to static method PHPUnit\\\\Framework\\\\/"
       paths:
         - tests
-
-    - message: "/^File is missing a \"declare\\(strict_types=1\\)\" declaration\\.$/"
-      paths:
-        - tests
