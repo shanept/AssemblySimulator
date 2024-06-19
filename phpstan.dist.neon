@@ -12,25 +12,6 @@ parameters:
   treatPhpDocTypesAsCertain: false
   strictRules:
     booleansInConditions: false
-  ergebnis:
-    final:
-      enabled: false
-    noExtends:
-      enabled: false
-    noParameterWithNullableTypeDeclaration:
-      enabled: false
-    noParameterWithNullDefaultValue:
-      enabled: false
-    noErrorSuppression:
-      enabled: false
-    finalInAbstractClass:
-      enabled: false
-    noConstructorParameterWithDefaultValue:
-      enabled: false
-    privateInFinalClass:
-      enabled: false
-    noSwitch:
-      enabled: false
   ignoreErrors:
     # We have already filtered out all callables here.
     - message: '/^Parameter #2 \.\.\.\$values of function sprintf expects bool\|float\|int\|string\|null, \(callable\)\|string given\.$/'
