@@ -16,7 +16,6 @@ class LoadEffectiveAddressTest extends \PHPUnit\Framework\TestCase
     public function testLeaLoads64BitAddress(): void
     {
         $simulator = $this->getMockSimulator(Simulator::LONG_MODE);
-        $simulator = $this->mockSimulatorRegisters($simulator);
 
         // lea rda,0xf1917e7
         // REX.W 0x48 0x8D 0x3D 0xE0 0x17 0x19 0x0F
@@ -25,6 +24,10 @@ class LoadEffectiveAddressTest extends \PHPUnit\Framework\TestCase
 
         $simulator->method('getPrefixes')
                   ->willReturn([]);
+
+        $simulator->expects($this->once())
+                  ->method('writeRegister')
+                  ->with(Register::RDI, 0xF1917E7);
 
         $simulator->expects($this->atLeastOnce())
                   ->method('getCodeAtInstruction')
@@ -49,7 +52,6 @@ class LoadEffectiveAddressTest extends \PHPUnit\Framework\TestCase
         $lea->setSimulator($simulator);
 
         $this->assertTrue($lea->executeOperand8d());
-        $this->assertEquals(0xf1917e7, $simulator->readRegister(Register::RDI));
         $this->assertEquals(9, $iPointer);
     }
 
@@ -96,7 +98,6 @@ class LoadEffectiveAddressTest extends \PHPUnit\Framework\TestCase
     public function testLeaThrowsExceptionOnInvalidModBit(): void
     {
         $simulator = $this->getMockSimulator(Simulator::LONG_MODE);
-        $simulator = $this->mockSimulatorRegisters($simulator);
 
         // REX.W lea rdi,0xf1917e7 (mod 2 - invalid)
         // 0x48 0x8D 0xFD 0xE0 0x17 0x19 0x0F (mod 2 - invalid)

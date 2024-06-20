@@ -221,7 +221,7 @@ class AssemblyInstructionTest extends \PHPUnit\Framework\TestCase
     }
 
     /**
-     * @return array<int, array{int, ?int, RegisterObj, int, string, int, int, int, int}>
+     * @return array<int, array{int, int, ?int, RegisterObj, int, string, int, int, int, int}>
      */
     public static function parseAddressOnMemoryOffsetAddressDataProvider(): array
     {
@@ -678,7 +678,7 @@ class AssemblyInstructionTest extends \PHPUnit\Framework\TestCase
     }
 
     /**
-     * @return array<int, array{int, RegisterObj}
+     * @return array<int, array{int, RegisterObj}>
      */
     public static function getStackPointerDataProvider(): array
     {
@@ -698,7 +698,7 @@ class AssemblyInstructionTest extends \PHPUnit\Framework\TestCase
      */
     public function testGetStackPointer(
         int $mode,
-        array $expectedStackPointer
+        array $expectedStackPointer,
     ): void {
         $simulator = $this->getMockSimulator($mode);
 

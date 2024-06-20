@@ -16,19 +16,11 @@ class SimulatorFactoryTest extends \PHPUnit\Framework\TestCase
      * @depends shanept\AssemblySimulatorTests\Unit\SimulatorFactoryTest::testFactoryReturnsSimulatorInstance
      * @covers shanept\AssemblySimulator\SimulatorFactory
      */
-    public function testFactoryRegistersAdditionalInstructions()
+    public function testFactoryRegistersAdditionalInstructions(): void
     {
-        $simulator = null;
-
         // We will use the TestAssemblyInstruction class to create a mocked
         // callback before assigning it to the TestFactoryInstruction.
         $mockedInstruction = $this->createMock(TestAssemblyInstruction::class);
-        $mockedInstruction->expects($this->once())
-                          ->method('mockableCallback')
-                          ->willReturnCallback(function() use (&$simulator) {
-                              $simulator->advanceInstructionPointer(1);
-                              return true;
-                          });
 
         // Now we set our mocked instruction. We will intentionally overwrite
         // opcode E8 (CALL NEAR) to test we have priority over default instructions.
@@ -38,6 +30,13 @@ class SimulatorFactoryTest extends \PHPUnit\Framework\TestCase
         $simulator = SimulatorFactory::createSimulator(Simulator::PROTECTED_MODE, [
             TestFactoryInstruction::class,
         ]);
+
+        $mockedInstruction->expects($this->once())
+                          ->method('mockableCallback')
+                          ->willReturnCallback(function () use (&$simulator) {
+                              $simulator->advanceInstructionPointer(1);
+                              return true;
+                          });
 
         // And see if we can call it.
         $simulator->setCodeBuffer("\xE8");

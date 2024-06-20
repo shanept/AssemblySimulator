@@ -9,12 +9,12 @@ class TestFactoryInstruction extends AssemblyInstruction
     /**
      * @var int
      */
-    static $opcode;
+    public static $opcode;
 
     /**
      * @var callable
      */
-    static $callback;
+    public static $callback;
 
     /**
      * @return callable[]

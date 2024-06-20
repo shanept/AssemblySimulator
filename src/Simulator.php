@@ -749,7 +749,7 @@ class Simulator
         if ($this->tainted) {
             throw new Exception\Tainted(
                 'Attempted to operate a tainted environment. ' .
-                'Did you forget to reset?'
+                'Did you forget to reset?',
             );
         }
     }

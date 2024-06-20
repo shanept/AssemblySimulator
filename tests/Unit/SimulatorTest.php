@@ -88,7 +88,7 @@ class SimulatorTest extends \PHPUnit\Framework\TestCase
 
         $this->expectException(Exception\Tainted::class);
         $this->expectExceptionMessage(
-            'Attempted to operate a tainted environment. Did you forget to reset?'
+            'Attempted to operate a tainted environment. Did you forget to reset?',
         );
         $simulator->simulate();
     }
@@ -137,7 +137,7 @@ class SimulatorTest extends \PHPUnit\Framework\TestCase
 
         $this->expectException(Exception\Tainted::class);
         $this->expectExceptionMessage(
-            'Attempted to operate a tainted environment. Did you forget to reset?'
+            'Attempted to operate a tainted environment. Did you forget to reset?',
         );
         $simulator->simulate();
     }
@@ -164,7 +164,7 @@ class SimulatorTest extends \PHPUnit\Framework\TestCase
 
         $this->expectException(Exception\Tainted::class);
         $this->expectExceptionMessage(
-            'Attempted to operate a tainted environment. Did you forget to reset?'
+            'Attempted to operate a tainted environment. Did you forget to reset?',
         );
         $simulator->simulate();
     }
@@ -552,7 +552,7 @@ class SimulatorTest extends \PHPUnit\Framework\TestCase
 
         $simulator->setCodeBuffer("\x0F\x02\x0F\x04\x01");
 
-        $this->expectException(Exception\InvalidOpCode::class);
+        $this->expectException(Exception\InvalidOpcode::class);
         $this->expectExceptionMessage('Encountered unknown opcode 0x0F04 at offset 2 (0x11).');
         $simulator->simulate();
     }
@@ -615,7 +615,7 @@ class SimulatorTest extends \PHPUnit\Framework\TestCase
 
         $simulator->setCodeBuffer("\x01");
 
-        $this->expectException(Exception\InvalidOpCode::class);
+        $this->expectException(Exception\InvalidOpcode::class);
         $this->expectExceptionMessage('Encountered unknown opcode 0x01 at offset 0 (0x0).');
         $simulator->simulate();
     }
@@ -760,7 +760,11 @@ class SimulatorTest extends \PHPUnit\Framework\TestCase
         $simulator->simulate();
     }
 
-    public static function rexOnLongModeIsRecordedDataProvider(): array {
+    /**
+     * @return array<int, array{int}>
+     */
+    public static function rexOnLongModeIsRecordedDataProvider(): array
+    {
         return [
             [0x40], [0x41], [0x42], [0x43], [0x44], [0x45], [0x46], [0x47],
             [0x48], [0x49], [0x4A], [0x4B], [0x4C], [0x4D], [0x4E], [0x4F],
@@ -905,7 +909,7 @@ class SimulatorTest extends \PHPUnit\Framework\TestCase
 
         $simulator->setCodeBuffer("\x67");
 
-        $this->expectException(Exception\InvalidOpCode::class);
+        $this->expectException(Exception\InvalidOpcode::class);
         $this->expectExceptionMessage('Encountered unknown opcode 0x67 at offset 0 (0x0).');
         $simulator->simulate();
     }
@@ -925,7 +929,7 @@ class SimulatorTest extends \PHPUnit\Framework\TestCase
 
         $simulator->setCodeBuffer("\x0F\x01");
 
-        $this->expectException(Exception\InvalidOpCode::class);
+        $this->expectException(Exception\InvalidOpcode::class);
         $this->expectExceptionMessage('Encountered unknown opcode 0x0F at offset 0 (0x0).');
         $simulator->simulate();
     }
@@ -933,7 +937,8 @@ class SimulatorTest extends \PHPUnit\Framework\TestCase
     /**
      * @return array<int, array{int}>
      */
-    public static function protectedAndLongModesDataProvider(): array {
+    public static function protectedAndLongModesDataProvider(): array
+    {
         return [[Simulator::PROTECTED_MODE], [Simulator::LONG_MODE]];
     }
 

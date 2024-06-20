@@ -2,10 +2,8 @@
 
 namespace shanept\AssemblySimulatorTests\Unit;
 
-use ReflectionProperty;
 use shanept\AssemblySimulator\Simulator;
 use shanept\AssemblySimulator\SimulatorFactory;
-use shanept\AssemblySimulatorTests\Fakes;
 
 /**
  * @covers shanept\AssemblySimulator\SimulatorFactory
