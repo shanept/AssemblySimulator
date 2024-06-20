@@ -1,9 +1,12 @@
 <?php
 
-namespace shanept\AssemblySimulatorTests\Integration\Instruction;
+namespace shanept\AssemblySimulatorTests\Integration\InstructionRegistration;
 
 use shanept\AssemblySimulator\Instruction\Call;
 
+/**
+ * @covers shanept\AssemblySimulator\Instruction\Call
+ */
 class CallInstructionRegistrationTest extends InstructionRegistrationTestBase
 {
     /**

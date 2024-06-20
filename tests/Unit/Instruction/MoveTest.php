@@ -6,7 +6,10 @@ use shanept\AssemblySimulator\Register;
 use shanept\AssemblySimulator\Simulator;
 use shanept\AssemblySimulator\Instruction\Move;
 
-class MovTest extends \PHPUnit\Framework\TestCase
+/**
+ * @covers shanept\AssemblySimulator\Instruction\Move
+ */
+class MoveTest extends \PHPUnit\Framework\TestCase
 {
     use MockSimulatorTrait;
 

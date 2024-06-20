@@ -5,6 +5,9 @@ namespace shanept\AssemblySimulatorTests\Unit\Address;
 use shanept\AssemblySimulator\Address\RipAddress;
 use shanept\AssemblySimulator\Address\AddressInterface;
 
+/**
+ * @covers shanept\AssemblySimulator\Address\RipAddress
+ */
 class RipAddressTest extends \PHPUnit\Framework\TestCase
 {
     public function testImplements(): void

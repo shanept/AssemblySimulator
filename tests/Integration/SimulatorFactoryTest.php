@@ -2,31 +2,45 @@
 
 namespace shanept\AssemblySimulatorTests\Integration;
 
+use shanept\AssemblySimulator\Simulator;
 use shanept\AssemblySimulator\SimulatorFactory;
+use shanept\AssemblySimulatorTests\Fakes\TestAssemblyInstruction;
+use shanept\AssemblySimulatorTests\Fakes\TestFactoryInstruction;
 
+/**
+ * @covers shanept\AssemblySimulator\SimulatorFactory
+ */
 class SimulatorFactoryTest extends \PHPUnit\Framework\TestCase
 {
     /**
+     * @depends shanept\AssemblySimulatorTests\Unit\SimulatorFactoryTest::testFactoryReturnsSimulatorInstance
      * @covers shanept\AssemblySimulator\SimulatorFactory
      */
-    public function testFactoryRegistersInstructionsWithSimulator(): void
+    public function testFactoryRegistersAdditionalInstructions()
     {
-        $simulator = SimulatorFactory::createSimulator();
+        $simulator = null;
 
-        // Extract the registered instructions from the instantiated simulator.
-        // Convert to a list of class names, for comparison with our defaults.
-        $reflectionInstructions = new \ReflectionProperty($simulator, 'registeredInstructions');
-        $registered = $reflectionInstructions->getValue($simulator);
+        // We will use the TestAssemblyInstruction class to create a mocked
+        // callback before assigning it to the TestFactoryInstruction.
+        $mockedInstruction = $this->createMock(TestAssemblyInstruction::class);
+        $mockedInstruction->expects($this->once())
+                          ->method('mockableCallback')
+                          ->willReturnCallback(function() use (&$simulator) {
+                              $simulator->advanceInstructionPointer(1);
+                              return true;
+                          });
 
-        if (! is_array($registered)) {
-            $this->fail('Simulator::$registeredInstructions returned non-array.');
-        }
+        // Now we set our mocked instruction. We will intentionally overwrite
+        // opcode E8 (CALL NEAR) to test we have priority over default instructions.
+        TestFactoryInstruction::$opcode = 0xE8;
+        TestFactoryInstruction::$callback = [&$mockedInstruction, 'mockableCallback'];
 
-        $registered = array_column($registered, 'reference');
-        $registered = array_map('get_class', $registered);
+        $simulator = SimulatorFactory::createSimulator(Simulator::PROTECTED_MODE, [
+            TestFactoryInstruction::class,
+        ]);
 
-        $expected = SimulatorFactory::getDefaultInstructionSet();
-
-        $this->assertEqualsCanonicalizing($expected, $registered);
+        // And see if we can call it.
+        $simulator->setCodeBuffer("\xE8");
+        $simulator->simulate();
     }
 }

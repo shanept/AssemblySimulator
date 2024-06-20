@@ -7,6 +7,9 @@ use shanept\AssemblySimulator\Simulator;
 use shanept\AssemblySimulator\Instruction\Call;
 use shanept\AssemblySimulatorTests\Fakes\TestAssemblyInstruction;
 
+/**
+ * @covers shanept\AssemblySimulator\Instruction\Call
+ */
 class CallTest extends \PHPUnit\Framework\TestCase
 {
     use MockSimulatorTrait;

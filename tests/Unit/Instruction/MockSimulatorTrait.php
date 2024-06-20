@@ -26,6 +26,8 @@ trait MockSimulatorTrait
     }
 
     /**
+     * @deprecated
+     *
      * @param MockSimulator $simulator
      * @param array<int, int> $initialRegisters
      *

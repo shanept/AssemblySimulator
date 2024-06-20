@@ -6,6 +6,9 @@ use shanept\AssemblySimulator\Register;
 use shanept\AssemblySimulator\Simulator;
 use shanept\AssemblySimulator\Instruction\ExclusiveOr;
 
+/**
+ * @covers shanept\AssemblySimulator\Simulator
+ */
 class LongModeTest extends \PHPUnit\Framework\TestCase
 {
     public function testOp66Uses16bitRegister(): void

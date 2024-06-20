@@ -6,6 +6,9 @@ use shanept\AssemblySimulator\Register;
 use shanept\AssemblySimulator\Simulator;
 use shanept\AssemblySimulator\Instruction\LoadEffectiveAddress;
 
+/**
+ * @covers shanept\AssemblySimulator\Instruction\LoadEffectiveAddress
+ */
 class LoadEffectiveAddressTest extends \PHPUnit\Framework\TestCase
 {
     use MockSimulatorTrait;

@@ -1,9 +1,12 @@
 <?php
 
-namespace shanept\AssemblySimulatorTests\Integration\Instruction;
+namespace shanept\AssemblySimulatorTests\Integration\InstructionRegistration;
 
 use shanept\AssemblySimulator\Instruction\Push;
 
+/**
+ * @covers shanept\AssemblySimulator\Instruction\Push
+ */
 class PushInstructionRegistrationTest extends InstructionRegistrationTestBase
 {
     /**

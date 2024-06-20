@@ -1,6 +1,8 @@
 /examples			export-ignore
 /tests				export-ignore
-/phpunit.xml			export-ignore
+/phpunit.dist.xml		export-ignore
+/phpstan.dist.neon		export-ignore
+/infection.json5.dist		export-ignore
 /README.md			export-ignore
 /.gitignore			export-ignore
 /.gitattributes			export-ignore

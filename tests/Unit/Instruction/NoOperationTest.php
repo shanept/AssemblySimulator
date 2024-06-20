@@ -4,6 +4,9 @@ namespace shanept\AssemblySimulatorTests\Unit\Instruction;
 
 use shanept\AssemblySimulator\Instruction\NoOperation;
 
+/**
+ * @covers shanept\AssemblySimulator\Instruction\NoOperation
+ */
 class NoOperationTest extends \PHPUnit\Framework\TestCase
 {
     use MockSimulatorTrait;

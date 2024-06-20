@@ -7,6 +7,9 @@ use shanept\AssemblySimulator\Register;
 use shanept\AssemblySimulator\Simulator;
 use shanept\AssemblySimulator\Instruction\ExclusiveOr;
 
+/**
+ * @covers shanept\AssemblySimulator\Instruction\ExclusiveOr
+ */
 class ExclusiveOrTest extends \PHPUnit\Framework\TestCase
 {
     use MockSimulatorTrait;

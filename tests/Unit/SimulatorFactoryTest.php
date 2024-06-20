@@ -2,9 +2,14 @@
 
 namespace shanept\AssemblySimulatorTests\Unit;
 
+use ReflectionProperty;
 use shanept\AssemblySimulator\Simulator;
 use shanept\AssemblySimulator\SimulatorFactory;
+use shanept\AssemblySimulatorTests\Fakes;
 
+/**
+ * @covers shanept\AssemblySimulator\SimulatorFactory
+ */
 class SimulatorFactoryTest extends \PHPUnit\Framework\TestCase
 {
     /**
@@ -49,8 +54,9 @@ class SimulatorFactoryTest extends \PHPUnit\Framework\TestCase
      */
     public function testFactoryReturnsSimulatorInstance(): void
     {
-        $simulator = SimulatorFactory::createSimulator();
+        $simulator = SimulatorFactory::createSimulator(Simulator::LONG_MODE);
 
         $this->assertInstanceOf(Simulator::class, $simulator);
+        $this->assertEquals(Simulator::LONG_MODE, $simulator->getMode());
     }
 }

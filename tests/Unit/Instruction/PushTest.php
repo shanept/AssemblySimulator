@@ -6,6 +6,9 @@ use shanept\AssemblySimulator\Register;
 use shanept\AssemblySimulator\Simulator;
 use shanept\AssemblySimulator\Instruction\Push;
 
+/**
+ * @covers shanept\AssemblySimulator\Instruction\Push
+ */
 class PushTest extends \PHPUnit\Framework\TestCase
 {
     use MockSimulatorTrait;

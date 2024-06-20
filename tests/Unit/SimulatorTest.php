@@ -10,6 +10,9 @@ use shanept\AssemblySimulator\Instruction\AssemblyInstruction;
 use shanept\AssemblySimulatorTests\Fakes\TestVoidInstruction;
 use shanept\AssemblySimulatorTests\Fakes\TestAssemblyInstruction;
 
+/**
+ * @covers shanept\AssemblySimulator\Simulator
+ */
 class SimulatorTest extends \PHPUnit\Framework\TestCase
 {
     /**
@@ -84,6 +87,9 @@ class SimulatorTest extends \PHPUnit\Framework\TestCase
         $simulator->setCodeBuffer("\x90");
 
         $this->expectException(Exception\Tainted::class);
+        $this->expectExceptionMessage(
+            'Attempted to operate a tainted environment. Did you forget to reset?'
+        );
         $simulator->simulate();
     }
 
@@ -130,12 +136,15 @@ class SimulatorTest extends \PHPUnit\Framework\TestCase
         $simulator->setStackAddress(0);
 
         $this->expectException(Exception\Tainted::class);
+        $this->expectExceptionMessage(
+            'Attempted to operate a tainted environment. Did you forget to reset?'
+        );
         $simulator->simulate();
     }
 
     public function testSetStackAddressChangesStackAddress(): void
     {
-        $simulator = new Simulator();
+        $simulator = new Simulator(Simulator::REAL_MODE);
 
         $stackAddress = $simulator->readRegister(Register::SP);
 
@@ -154,6 +163,9 @@ class SimulatorTest extends \PHPUnit\Framework\TestCase
         $simulator->setStackSize(1);
 
         $this->expectException(Exception\Tainted::class);
+        $this->expectExceptionMessage(
+            'Attempted to operate a tainted environment. Did you forget to reset?'
+        );
         $simulator->simulate();
     }
 
@@ -173,14 +185,28 @@ class SimulatorTest extends \PHPUnit\Framework\TestCase
         $simulator->reset();
 
         $this->expectException(\RangeException::class);
+        $this->expectExceptionMessage(sprintf(
+            'Exceeded maximum stack size. Attempted to allocate %d ' .
+            'new bytes to the stack, however it exceeds the maximum ' .
+            'stack size of %d.',
+            10,
+            5,
+        ));
         $simulator->writeStackAt(90, "\0");
     }
 
     public function testWriteStackPastMemoryLimitThrowsException(): void
     {
-        $simulator = new Simulator();
+        $simulator = new Simulator(Simulator::REAL_MODE);
 
         $this->expectException(\RangeException::class);
+        $this->expectExceptionMessage(sprintf(
+            'Exceeded maximum stack size. Attempted to allocate %d ' .
+            'new bytes to the stack, however it exceeds the maximum ' .
+            'stack size of %d.',
+            0x4000,
+            127,
+        ));
         $simulator->writeStackAt(0, "fail");
     }
 
@@ -190,10 +216,10 @@ class SimulatorTest extends \PHPUnit\Framework\TestCase
     public static function setStackDataProvider(): array
     {
         return [
-            [ [ 0 => "\x3", 1 => "\x4" ], "\x4\x3" ],
-            [ [ 0 => "\x3", 2 => "\x4" ], "\x4\x0\x3" ],
-            [ [ 0 => "\x3", 4 => "\x2\x1" ], "\x2\x1\x0\x0\x3" ],
-            [ [ 1 => "\x2" ], "\x2\x0" ],
+            [[0 => "\x3", 1 => "\x4"], "\x4\x3"],
+            [[0 => "\x3", 2 => "\x4"], "\x4\x0\x3"],
+            [[0 => "\x3", 4 => "\x2\x1"], "\x2\x1\x0\x0\x3"],
+            [[1 => "\x2"], "\x2\x0"],
         ];
     }
 
@@ -206,7 +232,7 @@ class SimulatorTest extends \PHPUnit\Framework\TestCase
     {
         $simulator = new Simulator(Simulator::REAL_MODE);
 
-        $stackAddress = $simulator->readRegister(Register::SP);
+        $stackAddress = 0x4000;
 
         foreach ($values as $position => $value) {
             $simulator->writeStackAt($stackAddress - $position, $value);
@@ -224,7 +250,7 @@ class SimulatorTest extends \PHPUnit\Framework\TestCase
     {
         $simulator = new Simulator(Simulator::REAL_MODE);
 
-        $stackAddress = $simulator->readRegister(Register::SP);
+        $stackAddress = 0x4000;
 
         foreach ($values as $position => $value) {
             $simulator->writeStackAt($stackAddress - $position, $value);
@@ -282,6 +308,19 @@ class SimulatorTest extends \PHPUnit\Framework\TestCase
                 0,
                 "\x79\x64\x31\x0",
             ],
+            [
+                [
+                    2  => "\x12\x34\x56",
+                    4  => "\x43\x21",
+                    8  => "\x64\x68\x30\x66",
+                    10  => "\x42\x42",
+                    14 => "\xCC\xCC\xCC\xCC",
+                    19 => "\x12\x00\x33\x00\x55",
+                ],
+                8,
+                "\x12\x00\x33\x00\x55\xCC\xCC\xCC\xCC\x42\x42\x00\x00\x00\x00" .
+                    "\x43\x21\x12\x34\x56",
+            ],
         ];
     }
 
@@ -295,9 +334,9 @@ class SimulatorTest extends \PHPUnit\Framework\TestCase
         int $clearIdx,
         string $expected,
     ): void {
-        $simulator = new Simulator();
+        $simulator = new Simulator(Simulator::REAL_MODE);
 
-        $startAddress = $simulator->readRegister(Register::SP);
+        $startAddress = 0x4000;
 
         foreach ($stack as $position => $value) {
             $simulator->writeStackAt($startAddress - $position, $value);
@@ -314,6 +353,11 @@ class SimulatorTest extends \PHPUnit\Framework\TestCase
         $simulator = new Simulator(Simulator::REAL_MODE);
 
         $this->expectException(Exception\StackUnderflow::class);
+        $this->expectExceptionMessage(sprintf(
+            'Stack underflow. Offset 0x%X requested. Stack starts at 0x%X.',
+            PHP_INT_MAX,
+            0x4000,
+        ));
         $simulator->readStackAt(PHP_INT_MAX, 1);
     }
 
@@ -322,6 +366,12 @@ class SimulatorTest extends \PHPUnit\Framework\TestCase
         $simulator = new Simulator();
 
         $this->expectException(Exception\StackIndex::class);
+        $this->expectExceptionMessage(sprintf(
+            'Stack offset 0x%X requested, but it exceeds the top of the ' .
+            'stack (0x%X)',
+            4560,
+            0x4000,
+        ));
         $simulator->readStackAt(4560, 2);
     }
 
@@ -330,6 +380,11 @@ class SimulatorTest extends \PHPUnit\Framework\TestCase
         $simulator = new Simulator(Simulator::REAL_MODE);
 
         $this->expectException(Exception\StackUnderflow::class);
+        $this->expectExceptionMessage(sprintf(
+            'Stack underflow. Offset 0x%X requested. Stack starts at 0x%X.',
+            PHP_INT_MAX,
+            0x4000,
+        ));
         $simulator->writeStackAt(PHP_INT_MAX, " ");
     }
 
@@ -338,6 +393,11 @@ class SimulatorTest extends \PHPUnit\Framework\TestCase
         $simulator = new Simulator(Simulator::REAL_MODE);
 
         $this->expectException(Exception\StackUnderflow::class);
+        $this->expectExceptionMessage(sprintf(
+            'Stack underflow. Offset 0x%X requested. Stack starts at 0x%X.',
+            PHP_INT_MAX,
+            0x4000,
+        ));
         $simulator->clearStackAt(PHP_INT_MAX, 2);
     }
 
@@ -346,6 +406,12 @@ class SimulatorTest extends \PHPUnit\Framework\TestCase
         $simulator = new Simulator();
 
         $this->expectException(Exception\StackIndex::class);
+        $this->expectExceptionMessage(sprintf(
+            'Stack offset 0x%X requested, but it exceeds the top of the ' .
+            'stack (0x%X)',
+            4560,
+            0x4000,
+        ));
         $simulator->clearStackAt(4560, 1);
     }
 
@@ -451,6 +517,8 @@ class SimulatorTest extends \PHPUnit\Framework\TestCase
     {
         $simulator = new Simulator(Simulator::LONG_MODE);
 
+        $simulator->setAddressBase(0xF);
+
         $mockInstructionOld = $this->createMock(AssemblyInstruction::class);
         $mockFunctionOld = function () {
             return true;
@@ -463,15 +531,18 @@ class SimulatorTest extends \PHPUnit\Framework\TestCase
         $simulator->setCodeBuffer("\x01");
 
         $this->expectException(Exception\InvalidOpcode::class);
+        $this->expectExceptionMessage('Encountered unknown opcode 0x01 at offset 0 (0xF).');
         $simulator->simulate();
     }
 
     public function testSimulatorThrowsExceptionIfTwoByteOpcodeIsNotRegistered(): void
     {
         $simulator = new Simulator(Simulator::LONG_MODE);
+        $simulator->setAddressBase(0xF);
 
         $mockInstructionOld = $this->createMock(AssemblyInstruction::class);
-        $mockFunctionOld = function () {
+        $mockFunctionOld = function () use ($simulator) {
+            $simulator->advanceInstructionPointer(1);
             return true;
         };
 
@@ -479,9 +550,10 @@ class SimulatorTest extends \PHPUnit\Framework\TestCase
             0x0F02 => $mockFunctionOld,
         ]);
 
-        $simulator->setCodeBuffer("\x0F\x01");
+        $simulator->setCodeBuffer("\x0F\x02\x0F\x04\x01");
 
-        $this->expectException(\OutOfBoundsException::class);
+        $this->expectException(Exception\InvalidOpCode::class);
+        $this->expectExceptionMessage('Encountered unknown opcode 0x0F04 at offset 2 (0x11).');
         $simulator->simulate();
     }
 
@@ -543,7 +615,8 @@ class SimulatorTest extends \PHPUnit\Framework\TestCase
 
         $simulator->setCodeBuffer("\x01");
 
-        $this->expectException(\OutOfBoundsException::class);
+        $this->expectException(Exception\InvalidOpCode::class);
+        $this->expectExceptionMessage('Encountered unknown opcode 0x01 at offset 0 (0x0).');
         $simulator->simulate();
     }
 
@@ -687,15 +760,28 @@ class SimulatorTest extends \PHPUnit\Framework\TestCase
         $simulator->simulate();
     }
 
-    public function testRexOnLongModeIsRecorded(): void
+    public static function rexOnLongModeIsRecordedDataProvider(): array {
+        return [
+            [0x40], [0x41], [0x42], [0x43], [0x44], [0x45], [0x46], [0x47],
+            [0x48], [0x49], [0x4A], [0x4B], [0x4C], [0x4D], [0x4E], [0x4F],
+        ];
+    }
+
+    /**
+     * @dataProvider rexOnLongModeIsRecordedDataProvider
+     */
+    public function testRexOnLongModeIsRecorded(int $rexValue): void
     {
         $simulator = new Simulator(Simulator::LONG_MODE);
 
         $mockInstruction = $this->createMock(AssemblyInstruction::class);
-        $mockFunction = function () use ($simulator) {
+        $mockFunction = function () use ($simulator, $rexValue) {
+            $this->assertEquals(1, $simulator->getInstructionPointer());
+
             $simulator->advanceInstructionPointer(1);
-            $this->assertEquals(0x48, $simulator->getRex());
-            $this->assertEquals([0x48], $simulator->getPrefixes());
+
+            $this->assertEquals($rexValue, $simulator->getRex());
+            $this->assertEquals([$rexValue], $simulator->getPrefixes());
             return true;
         };
 
@@ -703,7 +789,7 @@ class SimulatorTest extends \PHPUnit\Framework\TestCase
             0x01 => $mockFunction,
         ]);
 
-        $simulator->setCodeBuffer("\x48\x01");
+        $simulator->setCodeBuffer(chr($rexValue) . "\x01");
         $simulator->simulate();
     }
 
@@ -819,7 +905,8 @@ class SimulatorTest extends \PHPUnit\Framework\TestCase
 
         $simulator->setCodeBuffer("\x67");
 
-        $this->expectException(\OutOfBoundsException::class);
+        $this->expectException(Exception\InvalidOpCode::class);
+        $this->expectExceptionMessage('Encountered unknown opcode 0x67 at offset 0 (0x0).');
         $simulator->simulate();
     }
 
@@ -838,42 +925,35 @@ class SimulatorTest extends \PHPUnit\Framework\TestCase
 
         $simulator->setCodeBuffer("\x0F\x01");
 
-        $this->expectException(\OutOfBoundsException::class);
+        $this->expectException(Exception\InvalidOpCode::class);
+        $this->expectExceptionMessage('Encountered unknown opcode 0x0F at offset 0 (0x0).');
         $simulator->simulate();
     }
 
-    public function testTwoByteInstructionIsCalledInProtectedMode(): void
-    {
-        $simulator = new Simulator(Simulator::PROTECTED_MODE);
-
-        $mockInstruction = $this->createMock(TestAssemblyInstruction::class);
-        $mockFunction = function () use ($simulator) {
-            $simulator->advanceInstructionPointer(1);
-            $this->assertTrue(true);
-            return true;
-        };
-
-        $simulator->registerInstructions($mockInstruction, [
-            0x0F01  => $mockFunction,
-        ]);
-
-        $simulator->setCodeBuffer("\x0F\x01");
-        $simulator->simulate();
+    /**
+     * @return array<int, array{int}>
+     */
+    public static function protectedAndLongModesDataProvider(): array {
+        return [[Simulator::PROTECTED_MODE], [Simulator::LONG_MODE]];
     }
 
-    public function testTwoByteInstructionIsCalledInLongMode(): void
+    /**
+     * @dataProvider protectedAndLongModesDataProvider
+     */
+    public function testTwoByteInstructionIsCalledInProtectedAndLongModes(int $mode): void
     {
-        $simulator = new Simulator(Simulator::LONG_MODE);
+        $simulator = new Simulator($mode);
 
         $mockInstruction = $this->createMock(TestAssemblyInstruction::class);
-        $mockFunction = function () use ($simulator) {
-            $simulator->advanceInstructionPointer(1);
-            $this->assertTrue(true);
-            return true;
-        };
+        $mockInstruction->expects($this->once())
+                        ->method('mockableCallback')
+                        ->willReturnCallback(function () use ($simulator) {
+                            $simulator->advanceInstructionPointer(1);
+                            return true;
+                        });
 
         $simulator->registerInstructions($mockInstruction, [
-            0x0F01  => $mockFunction,
+            0x0F01  => [$mockInstruction, 'mockableCallback'],
         ]);
 
         $simulator->setCodeBuffer("\x0F\x01");
@@ -883,7 +963,7 @@ class SimulatorTest extends \PHPUnit\Framework\TestCase
     /**
      * @depends testOp66IsRecordedAsPrefixInLongMode
      * @depends testOp67IsRecordedAsPrefixInLongMode
-     * @depends testTwoByteInstructionIsCalledInLongMode
+     * @depends testTwoByteInstructionIsCalledInProtectedAndLongModes
      * @depends testRexOnLongModeIsRecorded
      */
     public function testGetPrefixReturnsListOfPrefixes(): void

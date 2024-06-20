@@ -1,9 +1,12 @@
 <?php
 
-namespace shanept\AssemblySimulatorTests\Integration\Instruction;
+namespace shanept\AssemblySimulatorTests\Integration\InstructionRegistration;
 
 use shanept\AssemblySimulator\Instruction\LoadEffectiveAddress;
 
+/**
+ * @covers shanept\AssemblySimulator\Instruction\LoadEffectiveAddress
+ */
 class LoadEffectiveAddressInstructionRegistrationTest extends InstructionRegistrationTestBase
 {
     /**

@@ -5,6 +5,9 @@ namespace shanept\AssemblySimulatorTests\Unit\Address;
 use shanept\AssemblySimulator\Address\ModRmAddress;
 use shanept\AssemblySimulator\Address\AddressInterface;
 
+/**
+ * @covers shanept\AssemblySimulator\Address\ModRmAddress
+ */
 class ModRmAddressTest extends \PHPUnit\Framework\TestCase
 {
     public function testImplements(): void

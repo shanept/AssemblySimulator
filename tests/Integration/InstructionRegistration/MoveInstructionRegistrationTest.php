@@ -1,9 +1,12 @@
 <?php
 
-namespace shanept\AssemblySimulatorTests\Integration\Instruction;
+namespace shanept\AssemblySimulatorTests\Integration\InstructionRegistration;
 
 use shanept\AssemblySimulator\Instruction\Move;
 
+/**
+ * @covers shanept\AssemblySimulator\Instruction\Move
+ */
 class MoveInstructionRegistrationTest extends InstructionRegistrationTestBase
 {
     /**

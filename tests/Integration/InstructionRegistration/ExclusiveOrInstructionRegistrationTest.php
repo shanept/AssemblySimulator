@@ -1,9 +1,12 @@
 <?php
 
-namespace shanept\AssemblySimulatorTests\Integration\Instruction;
+namespace shanept\AssemblySimulatorTests\Integration\InstructionRegistration;
 
 use shanept\AssemblySimulator\Instruction\ExclusiveOr;
 
+/**
+ * @covers shanept\AssemblySimulator\Instruction\ExclusiveOr
+ */
 class ExclusiveOrInstructionRegistrationTest extends InstructionRegistrationTestBase
 {
     /**

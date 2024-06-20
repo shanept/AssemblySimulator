@@ -5,6 +5,10 @@ namespace shanept\AssemblySimulatorTests\Unit;
 use shanept\AssemblySimulator\Register;
 use shanept\AssemblySimulator\Simulator;
 
+/**
+ * @covers shanept\AssemblySimulator\Register
+ * @covers shanept\AssemblySimulator\Simulator
+ */
 class RegistersTest extends \PHPUnit\Framework\TestCase
 {
     public function testEnsureSimulatorSetsUp8RegistersInRealMode(): void

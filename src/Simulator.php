@@ -596,7 +596,7 @@ class Simulator
                     'Exceeded maximum stack size. Attempted to allocate %d ' .
                     'new bytes to the stack, however it exceeds the maximum ' .
                     'stack size of %d.',
-                    $extendAmount,
+                    abs($stackOffset) - 1,
                     $this->stackSize,
                 );
 
@@ -746,11 +746,11 @@ class Simulator
      */
     private function taintProtection(): void
     {
-        $message = 'Attempted to operate a tainted environment. Did you ' .
-            'change modes and forget to reset?';
-
         if ($this->tainted) {
-            throw new Exception\Tainted($message);
+            throw new Exception\Tainted(
+                'Attempted to operate a tainted environment. ' .
+                'Did you forget to reset?'
+            );
         }
     }
 
@@ -869,7 +869,6 @@ class Simulator
         $this->taintProtection();
 
         $assembly_length = strlen($this->buffer);
-        $this->iPointer = 0;
 
         // Set up our instruction pointer then loop through until the end.
         for (; $this->iPointer < $assembly_length;) {
@@ -916,13 +915,13 @@ class Simulator
 
                 default:
                     $format =
-                        'Encountered unknown opcode 0x%X at offset %d (0x%x).';
+                        'Encountered unknown opcode 0x%02X at offset %d (0x%X).';
                     $iPointer = $this->iPointer;
 
                     if ($isTwoByteOp) {
                         $iPointer--;
-                        $format = 'Encountered unknown opcode 0x0F%X at ' .
-                                  'offset %d (0x%x).';
+                        $format = 'Encountered unknown opcode 0x0F%02X at ' .
+                                  'offset %d (0x%X).';
                     }
 
                     $address = $this->addressBase + $iPointer;

@@ -14,6 +14,9 @@ class AssemblyInstructionTest extends \PHPUnit\Framework\TestCase
 {
     use MockSimulatorTrait;
 
+    /**
+     * @covers shanept\AssemblySimulator\Instruction\AssemblyInstruction
+     */
     public function testSetSimulatorAttemptsToRegisterInstruction(): void
     {
         $simulator = $this->getMockSimulator();
@@ -27,32 +30,61 @@ class AssemblyInstructionTest extends \PHPUnit\Framework\TestCase
     }
 
     /**
-     * @return array<int, array{int, int, ?int, int}>
+     * @covers shanept\AssemblySimulator\Instruction\AssemblyInstruction
      */
-    public static function getAddressSizeDataProvider(): array
+    public function testGetSimulatorReturnsSetSimulator(): void
+    {
+        $simulator = $this->getMockSimulator();
+        $instruction = new TestAssemblyInstruction();
+
+        $instruction->setSimulator($simulator);
+
+        $getSimulator = new ReflectionMethod($instruction, 'getSimulator');
+
+        $this->assertEquals($simulator, $getSimulator->invoke($instruction));
+    }
+
+    /**
+     * @return array<int, array{int, string, int, ?int, int}>
+     */
+    public static function getAddressOrOperandSizeDataProvider(): array
     {
         return [
-            // No prefix
-            [Simulator::REAL_MODE, 0, null, 16],
-            [Simulator::PROTECTED_MODE, 0, null, 32],
-            [Simulator::LONG_MODE, 0, null, 64],
-            // 64-bit operand size
-            [Simulator::LONG_MODE, 0x48, null, 64],
+            // No address size prefix
+            [Simulator::REAL_MODE, 'getAddressSize', 0, null, 16],
+            [Simulator::PROTECTED_MODE, 'getAddressSize', 0, null, 32],
+            [Simulator::LONG_MODE, 'getAddressSize', 0, null, 64],
+            [Simulator::LONG_MODE, 'getAddressSize', 0x48, null, 64],
 
-            // Prefix applied
-            [Simulator::REAL_MODE, 0, 0x67, 32],
-            [Simulator::PROTECTED_MODE, 0, 0x67, 16],
-            [Simulator::LONG_MODE, 0, 0x67, 64],
-            // 64-bit operand size
-            [Simulator::LONG_MODE, 0x48, 0x67, 64],
+            // Address size prefix applied
+            [Simulator::REAL_MODE, 'getAddressSize', 0, 0x67, 32],
+            [Simulator::PROTECTED_MODE, 'getAddressSize', 0, 0x67, 16],
+            [Simulator::LONG_MODE, 'getAddressSize', 0, 0x67, 64],
+            [Simulator::LONG_MODE, 'getAddressSize', 0x48, 0x67, 64],
+
+            // No operand size prefix
+            [Simulator::REAL_MODE, 'getOperandSize', 0, null, 16],
+            [Simulator::PROTECTED_MODE, 'getOperandSize', 0, null, 32],
+            [Simulator::LONG_MODE, 'getOperandSize', 0, null, 32],
+            [Simulator::LONG_MODE, 'getOperandSize', 0x48, null, 64],
+
+            // Operand size prefix applied
+            [Simulator::REAL_MODE, 'getOperandSize', 0, 0x66, 32],
+            [Simulator::PROTECTED_MODE, 'getOperandSize', 0, 0x66, 16],
+            [Simulator::LONG_MODE, 'getOperandSize', 0, 0x66, 16],
+            [Simulator::LONG_MODE, 'getOperandSize', 0x48, 0x66, 64],
         ];
     }
 
     /**
-     * @dataProvider getAddressSizeDataProvider
+     * @dataProvider getAddressOrOperandSizeDataProvider
+     *
+     * @covers shanept\AssemblySimulator\Instruction\AssemblyInstruction::getAddressSize
+     * @covers shanept\AssemblySimulator\Instruction\AssemblyInstruction::getOperandSize
      */
-    public function testGetAddressSize(
+    public function testGetAddressOrOperandSize(
         int $simulatorMode,
+        string $functionName,
         int $rex,
         ?int $prefix,
         int $expected,
@@ -82,7 +114,7 @@ class AssemblyInstructionTest extends \PHPUnit\Framework\TestCase
         $instruction = new TestAssemblyInstruction();
         $instruction->setSimulator($simulator);
 
-        $fn = new ReflectionMethod($instruction, 'getAddressSize');
+        $fn = new ReflectionMethod($instruction, $functionName);
 
         $this->assertEquals($expected, $fn->invoke($instruction));
     }
@@ -165,6 +197,8 @@ class AssemblyInstructionTest extends \PHPUnit\Framework\TestCase
 
     /**
      * @dataProvider parseModRmByteDataProvider
+     *
+     * @covers shanept\AssemblySimulator\Instruction\AssemblyInstruction::parseModRmByte
      */
     public function testParseModRmByte(
         string $byte,
@@ -189,22 +223,28 @@ class AssemblyInstructionTest extends \PHPUnit\Framework\TestCase
     /**
      * @return array<int, array{int, ?int, RegisterObj, int, string, int, int, int, int}>
      */
-    public static function parseAddressOnNonRipOrSibAddressDataProvider(): array
+    public static function parseAddressOnMemoryOffsetAddressDataProvider(): array
     {
         return [
-            [Simulator::LONG_MODE,  null, Register::EBX, 849, "\x10", 1, 0, 3, 865],
-            [Simulator::PROTECTED_MODE, null, Register::EBX, 849, "\x10\x00\x00\x00", 2, 0, 3, 865],
-            [Simulator::REAL_MODE, 0x66, Register::EBX, 277938170, "\x10", 1, 0, 3, 277938186],
+            [Simulator::LONG_MODE, 0x00, null, Register::EBX, 849, "\x10", 1, 0, 3, 865],
+            [Simulator::PROTECTED_MODE, 0x00, null, Register::EBX, 849, "\x10\x00\x00\x00", 2, 0, 3, 865],
+            [Simulator::REAL_MODE, 0x00, 0x66, Register::EBX, 277938170, "\x10", 1, 0, 3, 277938186],
+            [Simulator::REAL_MODE, 0x00, 0x66, Register::EBX, 277938170, "\x10", 1, 0, 3, 277938186],
+            [Simulator::REAL_MODE, 0x48, 0x66, Register::RBX, 277938170, "\x10", 1, 0, 3, 277938186],
         ];
     }
 
     /**
-     * @dataProvider parseAddressOnNonRipOrSibAddressDataProvider
+     * @dataProvider parseAddressOnMemoryOffsetAddressDataProvider
+     *
+     * @covers shanept\AssemblySimulator\Instruction\AssemblyInstruction::parseAddress
+     * @covers shanept\AssemblySimulator\Instruction\AssemblyInstruction::parseMemoryOffset
      *
      * @param RegisterObj $register
      */
-    public function testParseAddressOnNonRipOrSibAddress(
+    public function testParseAddressOnMemoryOffsetAddress(
         int $simulatorMode,
+        int $rexValue,
         ?int $prefixValue,
         array $register,
         int $regValue,
@@ -219,6 +259,9 @@ class AssemblyInstructionTest extends \PHPUnit\Framework\TestCase
         $simulator->method('readRegister')
                   ->willReturn($regValue)
                   ->with($register);
+
+        $simulator->method('getRex')
+                  ->willReturn($rexValue);
 
         $simulator->method('hasPrefix')
                   ->willReturnCallback(function ($requested) use ($prefixValue) {
@@ -271,6 +314,9 @@ class AssemblyInstructionTest extends \PHPUnit\Framework\TestCase
     /**
      * @dataProvider parseAddressOnModRmDisp32AddressInProtectedModeDataProvider
      *
+     * @covers shanept\AssemblySimulator\Instruction\AssemblyInstruction::parseAddress
+     * @covers shanept\AssemblySimulator\Instruction\AssemblyInstruction::parseMemoryOffset
+     *
      * @param RegisterObj $reg
      */
     public function testParseAddressOnModRmDisp32AddressInProtectedMode(
@@ -313,6 +359,10 @@ class AssemblyInstructionTest extends \PHPUnit\Framework\TestCase
         $this->assertEquals(4, $address->getDisplacement());
     }
 
+    /**
+    * @covers shanept\AssemblySimulator\Instruction\AssemblyInstruction::parseAddress
+    * @covers shanept\AssemblySimulator\Instruction\AssemblyInstruction::parseRipAddress
+    */
     public function testParseAddressAcceptsRipAddressOnLongMode(): void
     {
         $simulator = $this->getMockSimulator(Simulator::LONG_MODE);
@@ -343,6 +393,10 @@ class AssemblyInstructionTest extends \PHPUnit\Framework\TestCase
         $this->assertEquals(0xF00F1917E5, $address->getAddress());
     }
 
+    /**
+     * @covers shanept\AssemblySimulator\Instruction\AssemblyInstruction::parseAddress
+     * @covers shanept\AssemblySimulator\Instruction\AssemblyInstruction::parseMemoryOffset
+     */
     public function testParseAddressLooksLikeRipOnProtectedModeReturnsModRmAddress(): void
     {
         $simulator = $this->getMockSimulator(Simulator::PROTECTED_MODE);
@@ -376,6 +430,10 @@ class AssemblyInstructionTest extends \PHPUnit\Framework\TestCase
         $this->assertEquals(0xF1917E0, $address->getAddress());
     }
 
+    /**
+     * @covers shanept\AssemblySimulator\Instruction\AssemblyInstruction::parseAddress
+     * @covers shanept\AssemblySimulator\Instruction\AssemblyInstruction::parseMemoryOffset
+     */
     public function testParseAddressDoesNotUseRipOnModRmMod1(): void
     {
         $simulator = $this->getMockSimulator(Simulator::LONG_MODE);
@@ -428,6 +486,10 @@ class AssemblyInstructionTest extends \PHPUnit\Framework\TestCase
 
     /**
      * @dataProvider parseSibAddressDataProvider
+     *
+     * @covers shanept\AssemblySimulator\Instruction\AssemblyInstruction::parseAddress
+     * @covers shanept\AssemblySimulator\Instruction\AssemblyInstruction::parseSibByte
+     * @covers shanept\AssemblySimulator\Instruction\AssemblyInstruction::parseSibAddress
      *
      * @param RegisterObj $scaleReg
      * @param RegisterObj $indexReg
@@ -506,6 +568,11 @@ class AssemblyInstructionTest extends \PHPUnit\Framework\TestCase
         $this->assertEquals(1 + $dispByteLen, $address->getDisplacement());
     }
 
+    /**
+     * @covers shanept\AssemblySimulator\Instruction\AssemblyInstruction::parseAddress
+     * @covers shanept\AssemblySimulator\Instruction\AssemblyInstruction::parseSibByte
+     * @covers shanept\AssemblySimulator\Instruction\AssemblyInstruction::parseSibAddress
+     */
     public function testParseAddressWithSibDisp32OverrideInProtectedMode(): void
     {
         $simulator = $this->getMockSimulator(Simulator::PROTECTED_MODE);
@@ -544,6 +611,44 @@ class AssemblyInstructionTest extends \PHPUnit\Framework\TestCase
         $this->assertEquals(5, $address->getDisplacement());
     }
 
+    /**
+     * @return array<int, array{int, string, int}>
+     */
+    public static function unpackImmediateDataProvider(): array
+    {
+        return [
+            [8, "\x32", 0x32],
+            [8, "\x12", 0x12],
+            [16, "\x32\x15", 0x1532],
+            [16, "\x93\xFA", 0xFA93],
+            [32, "\x90\x21\x43\x42", 0x42432190],
+            [32, "\x12\x34\x56\x78", 0x78563412],
+            [64, "\x01\x23\x45\xE7\x89\xAB\xCD\x6F", 0x6FCDAB89E7452301],
+            [64, "\xFF\xFF\xFF\xFF\xFF\xFF\xFF\x0F", 0xFFFFFFFFFFFFFFF],
+        ];
+    }
+
+    /**
+     * @dataProvider unpackImmediateDataProvider
+     *
+     * @covers shanept\AssemblySimulator\Instruction\AssemblyInstruction::unpackImmediate
+     */
+    public function testUnpackImmediate(
+        int $operandSize,
+        string $binaryString,
+        int $expected,
+    ): void {
+        $instruction = new TestAssemblyInstruction();
+
+        $unpackMethod = new ReflectionMethod($instruction, "unpackImmediate");
+
+        $actual = $unpackMethod->invoke($instruction, $binaryString, $operandSize);
+        $this->assertEquals($expected, $actual);
+    }
+
+    /**
+     * @covers shanept\AssemblySimulator\Instruction\AssemblyInstruction::unpackImmediate
+     */
     public function testUnpackThrowsExceptionOnInvalidImmediateForSize(): void
     {
         $instruction = new TestAssemblyInstruction();
@@ -552,5 +657,57 @@ class AssemblyInstructionTest extends \PHPUnit\Framework\TestCase
 
         $this->expectException(\UnexpectedValueException::class);
         $unpackMethod->invoke($instruction, "\x1", 64);
+    }
+
+    /**
+     * @dataProvider unpackImmediateDataProvider
+     *
+     * @covers shanept\AssemblySimulator\Instruction\AssemblyInstruction::packImmediate
+     */
+    public function testPackImmediate(
+        int $operandSize,
+        string $expected,
+        int $immediateToPack,
+    ): void {
+        $instruction = new TestAssemblyInstruction();
+
+        $unpackMethod = new ReflectionMethod($instruction, "packImmediate");
+
+        $actual = $unpackMethod->invoke($instruction, $immediateToPack, $operandSize);
+        $this->assertEquals($expected, $actual);
+    }
+
+    /**
+     * @return array<int, array{int, RegisterObj}
+     */
+    public static function getStackPointerDataProvider(): array
+    {
+        return [
+            [Simulator::REAL_MODE, Register::SP],
+            [Simulator::PROTECTED_MODE, Register::ESP],
+            [Simulator::LONG_MODE, Register::RSP],
+        ];
+    }
+
+    /**
+     * @dataProvider getStackPointerDataProvider
+     *
+     * @covers shanept\AssemblySimulator\Instruction\AssemblyInstruction::getStackPointerRegister
+     *
+     * @param RegisterObj $expectedStackPointer
+     */
+    public function testGetStackPointer(
+        int $mode,
+        array $expectedStackPointer
+    ): void {
+        $simulator = $this->getMockSimulator($mode);
+
+        $instruction = new TestAssemblyInstruction();
+        $instruction->setSimulator($simulator);
+
+        $unpackMethod = new ReflectionMethod($instruction, "getStackPointerRegister");
+
+        $actual = $unpackMethod->invoke($instruction);
+        $this->assertEquals($expectedStackPointer, $actual);
     }
 }

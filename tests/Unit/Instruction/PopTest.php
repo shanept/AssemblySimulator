@@ -6,6 +6,9 @@ use shanept\AssemblySimulator\Register;
 use shanept\AssemblySimulator\Simulator;
 use shanept\AssemblySimulator\Instruction\Pop;
 
+/**
+ * @covers shanept\AssemblySimulator\Instruction\Pop
+ */
 class PopTest extends \PHPUnit\Framework\TestCase
 {
     use MockSimulatorTrait;
