@@ -15,6 +15,8 @@ class AssemblyInstructionTest extends \PHPUnit\Framework\TestCase
     use MockSimulatorTrait;
 
     /**
+     * @small
+     *
      * @covers shanept\AssemblySimulator\Instruction\AssemblyInstruction
      */
     public function testSetSimulatorAttemptsToRegisterInstruction(): void
@@ -30,6 +32,8 @@ class AssemblyInstructionTest extends \PHPUnit\Framework\TestCase
     }
 
     /**
+     * @small
+     *
      * @covers shanept\AssemblySimulator\Instruction\AssemblyInstruction
      */
     public function testGetSimulatorReturnsSetSimulator(): void
@@ -78,6 +82,7 @@ class AssemblyInstructionTest extends \PHPUnit\Framework\TestCase
 
     /**
      * @dataProvider getAddressOrOperandSizeDataProvider
+     * @small
      *
      * @covers shanept\AssemblySimulator\Instruction\AssemblyInstruction::getAddressSize
      * @covers shanept\AssemblySimulator\Instruction\AssemblyInstruction::getOperandSize
@@ -197,6 +202,7 @@ class AssemblyInstructionTest extends \PHPUnit\Framework\TestCase
 
     /**
      * @dataProvider parseModRmByteDataProvider
+     * @small
      *
      * @covers shanept\AssemblySimulator\Instruction\AssemblyInstruction::parseModRmByte
      */
@@ -236,6 +242,7 @@ class AssemblyInstructionTest extends \PHPUnit\Framework\TestCase
 
     /**
      * @dataProvider parseAddressOnMemoryOffsetAddressDataProvider
+     * @small
      *
      * @covers shanept\AssemblySimulator\Instruction\AssemblyInstruction::parseAddress
      * @covers shanept\AssemblySimulator\Instruction\AssemblyInstruction::parseMemoryOffset
@@ -313,6 +320,7 @@ class AssemblyInstructionTest extends \PHPUnit\Framework\TestCase
 
     /**
      * @dataProvider parseAddressOnModRmDisp32AddressInProtectedModeDataProvider
+     * @small
      *
      * @covers shanept\AssemblySimulator\Instruction\AssemblyInstruction::parseAddress
      * @covers shanept\AssemblySimulator\Instruction\AssemblyInstruction::parseMemoryOffset
@@ -360,9 +368,11 @@ class AssemblyInstructionTest extends \PHPUnit\Framework\TestCase
     }
 
     /**
-    * @covers shanept\AssemblySimulator\Instruction\AssemblyInstruction::parseAddress
-    * @covers shanept\AssemblySimulator\Instruction\AssemblyInstruction::parseRipAddress
-    */
+     * @small
+     *
+     * @covers shanept\AssemblySimulator\Instruction\AssemblyInstruction::parseAddress
+     * @covers shanept\AssemblySimulator\Instruction\AssemblyInstruction::parseRipAddress
+     */
     public function testParseAddressAcceptsRipAddressOnLongMode(): void
     {
         $simulator = $this->getMockSimulator(Simulator::LONG_MODE);
@@ -394,6 +404,8 @@ class AssemblyInstructionTest extends \PHPUnit\Framework\TestCase
     }
 
     /**
+     * @small
+     *
      * @covers shanept\AssemblySimulator\Instruction\AssemblyInstruction::parseAddress
      * @covers shanept\AssemblySimulator\Instruction\AssemblyInstruction::parseMemoryOffset
      */
@@ -431,6 +443,8 @@ class AssemblyInstructionTest extends \PHPUnit\Framework\TestCase
     }
 
     /**
+     * @small
+     *
      * @covers shanept\AssemblySimulator\Instruction\AssemblyInstruction::parseAddress
      * @covers shanept\AssemblySimulator\Instruction\AssemblyInstruction::parseMemoryOffset
      */
@@ -486,6 +500,7 @@ class AssemblyInstructionTest extends \PHPUnit\Framework\TestCase
 
     /**
      * @dataProvider parseSibAddressDataProvider
+     * @small
      *
      * @covers shanept\AssemblySimulator\Instruction\AssemblyInstruction::parseAddress
      * @covers shanept\AssemblySimulator\Instruction\AssemblyInstruction::parseSibByte
@@ -569,6 +584,8 @@ class AssemblyInstructionTest extends \PHPUnit\Framework\TestCase
     }
 
     /**
+     * @small
+     *
      * @covers shanept\AssemblySimulator\Instruction\AssemblyInstruction::parseAddress
      * @covers shanept\AssemblySimulator\Instruction\AssemblyInstruction::parseSibByte
      * @covers shanept\AssemblySimulator\Instruction\AssemblyInstruction::parseSibAddress
@@ -587,7 +604,8 @@ class AssemblyInstructionTest extends \PHPUnit\Framework\TestCase
                   ->willReturn(3);
 
         $simulator->method('getCodeAtInstruction')
-                  ->willReturn("\x25");
+                  ->willReturn("\x25")
+                  ->with(1);
 
         $simulator->expects($this->once())
                   ->method('getCodeBuffer')
@@ -630,6 +648,7 @@ class AssemblyInstructionTest extends \PHPUnit\Framework\TestCase
 
     /**
      * @dataProvider unpackImmediateDataProvider
+     * @small
      *
      * @covers shanept\AssemblySimulator\Instruction\AssemblyInstruction::unpackImmediate
      */
@@ -647,6 +666,8 @@ class AssemblyInstructionTest extends \PHPUnit\Framework\TestCase
     }
 
     /**
+     * @small
+     *
      * @covers shanept\AssemblySimulator\Instruction\AssemblyInstruction::unpackImmediate
      */
     public function testUnpackThrowsExceptionOnInvalidImmediateForSize(): void
@@ -661,6 +682,7 @@ class AssemblyInstructionTest extends \PHPUnit\Framework\TestCase
 
     /**
      * @dataProvider unpackImmediateDataProvider
+     * @small
      *
      * @covers shanept\AssemblySimulator\Instruction\AssemblyInstruction::packImmediate
      */
@@ -691,6 +713,7 @@ class AssemblyInstructionTest extends \PHPUnit\Framework\TestCase
 
     /**
      * @dataProvider getStackPointerDataProvider
+     * @small
      *
      * @covers shanept\AssemblySimulator\Instruction\AssemblyInstruction::getStackPointerRegister
      *

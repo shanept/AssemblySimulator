@@ -53,6 +53,7 @@ class PushTest extends \PHPUnit\Framework\TestCase
 
     /**
      * @dataProvider pushOnStack5xDataProvider
+     * @small
      *
      * @param RegisterObj $stackPointer
      * @param RegisterObj $expectedRegister
@@ -79,10 +80,11 @@ class PushTest extends \PHPUnit\Framework\TestCase
                   });
 
         $simulator->method('getCodeAtInstruction')
-                  ->willReturn($opcode);
+                  ->willReturn($opcode)
+                  ->with(1);
 
         $simulator->method('readRegister')
-                  ->willReturnCallback(function ($register, $size) use (
+                  ->willReturnCallback(function ($register) use (
                       $stackPointer,
                       $stackPosition,
                       $expectedRegister,
@@ -124,6 +126,7 @@ class PushTest extends \PHPUnit\Framework\TestCase
 
     /**
      * @dataProvider pushOnStack68DataProvider
+     * @small
      *
      * @param RegisterObj $stackPointer
      */
@@ -146,7 +149,8 @@ class PushTest extends \PHPUnit\Framework\TestCase
                   });
 
         $simulator->method('getCodeAtInstruction')
-                  ->willReturn($immediate);
+                  ->willReturn($immediate)
+                  ->with(strlen($immediate));
 
         $simulator->method('readRegister')
                   ->willReturn($stackPosition)
@@ -176,6 +180,7 @@ class PushTest extends \PHPUnit\Framework\TestCase
 
     /**
      * @dataProvider pushOnStack6aDataProvider
+     * @small
      *
      * @param RegisterObj $stackPointer
      */
@@ -196,7 +201,8 @@ class PushTest extends \PHPUnit\Framework\TestCase
                   ->willReturn([$prefixValue]);
 
         $simulator->method('getCodeAtInstruction')
-                  ->willReturn($immediate);
+                  ->willReturn($immediate)
+                  ->with(strlen($immediate));
 
         $simulator->method('readRegister')
                   ->willReturn($stackPosition)

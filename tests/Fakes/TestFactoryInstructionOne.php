@@ -4,7 +4,7 @@ namespace shanept\AssemblySimulatorTests\Fakes;
 
 use shanept\AssemblySimulator\Instruction\AssemblyInstruction;
 
-class TestFactoryInstruction extends AssemblyInstruction
+class TestFactoryInstructionOne extends AssemblyInstruction
 {
     /**
      * @var int

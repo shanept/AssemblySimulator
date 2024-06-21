@@ -6,9 +6,30 @@
         ],
         "excludes": [
             "Exception"
-        ]
+        ],
+    },
+    "logs": {
+        "html": "infection-log.html"
     },
     "mutators": {
-        "@default": true
-    }
+        "@default": true,
+        "global-ignoreSourceCodeByRegex": [
+            "\\$this->taintProtection\\(\\);"
+        ],
+        "UnwrapArrayMerge": {
+            "ignore": [
+                "shanept\\AssemblySimulator\\SimulatorFactory::createSimulator",
+            ],
+        },
+        "GreaterThan": {
+            "ignoreSourceCodeByRegex": [
+                "if \\(\\$zeroPadAmount > 0\\).*"
+            ],
+        },
+        "ArrayItemRemoval": {
+            "ignore": [
+                "shanept\\AssemblySimulator\\Simulator::registerInstructions",
+            ],
+        },
+    },
 }

@@ -718,7 +718,7 @@ class Register
         bool $rexSet = false,
         bool $rExtend = false,
     ): array {
-        if ($rexSet & $rExtend) {
+        if ($rexSet && $rExtend) {
             return self::REX_ID_MAP[$id][$size];
         }
 

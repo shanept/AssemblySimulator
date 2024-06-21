@@ -34,6 +34,9 @@ class ExclusiveOrTest extends \PHPUnit\Framework\TestCase
         ];
     }
 
+    /**
+     * @small
+     */
     public function testXor30RegisterAgainstItselfIsEmpty(): void
     {
         $simulator = $this->getMockSimulator(Simulator::LONG_MODE);
@@ -54,8 +57,8 @@ class ExclusiveOrTest extends \PHPUnit\Framework\TestCase
                   ->with(Register::R9B, 0);
 
         $simulator->method('getCodeAtInstruction')
-                  ->with(1)
-                  ->willReturn("\xC9");
+                  ->willReturn("\xC9")
+                  ->with(1);
 
         $xor = new ExclusiveOr();
         $xor->setSimulator($simulator);
@@ -65,6 +68,7 @@ class ExclusiveOrTest extends \PHPUnit\Framework\TestCase
 
     /**
      * @dataProvider xorRegisterAgainstItselfIsEmptyDataProvider
+     * @small
      *
      * @param RegisterObj $register
      */
@@ -96,8 +100,8 @@ class ExclusiveOrTest extends \PHPUnit\Framework\TestCase
                   ->with($register, 0);
 
         $simulator->method('getCodeAtInstruction')
-                  ->with(1)
-                  ->willReturn($instruction);
+                  ->willReturn($instruction)
+                  ->with(1);
 
         $xor = new ExclusiveOr();
         $xor->setSimulator($simulator);
@@ -105,6 +109,9 @@ class ExclusiveOrTest extends \PHPUnit\Framework\TestCase
         $xor->executeOperand31();
     }
 
+    /**
+     * @small
+     */
     public function testXor32RegisterAgainstItselfIsEmpty(): void
     {
         $simulator = $this->getMockSimulator(Simulator::LONG_MODE);
@@ -125,8 +132,8 @@ class ExclusiveOrTest extends \PHPUnit\Framework\TestCase
                   ->with(Register::R9B, 0);
 
         $simulator->method('getCodeAtInstruction')
-                  ->with(1)
-                  ->willReturn("\xC9");
+                  ->willReturn("\xC9")
+                  ->with(1);
 
         $xor = new ExclusiveOr();
         $xor->setSimulator($simulator);
@@ -136,6 +143,7 @@ class ExclusiveOrTest extends \PHPUnit\Framework\TestCase
 
     /**
      * @dataProvider xorRegisterAgainstItselfIsEmptyDataProvider
+     * @small
      *
      * @param RegisterObj $register
      */
@@ -168,8 +176,8 @@ class ExclusiveOrTest extends \PHPUnit\Framework\TestCase
 
         $simulator->expects($this->once())
                   ->method('getCodeAtInstruction')
-                  ->with(1)
-                  ->willReturn($instruction);
+                  ->willReturn($instruction)
+                  ->with(1);
 
         $xor = new ExclusiveOr();
         $xor->setSimulator($simulator);
@@ -199,6 +207,7 @@ class ExclusiveOrTest extends \PHPUnit\Framework\TestCase
 
     /**
      * @dataProvider xorWithTwoRegistersDataProvider
+     * @small
      *
      * @param RegisterObj $firstRegister
      * @param RegisterObj $secondRegister
@@ -252,8 +261,8 @@ class ExclusiveOrTest extends \PHPUnit\Framework\TestCase
 
         $simulator->expects($this->once())
                   ->method('getCodeAtInstruction')
-                  ->with(1)
-                  ->willReturn($instruction);
+                  ->willReturn($instruction)
+                  ->with(1);
 
         $xor = new ExclusiveOr();
         $xor->setSimulator($simulator);
@@ -263,6 +272,7 @@ class ExclusiveOrTest extends \PHPUnit\Framework\TestCase
 
     /**
      * @dataProvider xorWithTwoRegistersDataProvider
+     * @small
      *
      * @param RegisterObj $firstRegister
      * @param RegisterObj $secondRegister
@@ -316,8 +326,8 @@ class ExclusiveOrTest extends \PHPUnit\Framework\TestCase
 
         $simulator->expects($this->once())
                   ->method('getCodeAtInstruction')
-                  ->with(1)
-                  ->willReturn($instruction);
+                  ->willReturn($instruction)
+                  ->with(1);
 
         $xor = new ExclusiveOr();
         $xor->setSimulator($simulator);
@@ -325,6 +335,9 @@ class ExclusiveOrTest extends \PHPUnit\Framework\TestCase
         $xor->executeOperand33();
     }
 
+    /**
+     * @small
+     */
     public function testXorClearsFlagsAfterExecution(): void
     {
         $simulator = $this->getMockSimulator(Simulator::LONG_MODE);
@@ -386,8 +399,8 @@ class ExclusiveOrTest extends \PHPUnit\Framework\TestCase
                   ->willReturn(false);
 
         $simulator->method('getCodeAtInstruction')
-                  ->with(1)
-                  ->willReturn("\xC9");
+                  ->willReturn("\xC9")
+                  ->with(1);
 
         $xor = new ExclusiveOr();
         $xor->setSimulator($simulator);
@@ -395,6 +408,9 @@ class ExclusiveOrTest extends \PHPUnit\Framework\TestCase
         $xor->executeOperand31();
     }
 
+    /**
+     * @small
+     */
     public function testXorWithIncorrectModByteFails(): void
     {
         $simulator = $this->getMockSimulator(Simulator::LONG_MODE);
@@ -409,8 +425,8 @@ class ExclusiveOrTest extends \PHPUnit\Framework\TestCase
 
         $simulator->expects($this->once())
                   ->method('getCodeAtInstruction')
-                  ->with(1)
-                  ->willReturn("\x89");
+                  ->willReturn("\x89")
+                  ->with(1);
 
         $xor = new ExclusiveOr();
         $xor->setSimulator($simulator);

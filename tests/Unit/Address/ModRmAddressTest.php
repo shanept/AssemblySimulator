@@ -10,6 +10,9 @@ use shanept\AssemblySimulator\Address\AddressInterface;
  */
 class ModRmAddressTest extends \PHPUnit\Framework\TestCase
 {
+    /**
+     * @small
+     */
     public function testImplements(): void
     {
         $modrm = new ModRmAddress(0, 0, 1);
@@ -70,6 +73,7 @@ class ModRmAddressTest extends \PHPUnit\Framework\TestCase
 
     /**
      * @dataProvider modRmAddressResolvesCorrectly
+     * @small
      */
     public function testModRmAddressResolvesCorrectly(
         int $baseAddress,
@@ -83,6 +87,25 @@ class ModRmAddressTest extends \PHPUnit\Framework\TestCase
         $this->assertEquals($expected, $modrm->getAddress($offset));
     }
 
+    /**
+     * @dataProvider modRmAddressResolvesCorrectly
+     * @small
+     */
+    public function testModRmAddressWithoutOffsetResolvesCorrectly(
+        int $baseAddress,
+        int $displacement,
+        int $dispSize,
+        int $offset,
+        int $expected,
+    ): void {
+        $modrm = new ModRmAddress($baseAddress, $displacement, $dispSize);
+
+        $this->assertEquals($expected - $offset, $modrm->getAddress());
+    }
+
+    /**
+     * @small
+     */
     public function testDisplacementReturnsIntFromConstruct(): void
     {
         $modrm1 = new ModRmAddress(0, 0, 5);

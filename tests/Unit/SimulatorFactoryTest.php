@@ -11,7 +11,7 @@ use shanept\AssemblySimulator\SimulatorFactory;
 class SimulatorFactoryTest extends \PHPUnit\Framework\TestCase
 {
     /**
-     * @covers shanept\AssemblySimulator\SimulatorFactory
+     * @small
      */
     public function testFactoryDefaultInstructionsIncludeAllClasses(): void
     {
@@ -48,7 +48,7 @@ class SimulatorFactoryTest extends \PHPUnit\Framework\TestCase
     }
 
     /**
-     * @covers shanept\AssemblySimulator\SimulatorFactory
+     * @small
      */
     public function testFactoryReturnsSimulatorInstance(): void
     {

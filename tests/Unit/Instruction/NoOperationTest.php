@@ -11,6 +11,9 @@ class NoOperationTest extends \PHPUnit\Framework\TestCase
 {
     use MockSimulatorTrait;
 
+    /**
+     * @small
+     */
     public function testNoOperationOperand90LeavesRegistersAndStackAlone(): void
     {
         $simulator = $this->getMockSimulator();
@@ -43,6 +46,9 @@ class NoOperationTest extends \PHPUnit\Framework\TestCase
         $this->assertTrue($nop->executeOperand90());
     }
 
+    /**
+     * @small
+     */
     public function testNoOperationOperand0F1FLeavesRegistersAndStackAlone(): void
     {
         $simulator = $this->getMockSimulator();
@@ -78,6 +84,9 @@ class NoOperationTest extends \PHPUnit\Framework\TestCase
         $this->assertTrue($nop->executeOperand0F1F());
     }
 
+    /**
+     * @small
+     */
     public function testNoOperationOperand0F1FWithAddressLeavesRegistersAndStackAlone(): void
     {
         // 0x0F 0x1F 0x80 0x00 0x00 0x00 0x00
@@ -112,7 +121,8 @@ class NoOperationTest extends \PHPUnit\Framework\TestCase
 
         $simulator->expects($this->once())
                   ->method('getCodeAtInstruction')
-                  ->willReturn("\x80");
+                  ->willReturn("\x80")
+                  ->with(1);
 
         $simulator->expects($this->once())
                   ->method('getCodeBuffer')

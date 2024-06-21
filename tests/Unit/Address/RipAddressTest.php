@@ -10,6 +10,9 @@ use shanept\AssemblySimulator\Address\AddressInterface;
  */
 class RipAddressTest extends \PHPUnit\Framework\TestCase
 {
+    /**
+     * @small
+     */
     public function testImplements(): void
     {
         $rip = new RipAddress(0, 0);
@@ -30,7 +33,7 @@ class RipAddressTest extends \PHPUnit\Framework\TestCase
             [32, 50, -15, 71],
 
             // negative numbers
-            [95, 0xFFFFFFE2, 0, 69],
+            [0, 0x80000009, 0, -0x7FFFFFF3],
             [17, 0xFFFFFFF0, 0, 5],
             [95, 0xFFFFFFE2, -15, 54],
             [17, 0xFFFFFFF0, 15, 20],
@@ -39,6 +42,7 @@ class RipAddressTest extends \PHPUnit\Framework\TestCase
 
     /**
      * @dataProvider ripAddressResolvesCorrectly
+     * @small
      */
     public function testRipAddressResolvesCorrectly(
         int $ripPointer,
@@ -51,6 +55,24 @@ class RipAddressTest extends \PHPUnit\Framework\TestCase
         $this->assertEquals($expected, $rip->getAddress($offset));
     }
 
+    /**
+     * @dataProvider ripAddressResolvesCorrectly
+     * @small
+     */
+    public function testRipAddressWithoutOffsetResolvesCorrectly(
+        int $ripPointer,
+        int $address,
+        int $offset,
+        int $expected,
+    ): void {
+        $rip = new RipAddress($ripPointer, $address);
+
+        $this->assertEquals($expected - $offset, $rip->getAddress());
+    }
+
+    /**
+     * @small
+     */
     public function testRipDisplacementIs32bit(): void
     {
         $rip = new RipAddress(0, 0);

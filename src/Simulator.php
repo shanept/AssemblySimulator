@@ -185,11 +185,12 @@ class Simulator
         $this->mode = $mode ?? self::REAL_MODE;
 
         // Set an appropriately high stack address, dependent on mode, where
-        // the leading 4 bits are 0100.
-        $this->stackAddress = 2 ** ($this->getLargestInstructionWidth() - 2);
+        // the leading 4 bits are 0011.
+        $this->stackAddress = 2 ** ($this->getLargestInstructionWidth() - 2) - 1;
 
         // Limit the maximum size of our stack to a reasonable amount.
-        $this->stackSize = 2 ** ((4 << $this->mode) - 1) - 1;
+        // Max is approx 16MB
+        $this->stackSize = min(0xFFFFFF, 2 ** ((4 << $this->mode) - 1) - 1);
 
         // Sets the simulator up to a known state.
         $this->reset();
@@ -226,7 +227,6 @@ class Simulator
         $this->rex = 0;
         $this->prefixes = [];
         $this->buffer = "";
-
 
         $this->eFlags = 0;
         $this->stack = "";
@@ -296,10 +296,10 @@ class Simulator
      *
      * @param int $flag The flag to retreive.
      */
-    public function getFlag(int $flag): int
+    public function getFlag(int $flag): bool
     {
         $factor = $flag & -$flag;
-        return ($this->eFlags & $flag) / $factor;
+        return (($this->eFlags & $flag) / $factor) === 1;
     }
 
     /**
@@ -421,11 +421,10 @@ class Simulator
      * Returns the value for the specified register.
      *
      * @param RegisterObj $register The register reference
-     * @param ?int        $size     The parameter width, if required
      *
      * @return int
      */
-    public function readRegister(array $register, $size = null): int
+    public function readRegister(array $register): int
     {
         $largestWidth = $this->getLargestInstructionWidth();
 
@@ -542,14 +541,14 @@ class Simulator
         $stackLength = strlen($this->stack);
 
         // This makes our offset relative to the start of the stack string.
-        $stackOffset = $offset - ($this->stackAddress - $stackLength + 1);
+        $stackOffset = $offset - ($this->stackAddress - $stackLength) - 1;
 
         if ($stackOffset < 0) {
             $message = sprintf(
                 'Stack offset 0x%X requested, but it exceeds the top of the ' .
                 'stack (0x%X)',
                 $offset,
-                $this->stackAddress - $stackLength,
+                $this->stackAddress - $stackLength + 1,
             );
 
             throw new Exception\StackIndex($message);
@@ -579,34 +578,48 @@ class Simulator
 
         $valueLength = strlen($value);
         $stackLength = strlen($this->stack);
+        $availableBytes = $this->stackSize - $stackLength;
 
         // This makes our offset relative to the start of the stack string.
-        $stackOffset = $offset - ($this->stackAddress - $stackLength + 1);
+        $stackOffset = $offset - ($this->stackAddress - $stackLength) - 1;
 
         /**
          * If the requested offset is further up the stack than the amount of
          * bytes we have been provided with to write to the stack, we will
          * zero-extend the value by the required amount.
          */
-        if ($stackOffset < -$valueLength) {
-            $extendAmount = abs($stackOffset) - $valueLength;
+        if ($stackOffset < 0) {
+            $newBytesLength = ($stackOffset * -1);
 
-            if ($stackLength + $extendAmount > $this->stackSize) {
+            if ($newBytesLength > $availableBytes) {
                 $message = sprintf(
                     'Exceeded maximum stack size. Attempted to allocate %d ' .
                     'new bytes to the stack, however it exceeds the maximum ' .
                     'stack size of %d.',
-                    abs($stackOffset) - 1,
+                    $newBytesLength,
                     $this->stackSize,
                 );
 
                 throw new \RangeException($message);
             }
 
-            $value .= str_repeat("\0", $extendAmount);
-        }
+            $zeroPadAmount = $newBytesLength - $valueLength;
 
-        $this->stack = $value . $this->stack;
+            if ($zeroPadAmount > 0) {
+                $value .= str_repeat("\0", $zeroPadAmount);
+            }
+
+            // Prepend our value to the stack.
+            $this->stack = $value . $this->stack;
+        } else {
+            // We must overwrite the stack at the specified position.
+            $this->stack = substr_replace(
+                $this->stack,
+                $value,
+                $stackOffset,
+                $valueLength,
+            );
+        }
     }
 
     /**
@@ -632,7 +645,7 @@ class Simulator
         $clearString = str_repeat("\0", $bytes);
 
         // This makes our offset relative to the start of the stack string.
-        $stackOffset = $offset - ($this->stackAddress - $stackLength + 1);
+        $stackOffset = $offset - ($this->stackAddress - $stackLength) - 1;
 
         if ($stackOffset < 0) {
             $message = sprintf(
@@ -752,27 +765,6 @@ class Simulator
                 'Did you forget to reset?',
             );
         }
-    }
-
-    /**
-     * Determines whether an instruction has been registered to handle an opcode.
-     *
-     * @param int $opcode The opcode to check for the existance of an instruction.
-     */
-    private function hasRegisteredInstruction(int $opcode): bool
-    {
-        // Add our two-byte instruction prefix.
-        if ($this->hasPrefix(0x0F)) {
-            $opcode = 0xF00 | $opcode;
-        }
-
-        foreach ($this->registeredInstructions as $record) {
-            if (array_key_exists($opcode, $record['mappings'])) {
-                return true;
-            }
-        }
-
-        return false;
     }
 
     /**
@@ -903,9 +895,7 @@ class Simulator
                     // prefix, REX bit and two byte instruction prefix.
                     continue 2;
 
-                case ($this->hasRegisteredInstruction($op) &&
-                      $this->processOpcodeWithRegisteredInstructions($op)):
-
+                case $this->processOpcodeWithRegisteredInstructions($op):
                     /**
                      * We have identified that we are passing a registered
                      * instruction. If the instruction processor returns true,

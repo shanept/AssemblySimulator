@@ -14,6 +14,9 @@ class CallTest extends \PHPUnit\Framework\TestCase
 {
     use MockSimulatorTrait;
 
+    /**
+     * @small
+     */
     public function testCallParsesInput(): void
     {
         $simulator = $this->getMockSimulator(Simulator::PROTECTED_MODE);
@@ -58,6 +61,9 @@ class CallTest extends \PHPUnit\Framework\TestCase
         $this->assertEquals(5, $iPointer);
     }
 
+    /**
+     * @small
+     */
     public function testCallThrowsExceptionOnInvalidCallback(): void
     {
         $callback = $this->createMock(TestAssemblyInstruction::class);
@@ -72,6 +78,9 @@ class CallTest extends \PHPUnit\Framework\TestCase
         $call = new Call([null, 'mockableCallback']);
     }
 
+    /**
+     * @small
+     */
     public function testCallParsesPositiveAddress(): void
     {
         $simulator = $this->getMockSimulator(Simulator::PROTECTED_MODE);
@@ -83,8 +92,8 @@ class CallTest extends \PHPUnit\Framework\TestCase
                   ->willReturn(false);
 
         $simulator->method('getCodeAtInstruction')
-                  ->with(4)
-                  ->willReturn("\x10\x20\x30\x40");
+                  ->willReturn("\x10\x20\x30\x40")
+                  ->with(4);
 
         $simulator->method('getAddressBase')
                   ->willReturn(0xF3);
@@ -126,6 +135,9 @@ class CallTest extends \PHPUnit\Framework\TestCase
         $this->assertEquals(10, $iPointer);
     }
 
+    /**
+     * @small
+     */
     public function testCallParsesNegativeAddress(): void
     {
         $simulator = $this->getMockSimulator(Simulator::PROTECTED_MODE);
@@ -137,8 +149,8 @@ class CallTest extends \PHPUnit\Framework\TestCase
                   ->willReturn(false);
 
         $simulator->method('getCodeAtInstruction')
-                  ->with(4)
-                  ->willReturn("\x10\x20\x30\xC0");
+                  ->willReturn("\x10\x20\x30\xC0")
+                  ->with(4);
 
         $simulator->method('getAddressBase')
                   ->willReturn(0xFF);

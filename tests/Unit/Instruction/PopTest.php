@@ -53,6 +53,7 @@ class PopTest extends \PHPUnit\Framework\TestCase
 
     /**
      * @dataProvider popOffStackDataProvider
+     * @small
      *
      * @param RegisterObj $stackPointerRegister
      * @param RegisterObj $destinationRegister
@@ -79,7 +80,8 @@ class PopTest extends \PHPUnit\Framework\TestCase
                   ->willReturn($expectedBin);
 
         $simulator->method('getCodeAtInstruction')
-                  ->willReturn($opcode);
+                  ->willReturn($opcode)
+                  ->with(1);
 
         $simulator->method('readRegister')
                   ->willReturn(2);

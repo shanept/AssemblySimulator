@@ -11,6 +11,9 @@ use shanept\AssemblySimulator\Simulator;
  */
 class RegistersTest extends \PHPUnit\Framework\TestCase
 {
+    /**
+     * @small
+     */
     public function testEnsureSimulatorSetsUp8RegistersInRealMode(): void
     {
         $simulator = new Simulator(Simulator::REAL_MODE);
@@ -20,6 +23,9 @@ class RegistersTest extends \PHPUnit\Framework\TestCase
         $this->assertEquals(8, count($registers));
     }
 
+    /**
+     * @small
+     */
     public function testEnsureSimulatorSetsUp8RegistersInProtectedMode(): void
     {
         $simulator = new Simulator(Simulator::PROTECTED_MODE);
@@ -29,6 +35,9 @@ class RegistersTest extends \PHPUnit\Framework\TestCase
         $this->assertEquals(8, count($registers));
     }
 
+    /**
+     * @small
+     */
     public function testEnsureSimulatorSetsUp16RegistersInLongMode(): void
     {
         $simulator = new Simulator(Simulator::LONG_MODE);
@@ -61,6 +70,7 @@ class RegistersTest extends \PHPUnit\Framework\TestCase
 
     /**
      * @dataProvider writeRegisterDataProvider
+     * @small
      *
      * @param RegisterObj $register
      */
@@ -73,6 +83,8 @@ class RegistersTest extends \PHPUnit\Framework\TestCase
     }
 
     /**
+     * @small
+     *
      * @depends testWriteRegister
      */
     public function testGetIndexedRegisters(): void
@@ -97,7 +109,7 @@ class RegistersTest extends \PHPUnit\Framework\TestCase
 
         $actual = $simulator->getIndexedRegisters();
 
-        $this->assertEqualsCanonicalizing($expected, $actual);
+        $this->assertEquals($expected, $actual);
     }
 
     /**
@@ -112,6 +124,9 @@ class RegistersTest extends \PHPUnit\Framework\TestCase
             // Set EAX then zero AX in Protected mode.
             [Simulator::PROTECTED_MODE, Register::EAX, 4294967295, Register::AX, 0, 4294901760],
 
+            // Set EAX then write AL in Protected mode.
+            [Simulator::PROTECTED_MODE, Register::EAX, 4227858431, Register::AL, 42, 4227858218],
+
             // Set RAX then zero AX in Long mode.
             [Simulator::LONG_MODE, Register::RAX, PHP_INT_MAX, Register::AX, 0, PHP_INT_MAX - 65535],
 
@@ -122,8 +137,8 @@ class RegistersTest extends \PHPUnit\Framework\TestCase
     }
 
     /**
-     * @depends testWriteRegister
      * @dataProvider settingDifferentWidthRegistersDataProvider
+     * @small
      *
      * @param RegisterObj $largerRegister
      * @param RegisterObj $smallerRegister
@@ -146,6 +161,23 @@ class RegistersTest extends \PHPUnit\Framework\TestCase
     }
 
     /**
+     * @small
+     *
+     * @depends testWriteRegister
+     */
+    public function testReadingSmallerRegister(): void
+    {
+        $simulator = new Simulator(Simulator::PROTECTED_MODE);
+
+        $simulator->writeRegister(Register::EAX, 0x55555555);
+        $readValue = $simulator->readRegister(Register::AL);
+
+        $this->assertEquals(0x55, $readValue);
+    }
+
+    /**
+     * @small
+     *
      * @depends testWriteRegister
      */
     public function testSettingEaxThrowsExceptionInRealMode(): void
@@ -157,6 +189,8 @@ class RegistersTest extends \PHPUnit\Framework\TestCase
     }
 
     /**
+     * @small
+     *
      * @depends testWriteRegister
      */
     public function testSettingRaxThrowsExceptionInProtectedMode(): void
@@ -167,29 +201,80 @@ class RegistersTest extends \PHPUnit\Framework\TestCase
         $simulator->writeRegister(Register::RAX, 0);
     }
 
-    public function testRegisterGetCodeReturnsUniformByteRegisterIfOperandNotExtended(): void
+    /**
+     * @return array<int, array{int, int, bool, bool, string}>
+     */
+    public static function registerGetCodeDataProvider(): array
     {
-        // REX is set but not for this byte
-        $register = Register::getByCode(
-            Register::SPL['code'],
-            Simulator::TYPE_BYTE,
-            true,
-            false,
-        );
+        $f = false;
+        $t = true;
 
-        $this->assertEquals('%spl', $register['name']);
+        return [
+            [0, 8, $f, $f, '%al'], [0, 8, $t, $f, '%al'], [0, 16, $f, $f, '%ax'], [0, 32, $f, $f, '%eax'], [0, 64, $f, $f, '%rax'],
+            [1, 8, $f, $f, '%cl'], [1, 8, $t, $f, '%cl'], [1, 16, $f, $f, '%cx'], [1, 32, $f, $f, '%ecx'], [1, 64, $f, $f, '%rcx'],
+            [2, 8, $f, $f, '%dl'], [2, 8, $t, $f, '%dl'], [2, 16, $f, $f, '%dx'], [2, 32, $f, $f, '%edx'], [2, 64, $f, $f, '%rdx'],
+            [3, 8, $f, $f, '%bl'], [3, 8, $t, $f, '%bl'], [3, 16, $f, $f, '%bx'], [3, 32, $f, $f, '%ebx'], [3, 64, $f, $f, '%rbx'],
+            [4, 8, $f, $f, '%ah'], [4, 8, $t, $f, '%spl'], [4, 16, $f, $f, '%sp'], [4, 32, $f, $f, '%esp'], [4, 64, $f, $f, '%rsp'],
+            [5, 8, $f, $f, '%ch'], [5, 8, $t, $f, '%bpl'], [5, 16, $f, $f, '%bp'], [5, 32, $f, $f, '%ebp'], [5, 64, $f, $f, '%rbp'],
+            [6, 8, $f, $f, '%dh'], [6, 8, $t, $f, '%sil'], [6, 16, $f, $f, '%si'], [6, 32, $f, $f, '%esi'], [6, 64, $f, $f, '%rsi'],
+            [7, 8, $f, $f, '%bh'], [7, 8, $t, $f, '%dil'], [7, 16, $f, $f, '%di'], [7, 32, $f, $f, '%edi'], [7, 64, $f, $f, '%rdi'],
+
+            [0, 8, $t, $t, '%r8b'], [0, 16, $t, $t, '%r8w'], [0, 32, $t, $t, '%r8d'], [0, 64, $t, $t, '%r8'],
+            [1, 8, $t, $t, '%r9b'], [1, 16, $t, $t, '%r9w'], [1, 32, $t, $t, '%r9d'], [1, 64, $t, $t, '%r9'],
+            [2, 8, $t, $t, '%r10b'], [2, 16, $t, $t, '%r10w'], [2, 32, $t, $t, '%r10d'], [2, 64, $t, $t, '%r10'],
+            [3, 8, $t, $t, '%r11b'], [3, 16, $t, $t, '%r11w'], [3, 32, $t, $t, '%r11d'], [3, 64, $t, $t, '%r11'],
+            [4, 8, $t, $t, '%r12b'], [4, 16, $t, $t, '%r12w'], [4, 32, $t, $t, '%r12d'], [4, 64, $t, $t, '%r12'],
+            [5, 8, $t, $t, '%r13b'], [5, 16, $t, $t, '%r13w'], [5, 32, $t, $t, '%r13d'], [5, 64, $t, $t, '%r13'],
+            [6, 8, $t, $t, '%r14b'], [6, 16, $t, $t, '%r14w'], [6, 32, $t, $t, '%r14d'], [6, 64, $t, $t, '%r14'],
+            [7, 8, $t, $t, '%r15b'], [7, 16, $t, $t, '%r15w'], [7, 32, $t, $t, '%r15d'], [7, 64, $t, $t, '%r15'],
+        ];
     }
 
-    public function testRegisterGetCodeReturnsExtendedRegisterIfOperandExtended(): void
-    {
-        // REX is set but not for this byte
+    /**
+     * @dataProvider registerGetCodeDataProvider
+     * @small
+     */
+    public function testRegisterGetCode(
+        int $code,
+        int $size,
+        bool $rexPrefixSet,
+        bool $rexExtendedRegisters,
+        string $expected,
+    ): void {
         $register = Register::getByCode(
-            Register::SPL['code'],
+            $code,
+            $size,
+            $rexPrefixSet,
+            $rexExtendedRegisters,
+        );
+
+        $this->assertEquals($expected, $register['name']);
+    }
+
+    /**
+     * @small
+     */
+    public function testRegisterGetCodeDefaultsToNonRex(): void
+    {
+        $register = Register::getByCode(
+            Register::R12['code'],
             Simulator::TYPE_BYTE,
-            true,
+        );
+
+        $this->assertEquals('%ah', $register['name']);
+    }
+
+    /**
+     * @small
+     */
+    public function testRegisterGetCodeDefaultsToNonExtended(): void
+    {
+        $register = Register::getByCode(
+            Register::R12['code'],
+            Simulator::TYPE_QUAD,
             true,
         );
 
-        $this->assertEquals('%r12b', $register['name']);
+        $this->assertEquals('%rsp', $register['name']);
     }
 }

@@ -40,6 +40,7 @@ class MoveTest extends \PHPUnit\Framework\TestCase
 
     /**
      * @dataProvider movLoadsImmediate32bitValueDataProvider
+     * @small
      *
      * @param RegisterObj $register
      */
@@ -66,7 +67,23 @@ class MoveTest extends \PHPUnit\Framework\TestCase
 
         $simulator->method('getCodeAtInstruction')
                   ->willReturnCallback(function ($length) use (&$values) {
-                      return array_pop($values);
+                      $value = array_pop($values);
+
+                      if (is_null($value)) {
+                          $this->fail('Out of values.');
+                      }
+
+                      if ($length !== strlen($value)) {
+                          $message = sprintf(
+                              'Expected string of length %d, received "%s".',
+                              $length,
+                              $value,
+                          );
+
+                          $this->fail($message);
+                      }
+
+                      return $value;
                   });
 
         $simulator->expects($this->once())
@@ -79,6 +96,9 @@ class MoveTest extends \PHPUnit\Framework\TestCase
         $this->assertTrue($move->executeOperandBx());
     }
 
+    /**
+     * @small
+     */
     public function testMovBxLoadsImmediate8bitValue(): void
     {
         $simulator = $this->getMockSimulator(Simulator::LONG_MODE);
@@ -95,7 +115,23 @@ class MoveTest extends \PHPUnit\Framework\TestCase
 
         $simulator->method('getCodeAtInstruction')
                   ->willReturnCallback(function ($length) use (&$values) {
-                      return array_pop($values);
+                      $value = array_pop($values);
+
+                      if (is_null($value)) {
+                          $this->fail('Out of values.');
+                      }
+
+                      if ($length !== strlen($value)) {
+                          $message = sprintf(
+                              'Expected string of length %d, received "%s".',
+                              $length,
+                              $value,
+                          );
+
+                          $this->fail($message);
+                      }
+
+                      return $value;
                   });
 
         $simulator->expects($this->once())
@@ -108,6 +144,9 @@ class MoveTest extends \PHPUnit\Framework\TestCase
         $this->assertTrue($move->executeOperandBx8());
     }
 
+    /**
+     * @small
+     */
     public function testMov8bLoadsMemoryAddress(): void
     {
         $simulator = $this->getMockSimulator(Simulator::LONG_MODE);
@@ -143,6 +182,9 @@ class MoveTest extends \PHPUnit\Framework\TestCase
         $this->assertTrue($move->executeOperand8b());
     }
 
+    /**
+     * @small
+     */
     public function testMov88OnRegisterValue(): void
     {
         $simulator = $this->getMockSimulator(Simulator::LONG_MODE);
@@ -156,7 +198,8 @@ class MoveTest extends \PHPUnit\Framework\TestCase
                   ->willReturn([]);
 
         $simulator->method('getCodeAtInstruction')
-                  ->willReturn("\xD1");
+                  ->willReturn("\xD1")
+                  ->with(1);
 
         $simulator->method('readRegister')
                   ->with(Register::DL)
@@ -176,6 +219,8 @@ class MoveTest extends \PHPUnit\Framework\TestCase
      * We aren't looking for much here as we don't actually handle the value.
      * We just want to ensure we move past the SIB value without error and
      * return true.
+     *
+     * @small
      */
     public function testMov88OnSibValue(): void
     {
@@ -198,8 +243,24 @@ class MoveTest extends \PHPUnit\Framework\TestCase
         ];
 
         $simulator->method('getCodeAtInstruction')
-                  ->willReturnCallback(function () use (&$values) {
-                      return array_pop($values);
+                  ->willReturnCallback(function ($length) use (&$values) {
+                      $value = array_pop($values);
+
+                      if (is_null($value)) {
+                          $this->fail('Out of values.');
+                      }
+
+                      if ($length !== strlen($value)) {
+                          $message = sprintf(
+                              'Expected string of length %d, received "%s".',
+                              $length,
+                              $value,
+                          );
+
+                          $this->fail($message);
+                      }
+
+                      return $value;
                   });
 
         $simulator->method('getCodeBuffer')
@@ -227,6 +288,9 @@ class MoveTest extends \PHPUnit\Framework\TestCase
         $this->assertTrue($move->executeOperand88());
     }
 
+    /**
+     * @small
+     */
     public function testMov88OnNonSibValue(): void
     {
         $simulator = $this->getMockSimulator(Simulator::LONG_MODE);
@@ -235,7 +299,8 @@ class MoveTest extends \PHPUnit\Framework\TestCase
                   ->willReturn(0x41);
 
         $simulator->method('getCodeAtInstruction')
-                  ->willReturn("\xFC");
+                  ->willReturn("\xFC")
+                  ->with(1);
 
         $simulator->method('readRegister')
                   ->with(Register::DIL)
@@ -251,6 +316,9 @@ class MoveTest extends \PHPUnit\Framework\TestCase
         $this->assertTrue($move->executeOperand88());
     }
 
+    /**
+     * @small
+     */
     public function testMov88OnRexRegisterValue(): void
     {
         $simulator = $this->getMockSimulator(Simulator::LONG_MODE);
@@ -264,7 +332,8 @@ class MoveTest extends \PHPUnit\Framework\TestCase
                   ->willReturn([]);
 
         $simulator->method('getCodeAtInstruction')
-                  ->willReturn("\xD1");
+                  ->willReturn("\xD1")
+                  ->with(1);
 
         $simulator->method('readRegister')
                   ->with(Register::R10B)
@@ -280,6 +349,9 @@ class MoveTest extends \PHPUnit\Framework\TestCase
         $this->assertTrue($move->executeOperand88());
     }
 
+    /**
+     * @small
+     */
     public function testMov89OnRegisterValue(): void
     {
         $simulator = $this->getMockSimulator(Simulator::LONG_MODE);
@@ -293,7 +365,8 @@ class MoveTest extends \PHPUnit\Framework\TestCase
                   ->willReturn([]);
 
         $simulator->method('getCodeAtInstruction')
-                  ->willReturn("\xD1");
+                  ->willReturn("\xD1")
+                  ->with(1);
 
         $simulator->method('readRegister')
                   ->with(Register::RDX)
@@ -313,6 +386,8 @@ class MoveTest extends \PHPUnit\Framework\TestCase
      * We aren't looking for much here as we don't actually handle the value.
      * We just want to ensure we move past the SIB value without error and
      * return true.
+     *
+     * @small
      */
     public function testMov89OnSibValue(): void
     {
@@ -335,8 +410,24 @@ class MoveTest extends \PHPUnit\Framework\TestCase
         ];
 
         $simulator->method('getCodeAtInstruction')
-                  ->willReturnCallback(function () use (&$values) {
-                      return array_pop($values);
+                  ->willReturnCallback(function ($length) use (&$values) {
+                      $value = array_pop($values);
+
+                      if (is_null($value)) {
+                          $this->fail('Out of values.');
+                      }
+
+                      if ($length !== strlen($value)) {
+                          $message = sprintf(
+                              'Expected string of length %d, received "%s".',
+                              $length,
+                              $value,
+                          );
+
+                          $this->fail($message);
+                      }
+
+                      return $value;
                   });
 
         $simulator->method('getCodeBuffer')
@@ -364,6 +455,9 @@ class MoveTest extends \PHPUnit\Framework\TestCase
         $this->assertTrue($move->executeOperand89());
     }
 
+    /**
+     * @small
+     */
     public function testMov89OnNonSibValue(): void
     {
         $simulator = $this->getMockSimulator(Simulator::LONG_MODE);
@@ -372,7 +466,8 @@ class MoveTest extends \PHPUnit\Framework\TestCase
                   ->willReturn(0x49);
 
         $simulator->method('getCodeAtInstruction')
-                  ->willReturn("\xFC");
+                  ->willReturn("\xFC")
+                  ->with(1);
 
         $simulator->method('readRegister')
                   ->with(Register::RDI)
@@ -388,6 +483,9 @@ class MoveTest extends \PHPUnit\Framework\TestCase
         $this->assertTrue($move->executeOperand89());
     }
 
+    /**
+     * @small
+     */
     public function testMov89OnRexRegisterValue(): void
     {
         $simulator = $this->getMockSimulator(Simulator::LONG_MODE);
@@ -401,7 +499,8 @@ class MoveTest extends \PHPUnit\Framework\TestCase
                   ->willReturn([]);
 
         $simulator->method('getCodeAtInstruction')
-                  ->willReturn("\xD1");
+                  ->willReturn("\xD1")
+                  ->with(1);
 
         $simulator->method('readRegister')
                   ->with(Register::R10)
@@ -417,6 +516,9 @@ class MoveTest extends \PHPUnit\Framework\TestCase
         $this->assertTrue($move->executeOperand89());
     }
 
+    /**
+     * @small
+     */
     public function testMov8aOnRegisterValue(): void
     {
         $simulator = $this->getMockSimulator(Simulator::LONG_MODE);
@@ -430,7 +532,8 @@ class MoveTest extends \PHPUnit\Framework\TestCase
                   ->willReturn([]);
 
         $simulator->method('getCodeAtInstruction')
-                  ->willReturn("\xD1");
+                  ->willReturn("\xD1")
+                  ->with(1);
 
         $simulator->method('readRegister')
                   ->with(Register::CL)
@@ -446,6 +549,9 @@ class MoveTest extends \PHPUnit\Framework\TestCase
         $this->assertTrue($move->executeOperand8a());
     }
 
+    /**
+     * @small
+     */
     public function testMov8aOnRexRegisterValue(): void
     {
         $simulator = $this->getMockSimulator(Simulator::LONG_MODE);
@@ -459,7 +565,8 @@ class MoveTest extends \PHPUnit\Framework\TestCase
                   ->willReturn([]);
 
         $simulator->method('getCodeAtInstruction')
-                  ->willReturn("\xD1");
+                  ->willReturn("\xD1")
+                  ->with(1);
 
         $simulator->method('readRegister')
                   ->with(Register::R9B)
@@ -475,6 +582,9 @@ class MoveTest extends \PHPUnit\Framework\TestCase
         $this->assertTrue($move->executeOperand8a());
     }
 
+    /**
+     * @small
+     */
     public function testMov8bOnRegisterValue(): void
     {
         $simulator = $this->getMockSimulator(Simulator::LONG_MODE);
@@ -488,7 +598,8 @@ class MoveTest extends \PHPUnit\Framework\TestCase
                   ->willReturn([]);
 
         $simulator->method('getCodeAtInstruction')
-                  ->willReturn("\xD1");
+                  ->willReturn("\xD1")
+                  ->with(1);
 
         $simulator->method('readRegister')
                   ->with(Register::RCX)
@@ -504,6 +615,9 @@ class MoveTest extends \PHPUnit\Framework\TestCase
         $this->assertTrue($move->executeOperand8b());
     }
 
+    /**
+     * @small
+     */
     public function testMov8bOnRexRegisterValue(): void
     {
         $simulator = $this->getMockSimulator(Simulator::LONG_MODE);
@@ -517,7 +631,8 @@ class MoveTest extends \PHPUnit\Framework\TestCase
                   ->willReturn([]);
 
         $simulator->method('getCodeAtInstruction')
-                  ->willReturn("\xD1");
+                  ->willReturn("\xD1")
+                  ->with(1);
 
         $simulator->method('readRegister')
                   ->with(Register::R9)
@@ -533,7 +648,9 @@ class MoveTest extends \PHPUnit\Framework\TestCase
         $this->assertTrue($move->executeOperand8b());
     }
 
-
+    /**
+     * @small
+     */
     public function testMovC6OnAddress(): void
     {
         // 0xC6 0x05 0x84 0x57 0x32 0x00 0x04
@@ -581,6 +698,9 @@ class MoveTest extends \PHPUnit\Framework\TestCase
         $this->assertEquals(7, $iPointer);
     }
 
+    /**
+     * @small
+     */
     public function testMovC6OnRegister(): void
     {
         // 0xC6 0xC0 0x04
@@ -630,6 +750,9 @@ class MoveTest extends \PHPUnit\Framework\TestCase
         $this->assertEquals(3, $iPointer);
     }
 
+    /**
+     * @small
+     */
     public function testMovC7OnAddress(): void
     {
         // 0xC7 0x05 0x84 0x57 0x32 0x00 0x01 0x02 0x03 0x04
@@ -677,6 +800,9 @@ class MoveTest extends \PHPUnit\Framework\TestCase
         $this->assertEquals(10, $iPointer);
     }
 
+    /**
+     * @small
+     */
     public function testMovC7OnRegister(): void
     {
         // 0xC7 0xC0 0x01 0x02 0x03 0x04
@@ -723,6 +849,9 @@ class MoveTest extends \PHPUnit\Framework\TestCase
         $this->assertEquals(6, $iPointer);
     }
 
+    /**
+     * @small
+     */
     public function testMovC7WithOp66InProtectedMode(): void
     {
         // mov [esi+0x25], 0x0
@@ -753,6 +882,8 @@ class MoveTest extends \PHPUnit\Framework\TestCase
                       } elseif (2 === $length) {
                           return "\x00\x00";
                       }
+
+                      $this->fail('Unknown length ' . $length);
                   });
 
         $simulator->method('getCodeBuffer')

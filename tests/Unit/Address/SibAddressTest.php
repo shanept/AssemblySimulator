@@ -10,6 +10,9 @@ use shanept\AssemblySimulator\Address\AddressInterface;
  */
 class SibAddressTest extends \PHPUnit\Framework\TestCase
 {
+    /**
+     * @small
+     */
     public function testImplements(): void
     {
         $sibByte = ['s' => 1,'i' => 0,'b' => 0];
@@ -81,6 +84,7 @@ class SibAddressTest extends \PHPUnit\Framework\TestCase
 
     /**
      * @dataProvider sibAddressResolvesCorrectly
+     * @small
      */
     public function testSibAddressResolvesCorrectly(
         int $scale,
@@ -102,6 +106,33 @@ class SibAddressTest extends \PHPUnit\Framework\TestCase
         $this->assertEquals($expected, $sib->getAddress($offset));
     }
 
+    /**
+     * @dataProvider sibAddressResolvesCorrectly
+     * @small
+     */
+    public function testSibAddressWithoutOffsetResolvesCorrectly(
+        int $scale,
+        int $index,
+        int $base,
+        int $displacement,
+        int $dispSize,
+        int $offset,
+        int $expected,
+    ): void {
+        $sib = [
+            's' => $scale,
+            'i' => $index,
+            'b' => $base,
+        ];
+
+        $sib = new SibAddress($sib, $displacement, $dispSize);
+
+        $this->assertEquals($expected - $offset, $sib->getAddress());
+    }
+
+    /**
+     * @small
+     */
     public function testDisplacementReturnsIntFromConstruct(): void
     {
         $sibByte = ['s' => 1,'i' => 0,'b' => 0];
@@ -125,6 +156,7 @@ class SibAddressTest extends \PHPUnit\Framework\TestCase
 
     /**
      * @dataProvider invalidDisplacementThrowsExceptionDataProvider
+     * @small
      */
     public function testInvalidDisplacementThrowsException(int $displacementSize): void
     {
@@ -149,6 +181,7 @@ class SibAddressTest extends \PHPUnit\Framework\TestCase
 
     /**
      * @dataProvider invalidScaleThrowsExceptionDataProvider
+     * @small
      */
     public function testInvalidScaleThrowsException(int $scale): void
     {

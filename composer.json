@@ -37,7 +37,7 @@
         "analyse": "vendor/bin/phpstan",
         "format": "vendor/bin/php-cs-fixer fix",
         "check-format": "vendor/bin/php-cs-fixer check",
-        "infect": "vendor/bin/infection --threads=4"
+        "infect": "vendor/bin/infection --threads=max"
     },
     "config": {
         "allow-plugins": {

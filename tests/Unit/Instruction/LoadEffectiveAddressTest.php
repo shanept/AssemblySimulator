@@ -13,6 +13,9 @@ class LoadEffectiveAddressTest extends \PHPUnit\Framework\TestCase
 {
     use MockSimulatorTrait;
 
+    /**
+     * @small
+     */
     public function testLeaLoads64BitAddress(): void
     {
         $simulator = $this->getMockSimulator(Simulator::LONG_MODE);
@@ -55,6 +58,9 @@ class LoadEffectiveAddressTest extends \PHPUnit\Framework\TestCase
         $this->assertEquals(9, $iPointer);
     }
 
+    /**
+     * @small
+     */
     public function testLeaLoadsAddressWithDisplacement(): void
     {
         $simulator = $this->getMockSimulator(Simulator::LONG_MODE);
@@ -95,6 +101,9 @@ class LoadEffectiveAddressTest extends \PHPUnit\Framework\TestCase
         $this->assertTrue($lea->executeOperand8d());
     }
 
+    /**
+     * @small
+     */
     public function testLeaThrowsExceptionOnInvalidModBit(): void
     {
         $simulator = $this->getMockSimulator(Simulator::LONG_MODE);
@@ -109,7 +118,8 @@ class LoadEffectiveAddressTest extends \PHPUnit\Framework\TestCase
 
         $simulator->expects($this->once())
                   ->method('getCodeAtInstruction')
-                  ->willReturn("\xFD");
+                  ->willReturn("\xFD")
+                  ->with(1);
 
         $lea = new LoadEffectiveAddress();
         $lea->setSimulator($simulator);
