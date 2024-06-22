@@ -14,22 +14,38 @@
     "mutators": {
         "@default": true,
         "global-ignoreSourceCodeByRegex": [
-            "\\$this->taintProtection\\(\\);"
+            "\\$this->taintProtection\\(\\);",
         ],
         "UnwrapArrayMerge": {
             "ignore": [
                 "shanept\\AssemblySimulator\\SimulatorFactory::createSimulator",
             ],
         },
-        "GreaterThan": {
-            "ignoreSourceCodeByRegex": [
-                "if \\(\\$zeroPadAmount > 0\\).*"
-            ],
-        },
         "ArrayItemRemoval": {
             "ignore": [
                 "shanept\\AssemblySimulator\\Simulator::registerInstructions",
             ],
+        },
+        "BitwiseAnd": {
+            "ignoreSourceCodeByRegex": [
+                "\\$rexSet = \\(bool\\) \\(\\$rex & Simulator::REX\\);",
+            ],
+        },
+        "GreaterThan": {
+            "ignoreSourceCodeByRegex": [
+                "if \\(\\$zeroPadAmount > 0\\).*",
+            ],
+        },
+        "LessThan": {
+            "ignoreSourceCodeByRegex": [
+                "if \\(\\$operandSize < \\$addressSize\\).*",
+            ],
+        },
+        "IncrementInteger": {
+            "ignore": [
+                "shanept\\AssemblySimulator\\Instruction\\AssemblyInstruction::parseModRmByte",
+                "shanept\\AssemblySimulator\\Instruction\\AssemblyInstruction::parseSibByte",
+            ]
         },
     },
 }

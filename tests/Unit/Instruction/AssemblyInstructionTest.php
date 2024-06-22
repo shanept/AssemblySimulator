@@ -49,34 +49,87 @@ class AssemblyInstructionTest extends \PHPUnit\Framework\TestCase
     }
 
     /**
+     * @return array<int, array<int, string>>
+     */
+    public static function protectedMethodsDataProvider(): array
+    {
+        return [
+            ['getSimulator'],
+            ['getOperandSize'],
+            ['getAddressSize'],
+            ['parseModRmByte'],
+            ['unpackImmediate'],
+            ['packImmediate'],
+            ['parseAddress'],
+            ['getStackPointerRegister'],
+        ];
+    }
+
+    /**
+     * It is important that these methods are not private, as they must be
+     * accessible to child functions.
+     *
+     * @dataProvider protectedMethodsDataProvider
+     * @small
+     */
+    public function testProtectedMethodsVisibility(
+        string $methodName,
+    ): void {
+        $instruction = new TestAssemblyInstruction();
+
+        $method = new ReflectionMethod($instruction, $methodName);
+
+        $this->assertTrue($method->isProtected());
+    }
+
+    /**
+     * @small
+     */
+    public function testNoExtraProtectedMethods(): void
+    {
+        $expected = array_column(self::protectedMethodsDataProvider(), 0);
+
+        $instruction = new TestAssemblyInstruction();
+
+        $class = new \ReflectionClass($instruction);
+        $protectedMethods = $class->getMethods(\ReflectionMethod::IS_PROTECTED);
+
+        $protectedMethods = array_map(function ($method) {
+            return $method->getName();
+        }, $protectedMethods);
+
+        $this->assertEqualsCanonicalizing($expected, $protectedMethods);
+    }
+
+    /**
      * @return array<int, array{int, string, int, ?int, int}>
      */
     public static function getAddressOrOperandSizeDataProvider(): array
     {
         return [
             // No address size prefix
-            [Simulator::REAL_MODE, 'getAddressSize', 0, null, 16],
-            [Simulator::PROTECTED_MODE, 'getAddressSize', 0, null, 32],
-            [Simulator::LONG_MODE, 'getAddressSize', 0, null, 64],
-            [Simulator::LONG_MODE, 'getAddressSize', 0x48, null, 64],
+            'Real Mode address size' => [Simulator::REAL_MODE, 'getAddressSize', 0, null, 16],
+            'Protected Mode address size' => [Simulator::PROTECTED_MODE, 'getAddressSize', 0, null, 32],
+            'Long Mode address size' => [Simulator::LONG_MODE, 'getAddressSize', 0, null, 64],
+            'Long Mod (Rex) address size' => [Simulator::LONG_MODE, 'getAddressSize', 0x48, null, 64],
 
             // Address size prefix applied
-            [Simulator::REAL_MODE, 'getAddressSize', 0, 0x67, 32],
-            [Simulator::PROTECTED_MODE, 'getAddressSize', 0, 0x67, 16],
-            [Simulator::LONG_MODE, 'getAddressSize', 0, 0x67, 64],
-            [Simulator::LONG_MODE, 'getAddressSize', 0x48, 0x67, 64],
+            'Real Mode prefixed address size' => [Simulator::REAL_MODE, 'getAddressSize', 0, 0x67, 32],
+            'Protected Mode prefixed address size' => [Simulator::PROTECTED_MODE, 'getAddressSize', 0, 0x67, 16],
+            'Long Mode prefixed address size' => [Simulator::LONG_MODE, 'getAddressSize', 0, 0x67, 32],
+            'Long Mode (Rex) prefixed address size' => [Simulator::LONG_MODE, 'getAddressSize', 0x48, 0x67, 32],
 
             // No operand size prefix
-            [Simulator::REAL_MODE, 'getOperandSize', 0, null, 16],
-            [Simulator::PROTECTED_MODE, 'getOperandSize', 0, null, 32],
-            [Simulator::LONG_MODE, 'getOperandSize', 0, null, 32],
-            [Simulator::LONG_MODE, 'getOperandSize', 0x48, null, 64],
+            'Real Mode operand size' => [Simulator::REAL_MODE, 'getOperandSize', 0, null, 16],
+            'Protected Mode operand size' => [Simulator::PROTECTED_MODE, 'getOperandSize', 0, null, 32],
+            'Long Mode operand size' => [Simulator::LONG_MODE, 'getOperandSize', 0, null, 32],
+            'Long Mod (Rex) operand size' => [Simulator::LONG_MODE, 'getOperandSize', 0x48, null, 64],
 
             // Operand size prefix applied
-            [Simulator::REAL_MODE, 'getOperandSize', 0, 0x66, 32],
-            [Simulator::PROTECTED_MODE, 'getOperandSize', 0, 0x66, 16],
-            [Simulator::LONG_MODE, 'getOperandSize', 0, 0x66, 16],
-            [Simulator::LONG_MODE, 'getOperandSize', 0x48, 0x66, 64],
+            'Real Mode prefixed operand size' => [Simulator::REAL_MODE, 'getOperandSize', 0, 0x66, 32],
+            'Protected Mode prefixed operand size' => [Simulator::PROTECTED_MODE, 'getOperandSize', 0, 0x66, 16],
+            'Long Mode prefixed operand size' => [Simulator::LONG_MODE, 'getOperandSize', 0, 0x66, 16],
+            'Long Mode (Rex) prefixed operand size' => [Simulator::LONG_MODE, 'getOperandSize', 0x48, 0x66, 64],
         ];
     }
 
@@ -227,16 +280,132 @@ class AssemblyInstructionTest extends \PHPUnit\Framework\TestCase
     }
 
     /**
-     * @return array<int, array{int, int, ?int, RegisterObj, int, string, int, int, int, int}>
+     * @return array<int, array{int, int, int, RegisterObj, int, string, int, int, int, int}>
      */
     public static function parseAddressOnMemoryOffsetAddressDataProvider(): array
     {
         return [
-            [Simulator::LONG_MODE, 0x00, null, Register::EBX, 849, "\x10", 1, 0, 3, 865],
-            [Simulator::PROTECTED_MODE, 0x00, null, Register::EBX, 849, "\x10\x00\x00\x00", 2, 0, 3, 865],
-            [Simulator::REAL_MODE, 0x00, 0x66, Register::EBX, 277938170, "\x10", 1, 0, 3, 277938186],
-            [Simulator::REAL_MODE, 0x00, 0x66, Register::EBX, 277938170, "\x10", 1, 0, 3, 277938186],
-            [Simulator::REAL_MODE, 0x48, 0x66, Register::RBX, 277938170, "\x10", 1, 0, 3, 277938186],
+            'Long Mode defaults to 64-bit address size' => [
+                Simulator::LONG_MODE,
+                0x00,
+                0x00,
+                Register::RBX,
+                849,
+                "\x10",
+                1,
+                0,
+                3,
+                865,
+            ],
+            'Long Mode (Rex.B) with address size overrides to 32-bit address size' => [
+                Simulator::LONG_MODE,
+                0x41,
+                0x67,
+                Register::R11D,
+                849,
+                "\x10",
+                1,
+                0,
+                3,
+                865,
+            ],
+            'Long Mode (Rex.W) with address size overrides to 32-bit address size' => [
+                Simulator::LONG_MODE,
+                0x48,
+                0x67,
+                Register::EBX,
+                849,
+                "\x10",
+                1,
+                0,
+                3,
+                865,
+            ],
+            'Long Mode with address size overrides to 32-bit address size' => [
+                Simulator::LONG_MODE,
+                0x00,
+                0x67,
+                Register::EBX,
+                849,
+                "\x10",
+                1,
+                0,
+                3,
+                865,
+            ],
+            'Protected Mode defaults to 32-bit address size' => [
+                Simulator::PROTECTED_MODE,
+                0x00,
+                0x00,
+                Register::EBX,
+                849,
+                "\x10\x00\x00\x00",
+                2,
+                0,
+                3,
+                865,
+            ],
+            'Protected Mode with address size overrides to 16-bit address size' => [
+                Simulator::PROTECTED_MODE,
+                0x00,
+                0x67,
+                Register::BX,
+                849,
+                "\x10\x00\x00\x00",
+                2,
+                0,
+                3,
+                865,
+            ],
+            'Real Mode defaults to 16-bit address size' => [
+                Simulator::REAL_MODE,
+                0x00,
+                0x00,
+                Register::BX,
+                4354,
+                "\x10",
+                1,
+                0,
+                3,
+                4370,
+            ],
+            'Real Mode with address size overrides to 32-bit address size' => [
+                Simulator::REAL_MODE,
+                0x00,
+                0x67,
+                Register::EBX,
+                4354,
+                "\x10",
+                1,
+                0,
+                3,
+                4370,
+            ],
+
+            'Long Mode with REX.B extends base' => [
+               Simulator::LONG_MODE,
+               0x41,
+               0x00,
+               Register::R11,
+               849,
+               "\x10",
+               1,
+               0,
+               3,
+               865,
+           ],
+           'Long Mode with no displacement' => [
+              Simulator::LONG_MODE,
+              0x00,
+              0x00,
+              Register::RBX,
+              849,
+              "",
+              0,
+              0,
+              3,
+              849,
+          ],
         ];
     }
 
@@ -252,7 +421,7 @@ class AssemblyInstructionTest extends \PHPUnit\Framework\TestCase
     public function testParseAddressOnMemoryOffsetAddress(
         int $simulatorMode,
         int $rexValue,
-        ?int $prefixValue,
+        int $prefixValue,
         array $register,
         int $regValue,
         string $addressBytes,
@@ -310,7 +479,7 @@ class AssemblyInstructionTest extends \PHPUnit\Framework\TestCase
     /**
      * @return array<int, array{int, RegisterObj}>
      */
-    public static function parseAddressOnModRmDisp32AddressInProtectedModeDataProvider(): array
+    public static function parseAddressOnModRmDisp32AddressNotInLongModeDataProvider(): array
     {
         return [
             [Simulator::REAL_MODE, Register::BP],
@@ -319,7 +488,7 @@ class AssemblyInstructionTest extends \PHPUnit\Framework\TestCase
     }
 
     /**
-     * @dataProvider parseAddressOnModRmDisp32AddressInProtectedModeDataProvider
+     * @dataProvider parseAddressOnModRmDisp32AddressNotInLongModeDataProvider
      * @small
      *
      * @covers shanept\AssemblySimulator\Instruction\AssemblyInstruction::parseAddress
@@ -327,7 +496,7 @@ class AssemblyInstructionTest extends \PHPUnit\Framework\TestCase
      *
      * @param RegisterObj $reg
      */
-    public function testParseAddressOnModRmDisp32AddressInProtectedMode(
+    public function testParseAddressOnModRmDisp32AddressNotInLongMode(
         int $mode,
         array $reg,
     ): void {
@@ -495,6 +664,10 @@ class AssemblyInstructionTest extends \PHPUnit\Framework\TestCase
             // mov eax,[ebp+eax*2+0x40201030]
             // 0x8B 0x84 0x45 0x30 0x10 0x20 0x40
             [Simulator::PROTECTED_MODE, 0, Register::EAX, 12, Register::EBP, 498, 2, 0, 4, "\x45", "\x30\x10\x20\x40", 1075843642],
+
+            // mov [rsp+0x10],rsi
+            // 0x48 0x89 0x74 0x24 0x10
+            [Simulator::LONG_MODE, 0x48, Register::RSP, 0, Register::RSP, 432, 1, 6, 4, "\x24", "\x10", 448],
         ];
     }
 
@@ -512,10 +685,10 @@ class AssemblyInstructionTest extends \PHPUnit\Framework\TestCase
     public function testParseSibAddress(
         int $simulatorMode,
         int $rexValue,
-        array $scaleReg,
-        int $scaleVal,
         array $indexReg,
         int $indexVal,
+        array $baseReg,
+        int $baseVal,
         int $mod,
         int $reg,
         int $rm,
@@ -536,16 +709,21 @@ class AssemblyInstructionTest extends \PHPUnit\Framework\TestCase
         $simulator->method('getInstructionPointer')
                   ->willReturn(2);
 
+        // This would indicate the (none) scale.
+        if ($indexReg['offset'] === Register::SP['offset']) {
+            $indexReg = null;
+        }
+
         $simulator->method('readRegister')
                   ->willReturnCallback(function ($register) use (
-                      $scaleReg,
-                      $scaleVal,
+                      $baseReg,
+                      $baseVal,
                       $indexReg,
                       $indexVal,
                   ) {
                       switch ($register) {
-                          case $scaleReg:
-                              return $scaleVal;
+                          case $baseReg:
+                              return $baseVal;
                           case $indexReg:
                               return $indexVal;
                       }

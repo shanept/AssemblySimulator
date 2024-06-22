@@ -59,46 +59,95 @@ class LoadEffectiveAddressTest extends \PHPUnit\Framework\TestCase
     }
 
     /**
-     * @small
+     * @return array<int, array{int, int, array<int, int>, RegisterObj, int, RegisterObj, int, string, ?string, int}>
      */
-    public function testLeaLoadsAddressWithDisplacement(): void
+    public static function leaLoadsAddressDataProvider(): array
     {
-        $simulator = $this->getMockSimulator(Simulator::LONG_MODE);
+        return [
+            // lea r10d,[r9+0x17]
+            // REX.RB 0x45 0x8d 0x51 0x17
+            [Simulator::LONG_MODE, 0x45, [0x67], Register::R9D, 1, Register::R10D, 0x18, "\x51", "\x17", 1],
 
-        // lea edx,[r9+0x17]
-        // REX.B 0x41 0x8d 0x51 0x17
+            // lea edx,[ecx+0x5]
+            // 0x8d 0x51 0x5
+            [Simulator::LONG_MODE, 0x00, [0x67], Register::ECX, 13, Register::EDX, 0x12, "\x51", "\x5", 22],
+
+            [Simulator::LONG_MODE, 0x00, [0x66, 0x67], Register::ECX, 65536, Register::DX, 0x12, "\x51", "\x12", 43]
+        ];
+    }
+
+    /**
+     * @dataProvider leaLoadsAddressDataProvider
+     * @small
+     *
+     * @param array<int, int> $prefixValues
+     * @param RegisterObj $readRegister
+     * @param RegisterObj $writeRegister
+     */
+    public function testLeaLoadsAddress(
+        int $mode,
+        int $rexValue,
+        array $prefixValues,
+        array $readRegister,
+        int $readValue,
+        array $writeRegister,
+        int $writeValue,
+        string $modRmByte,
+        ?string $displacement,
+        int $instructionPointer,
+    ): void {
+        $simulator = $this->getMockSimulator($mode);
+
         $simulator->method('getRex')
-                  ->willReturn(0x41);
+                  ->willReturn($rexValue);
 
         $simulator->method('hasPrefix')
-                  ->willReturn(false);
+                  ->willReturnCallback(function ($requestedPrefix) use ($prefixValues): bool {
+                      return in_array($requestedPrefix, $prefixValues, true);
+                  });
 
         $simulator->expects($this->once())
                   ->method('readRegister')
-                  ->willReturn(1)
-                  ->with(Register::R9D);
+                  ->willReturn($readValue)
+                  ->with($readRegister);
 
         $simulator->expects($this->once())
                   ->method('writeRegister')
-                  ->with(Register::EDX, 0x18);
+                  ->with($writeRegister, $writeValue);
 
         $simulator->expects($this->once())
                   ->method('getCodeAtInstruction')
-                  ->willReturn("\x51")
+                  ->willReturn($modRmByte)
                   ->with(1);
 
-        $simulator->expects($this->once())
-                  ->method('getCodeBuffer')
-                  ->willReturn("\x17")
-                  ->with(3, 1);
+        $dispLen = 0;
+        if (! is_null($displacement)) {
+            $dispLen = strlen($displacement);
+
+            $simulator->expects($this->once())
+                      ->method('getCodeBuffer')
+                      ->willReturn($displacement)
+                      ->with($instructionPointer + 2, $dispLen);
+        }
 
         $simulator->method('getInstructionPointer')
-                  ->willReturn(3);
+                  ->willReturnCallback(function () use (&$instructionPointer): int {
+                      return $instructionPointer;
+                  });
+
+        $simulator->expects($this->atLeastOnce())
+                  ->method('advanceInstructionPointer')
+                  ->willReturnCallback(function ($amount) use (&$instructionPointer): void {;
+                      $instructionPointer += $amount;
+                  });
+
+        $expectedInstructionPointer = $instructionPointer + 2 + $dispLen;
 
         $lea = new LoadEffectiveAddress();
         $lea->setSimulator($simulator);
 
         $this->assertTrue($lea->executeOperand8d());
+        $this->assertEquals($expectedInstructionPointer, $instructionPointer);
     }
 
     /**

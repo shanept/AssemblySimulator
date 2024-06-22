@@ -50,7 +50,7 @@ class LoadEffectiveAddress extends AssemblyInstruction
         $regExt = (bool) ($rex & Simulator::REX_R);
 
         $operandSize = $this->getOperandSize();
-        $addressSize = $sim->getLargestInstructionWidth();
+        $addressSize = $this->getAddressSize();
         $reg = Register::getByCode($byte["reg"], $operandSize, $rexSet, $regExt);
 
         if (0b11 === $byte["mod"]) {

@@ -98,6 +98,8 @@ abstract class AssemblyInstruction
 
     /**
      * Determines the size of the address to use for this instruction, in bits.
+     *
+     * @see https://wiki.osdev.org/X86-64_Instruction_Encoding#Operand-size_and_address-size_override_prefix
      */
     protected function getAddressSize(): int
     {
@@ -105,18 +107,18 @@ abstract class AssemblyInstruction
 
         $mode = $this->simulator->getMode();
 
-        /**
-         * On x64, ignore this prefix.
-         * On x32, prefix 0x67 specifies a 16-bit address.
-         * On 16-bit, prefix 0x67 specifies a 32-bit address.
-         */
-        if ($this->simulator->hasPrefix(0x67) && Simulator::LONG_MODE !== $mode) {
-            $maxWidth = Simulator::REAL_MODE === $mode ?
-                            Simulator::TYPE_DWRD :
-                            Simulator::TYPE_WORD;
+        if (! $this->simulator->hasPrefix(0x67)) {
+            return $maxWidth;
         }
 
-        return $maxWidth;
+        /**
+         * On 64-bit, prefix 0x67 specifies a 32-bit address.
+         * On 32-bit, prefix 0x67 specifies a 16-bit address.
+         * On 16-bit, prefix 0x67 specifies a 32-bit address.
+         */
+        return Simulator::PROTECTED_MODE !== $mode ?
+                        Simulator::TYPE_DWRD :
+                        Simulator::TYPE_WORD;
     }
 
     /**
@@ -351,7 +353,7 @@ abstract class AssemblyInstruction
         $rexSet = (bool) ($rex & Simulator::REX);
         $bseExt = (bool) ($rex & Simulator::REX_B);
 
-        $opSize = $this->getOperandSize();
+        $size = $this->getAddressSize();
         $displacement = 0;
 
         /**
@@ -365,7 +367,7 @@ abstract class AssemblyInstruction
         } else {
             $dispSize = 2 == $byte["mod"] ? 4 : $byte["mod"];
 
-            $reg = Register::getByCode($byte['rm'], $opSize, $rexSet, $bseExt);
+            $reg = Register::getByCode($byte['rm'], $size, $rexSet, $bseExt);
             $address = $this->simulator->readRegister($reg);
         }
 

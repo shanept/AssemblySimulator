@@ -868,7 +868,7 @@ class MoveTest extends \PHPUnit\Framework\TestCase
 
         $simulator->method('readRegister')
                   ->willReturnCallback(function ($register) {
-                      if ($register === Register::SI) {
+                      if ($register === Register::ESI) {
                           return 63;
                       }
 
