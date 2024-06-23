@@ -18,11 +18,6 @@ parameters:
       paths:
         - src/Simulator.php
 
-    # These will never be float values.
-    - message: '/^Parameter #\d \$(amount|length) of method shanept\\AssemblySimulator\\Simulator::(advanceInstructionPointer|getCodeAtInstruction)\(\) expects int(\|null)?, float\|int<min, 4> given\.$/'
-      paths:
-        - src/Instruction/Move.php
-
     # We create multiple mock callbacks in this fashion, we shall ignore the errors.
     - message: "/expects (array<callable\\(\\): mixed>|\\(callable\\(\\): mixed\\)\\|null), .*?(TestAssemblyInstruction|null), '[a-zA-Z0-9_]+'}}? given.$/"
       paths:

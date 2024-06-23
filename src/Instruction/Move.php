@@ -73,7 +73,6 @@ class Move extends AssemblyInstruction
     public function executeOperand89(): bool
     {
         $opSize = $this->getOperandSize();
-
         return $this->executeMovWithEncodingMr($opSize);
     }
 
@@ -95,7 +94,6 @@ class Move extends AssemblyInstruction
     public function executeOperand8b(): bool
     {
         $opSize = $this->getOperandSize();
-
         return $this->executeMovWithEncodingRm($opSize);
     }
 
@@ -106,8 +104,7 @@ class Move extends AssemblyInstruction
      */
     public function executeOperandBx8(): bool
     {
-        $opSize = Simulator::TYPE_BYTE;
-        return $this->executeMovWithEncodingOi($opSize);
+        return $this->executeMovWithEncodingOi(Simulator::TYPE_BYTE);
     }
 
     /**
@@ -128,39 +125,7 @@ class Move extends AssemblyInstruction
      */
     public function executeOperandC6(): bool
     {
-        $sim = $this->getSimulator();
-        $sim->advanceInstructionPointer(1);
-
-        $byte = $this->parseModRmByte($sim->getCodeAtInstruction(1));
-        $sim->advanceInstructionPointer(1);
-
-        /**
-         * Depending on the value of the mod bit, we may be writing to a
-         * register or a memory address. If our ModRM mod field is 0b11, we
-         * write our value from the register. Otherwise, we are supposed to
-         * write to a memory location. We will skip that bit.
-         */
-        if (0b11 !== $byte["mod"]) {
-            $address = $this->parseAddress($byte);
-            $sim->advanceInstructionPointer($address->getDisplacement());
-        }
-
-        $immediate = $sim->getCodeAtInstruction(1);
-        $value = $this->unpackImmediate($immediate, 8);
-
-        $sim->advanceInstructionPointer(1);
-
-        if (0b11 === $byte["mod"]) {
-            $rex = $sim->getRex();
-            $rexSet = (bool) ($rex & Simulator::REX);
-            $rmExt = (bool) ($rex & Simulator::REX_B);
-
-            $rm = Register::getByCode($byte["rm"], 8, $rexSet, $rmExt);
-            $sim->writeRegister($rm, $value);
-        }
-        // This is where we *should* save to a memory location. We won't.
-
-        return true;
+        return $this->executeMovWithEncodingMi(Simulator::TYPE_BYTE);
     }
 
     /**
@@ -169,6 +134,15 @@ class Move extends AssemblyInstruction
      * Implements MOV r/m,imm16/32 for the opcode \xC7.
      */
     public function executeOperandC7(): bool
+    {
+        $opSize = $this->getOperandSize();
+        return $this->executeMovWithEncodingMi($opSize);
+    }
+
+    /**
+     * Provides MOV implementation for operations with parameter encoding "MI".
+     */
+    private function executeMovWithEncodingMi(int $opSize): bool
     {
         $sim = $this->getSimulator();
         $sim->advanceInstructionPointer(1);
@@ -188,7 +162,6 @@ class Move extends AssemblyInstruction
         }
 
         // Now we load the Immediate value
-        $opSize = min(Simulator::TYPE_DWRD, $this->getOperandSize());
         $immediate = $sim->getCodeAtInstruction($opSize / 8);
         $value = $this->unpackImmediate($immediate, $opSize);
 
@@ -208,9 +181,7 @@ class Move extends AssemblyInstruction
     }
 
     /**
-     * Provides the functionality for operands 88 and 89. They simply dictate
-     * the operand size, this function does the rest.
-     * Parameter encoding is "MR".
+    * Provides MOV implementation for operations with parameter encoding "MR".
      */
     private function executeMovWithEncodingMr(int $opSize): bool
     {
@@ -226,7 +197,6 @@ class Move extends AssemblyInstruction
         $rmExt = (bool) ($rex & Simulator::REX_B);
 
         $reg = Register::getByCode($byte["reg"], $opSize, $rexSet, $regExt);
-        $value = $sim->readRegister($reg);
 
         // We have an address
         if (0b11 !== $byte['mod']) {
@@ -236,6 +206,7 @@ class Move extends AssemblyInstruction
         } else {
             $rm = Register::getByCode($byte["rm"], $opSize, $rexSet, $rmExt);
 
+            $value = $sim->readRegister($reg);
             $sim->writeRegister($rm, $value);
         }
 
@@ -243,9 +214,34 @@ class Move extends AssemblyInstruction
     }
 
     /**
-     * Provides the functionality for operands 88 and 89. They simply dictate
-     * the operand size, this function does the rest.
-     * Parameter encoding is "RM".
+    * Provides MOV implementation for operations with parameter encoding "OI".
+     */
+    private function executeMovWithEncodingOi(int $opSize): bool
+    {
+        $sim = $this->getSimulator();
+
+        // Get the last bit of the operand.
+        $opcode = ord($sim->getCodeAtInstruction(1)) & 0x7;
+        $sim->advanceInstructionPointer(1);
+
+        $value = $sim->getCodeAtInstruction($opSize / 8);
+        $value = $this->unpackImmediate($value, $opSize);
+
+        $sim->advanceInstructionPointer($opSize / 8);
+
+        $rex = $sim->getRex();
+        $rexSet = (bool) ($rex & Simulator::REX);
+        $regExt = (bool) ($rex & Simulator::REX_B);
+
+        $register = Register::getByCode($opcode, $opSize, $rexSet, $regExt);
+
+        $sim->writeRegister($register, $value);
+
+        return true;
+    }
+
+    /**
+    * Provides MOV implementation for operations with parameter encoding "RM".
      */
     private function executeMovWithEncodingRm(int $opSize): bool
     {
@@ -278,35 +274,6 @@ class Move extends AssemblyInstruction
         }
 
         $sim->writeRegister($reg, $value);
-
-        return true;
-    }
-
-    /**
-     * Provides the functionality for operand range \xB0-\xBF. They simply
-     * dictate the operand size, this function does the rest.
-     * Parameter encoding is "OI".
-     */
-    private function executeMovWithEncodingOi(int $opSize): bool
-    {
-        $sim = $this->getSimulator();
-
-        // Get the last bit of the operand.
-        $opcode = ord($sim->getCodeAtInstruction(1)) & 0x7;
-        $sim->advanceInstructionPointer(1);
-
-        $value = $sim->getCodeAtInstruction($opSize / 8);
-        $value = $this->unpackImmediate($value, $opSize);
-
-        $sim->advanceInstructionPointer($opSize / 8);
-
-        $rex = $sim->getRex();
-        $rexSet = (bool) ($rex & Simulator::REX);
-        $regExt = (bool) ($rex & Simulator::REX_B);
-
-        $register = Register::getByCode($opcode, $opSize, $rexSet, $regExt);
-
-        $sim->writeRegister($register, $value);
 
         return true;
     }

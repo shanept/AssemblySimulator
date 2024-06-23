@@ -8,9 +8,6 @@
             "Exception"
         ],
     },
-    "logs": {
-        "html": "infection-log.html"
-    },
     "mutators": {
         "@default": true,
         "global-ignoreSourceCodeByRegex": [
