@@ -72,7 +72,7 @@ class LoadEffectiveAddressTest extends \PHPUnit\Framework\TestCase
             // 0x8d 0x51 0x5
             [Simulator::LONG_MODE, 0x00, [0x67], Register::ECX, 13, Register::EDX, 0x12, "\x51", "\x5", 22],
 
-            [Simulator::LONG_MODE, 0x00, [0x66, 0x67], Register::ECX, 65536, Register::DX, 0x12, "\x51", "\x12", 43]
+            [Simulator::LONG_MODE, 0x00, [0x66, 0x67], Register::ECX, 65536, Register::DX, 0x12, "\x51", "\x12", 43],
         ];
     }
 
@@ -137,7 +137,7 @@ class LoadEffectiveAddressTest extends \PHPUnit\Framework\TestCase
 
         $simulator->expects($this->atLeastOnce())
                   ->method('advanceInstructionPointer')
-                  ->willReturnCallback(function ($amount) use (&$instructionPointer): void {;
+                  ->willReturnCallback(function ($amount) use (&$instructionPointer): void {
                       $instructionPointer += $amount;
                   });
 

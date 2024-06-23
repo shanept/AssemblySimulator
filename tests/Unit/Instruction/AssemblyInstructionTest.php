@@ -102,7 +102,7 @@ class AssemblyInstructionTest extends \PHPUnit\Framework\TestCase
     }
 
     /**
-     * @return array<int, array{int, string, int, ?int, int}>
+     * @return array<string, array{int, string, int, ?int, int}>
      */
     public static function getAddressOrOperandSizeDataProvider(): array
     {
@@ -280,7 +280,7 @@ class AssemblyInstructionTest extends \PHPUnit\Framework\TestCase
     }
 
     /**
-     * @return array<int, array{int, int, int, RegisterObj, int, string, int, int, int, int}>
+     * @return array<string, array{int, int, int, RegisterObj, int, string, int, int, int, int}>
      */
     public static function parseAddressOnMemoryOffsetAddressDataProvider(): array
     {
@@ -383,29 +383,29 @@ class AssemblyInstructionTest extends \PHPUnit\Framework\TestCase
             ],
 
             'Long Mode with REX.B extends base' => [
-               Simulator::LONG_MODE,
-               0x41,
-               0x00,
-               Register::R11,
-               849,
-               "\x10",
-               1,
-               0,
-               3,
-               865,
-           ],
-           'Long Mode with no displacement' => [
-              Simulator::LONG_MODE,
-              0x00,
-              0x00,
-              Register::RBX,
-              849,
-              "",
-              0,
-              0,
-              3,
-              849,
-          ],
+                Simulator::LONG_MODE,
+                0x41,
+                0x00,
+                Register::R11,
+                849,
+                "\x10",
+                1,
+                0,
+                3,
+                865,
+            ],
+            'Long Mode with no displacement' => [
+                Simulator::LONG_MODE,
+                0x00,
+                0x00,
+                Register::RBX,
+                849,
+                "",
+                0,
+                0,
+                3,
+                849,
+            ],
         ];
     }
 
@@ -679,8 +679,8 @@ class AssemblyInstructionTest extends \PHPUnit\Framework\TestCase
      * @covers shanept\AssemblySimulator\Instruction\AssemblyInstruction::parseSibByte
      * @covers shanept\AssemblySimulator\Instruction\AssemblyInstruction::parseSibAddress
      *
-     * @param RegisterObj $scaleReg
      * @param RegisterObj $indexReg
+     * @param RegisterObj $baseReg
      */
     public function testParseSibAddress(
         int $simulatorMode,
