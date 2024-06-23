@@ -30,8 +30,10 @@ class myCustomInstruction extends AssemblyInstruction
      *
      * In our case, we are handling the opcode 0x01, with the "executeOperand1"
      * method. The callable value must follow PHP standards for callables.
+     *
+     * @return callable[]
      */
-    public function register()
+    public function register(): array
     {
         return [
             0x01 => [&$this, 'executeOperand1'],
@@ -55,7 +57,7 @@ class myCustomInstruction extends AssemblyInstruction
      * the opcode, the simulator will not offer any other instruction processors
      * the opportunity to handle this opcode.
      */
-    public function executeOperand1()
+    public function executeOperand1(): bool
     {
         $sim = $this->getSimulator();
 
@@ -65,28 +67,32 @@ class myCustomInstruction extends AssemblyInstruction
          * required. If this processor only applies to a single opcode, we can
          * immediately advance the instruction pointer to the next position.
          *
+         * As an example of how you may implement multiple opcodes for a single
+         * operation, you may look at the Move instruction for opcodes B0-BF.
+         *
          * Here we advance the instruction pointer by 1 position.
          */
         $sim->advanceInstructionPointer(1);
 
         /**
          * Now we will read our byte at the instruction pointer to the buffer.
+         * The return value is a substring of the code buffer; a binary string.
          * The parameter '1' refers to the amount of bytes to read.
-         * Then, we convert the binary character to an integer.
          */
         $byte = $sim->getCodeAtInstruction(1);
-        $byte = ord($byte);
 
         /**
          * For demonstration, this instruction will refuse to process this
-         * operation if the byte here is equal to 0x37. However, as we advanced
-         * the instruction pointer earlier, we will need to rewind it first.
+         * operation if the byte here is equal to 0x37.
          *
-         * When we pass on processing, this instruction may be processed by
-         * another processor, and we need to ensure that processor gets the
-         * simulator with the same state as it was when this function began.
+         * When we pass on processing, this opcode may be processed by another
+         * processor, and we need to ensure that processor gets the simulator
+         * with the same state as it was when this function began.
+         *
+         * As we previously advanced the instruction pointer 1 byte, we will
+         * rewind it before passing on execution.
          */
-        if (0x37 === $byte) {
+        if (0x37 === ord($byte)) {
             /**
              * For demonstration purposes, I am going to get and then set the
              * instruction pointer. Alternatively, I could advance the pointer
@@ -103,37 +109,22 @@ class myCustomInstruction extends AssemblyInstruction
          * Ok, we are going to push this value onto the stack. First, we need
          * to get the stack pointer.
          */
-        $stackPointer = $this->getStackPointer($sim->getMode());
+        $stackPointer = $this->getStackPointerRegister();
 
         // We read the position of the stack from the stack pointer register.
         $stackPosition = $sim->readRegister($stackPointer);
 
-        // The stack pointer always points to the top, so we should increment
+        // The stack pointer always points to the top, so we should decrement
         // before we put onto the stack.
-        $stackPosition++;
+        $stackPosition--;
 
         // Now we can push our value onto the stack
-        $sim->setStackAt($stackPosition, $byte);
+        $sim->writeStackAt($stackPosition, $byte);
 
-        // Don't forget to increment the stack pointer!
+        // Don't forget to decrement the stack pointer!
         $sim->writeRegister($stackPointer, $stackPosition);
 
         // We have processed the operand, we must let the simulator know!
         return true;
-    }
-
-    /**
-     * This is exactly how we do it in the standard instruction set.
-     */
-    private function getStackPointer($mode)
-    {
-        $pointers = [
-            0 => null,              // Mode 0 refers to nothing.
-            1 => Register::SP,      // Mode 1 refers to REAL_MODE.
-            2 => Register::ESP,     // Mode 2 refers to PROTECTED_MODE.
-            3 => Register::RSP,     // Mode 3 refers to LONG_MODE.
-        ];
-
-        return $pointers[$mode];
     }
 }
