@@ -85,13 +85,15 @@ class Push extends AssemblyInstruction
         $sim->advanceInstructionPointer(1);
 
         $opSize = $this->getOperandSize();
-        $opDisp = $opSize / 8;
-        $value = $sim->getCodeAtInstruction($opDisp);
 
-        $sim->advanceInstructionPointer($opDisp);
+        // Operand 68 is limited to 32-bit displacement max.
+        $dispSize = min(4, $opSize / 8);
+        $value = $sim->getCodeAtInstruction($dispSize);
+
+        $sim->advanceInstructionPointer($dispSize);
 
         $stackPointer = $this->getStackPointerRegister();
-        $stackPosition = $sim->readRegister($stackPointer) - $opDisp;
+        $stackPosition = $sim->readRegister($stackPointer) - $dispSize;
 
         $sim->writeRegister($stackPointer, $stackPosition);
         $sim->writeStackAt($stackPosition, $value);
