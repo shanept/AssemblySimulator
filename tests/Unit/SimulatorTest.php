@@ -344,15 +344,43 @@ class SimulatorTest extends \PHPUnit\Framework\TestCase
     }
 
     /**
+     * @return array<string, array{int}>
+     */
+    public static function allFlagsDataProvider(): array
+    {
+        return [
+            'Carry flag' => [Flags::CARRY],
+            'Parity flag' => [Flags::PARITY],
+            'Adjust flag' => [Flags::ADJUST],
+            'Zero flag' => [Flags::ZERO],
+            'Sign flag' => [Flags::SIGN],
+            'Trap flag' => [Flags::TRAP],
+            'Interruption flag' => [Flags::INTERRUPTION],
+            'Direction flag' => [Flags::DIRECTION],
+            'Overflow flag' => [Flags::OVERFLOW],
+            'Iopl flag' => [Flags::IOPL],
+            'Nested flag' => [Flags::NESTED],
+            'Resume flag' => [Flags::RESUME],
+            'Virtual flag' => [Flags::VIRTUAL],
+            'Alignment flag' => [Flags::ALIGNMENT],
+            'Vif flag' => [Flags::VIF],
+            'Vip flag' => [Flags::VIP],
+        ];
+    }
+
+    /**
+     * @dataProvider allFlagsDataProvider
      * @small
      */
-    public function testSetFlag(): void
+    public function testSetFlag(int $flag): void
     {
         $simulator = new Simulator(Simulator::REAL_MODE);
 
-        $simulator->setFlag(Flags::OF, true);
+        $simulator->setFlag($flag, true);
+        $this->assertTrue($simulator->getFlag($flag));
 
-        $this->assertTrue($simulator->getFlag(Flags::OF));
+        $simulator->setFlag($flag, false);
+        $this->assertFalse($simulator->getFlag($flag));
     }
 
     /**
