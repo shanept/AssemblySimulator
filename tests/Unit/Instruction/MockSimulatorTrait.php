@@ -24,4 +24,24 @@ trait MockSimulatorTrait
 
         return $mock;
     }
+
+    public function mockInstructionPointer(
+        Simulator $simulator,
+        int &$instructionPointer,
+    ): void {
+        $simulator->method('getInstructionPointer')
+                  ->willReturnCallback(function () use (&$instructionPointer) {
+                      return $instructionPointer;
+                  });
+
+        $simulator->method('advanceInstructionPointer')
+                  ->willReturnCallback(function ($amount) use (&$instructionPointer): void {
+                      $instructionPointer += $amount;
+                  });
+
+        $simulator->method('setInstructionPointer')
+                  ->willReturnCallback(function ($pointer) use (&$instructionPointer): void {
+                      $instructionPointer = $pointer;
+                  });
+    }
 }

@@ -142,7 +142,7 @@ class MoveTest extends \PHPUnit\Framework\TestCase
     /**
      * @return array<int, array{int, int, int, string, int, string, RegisterObj, RegisterObj, int}>
      */
-    public static function movRegisterToRegisterWithEncodingMr(): array
+    public static function movRegisterToRegister(): array
     {
         return [
             [Simulator::LONG_MODE, 0x00, 0x00, "\x88", 2, "\xD1", Register::DL, Register::CL, 432],
@@ -152,17 +152,25 @@ class MoveTest extends \PHPUnit\Framework\TestCase
             [Simulator::LONG_MODE, 0x48, 0x00, "\x89", 7, "\xD1", Register::RDX, Register::RCX, 790],
             [Simulator::LONG_MODE, 0x49, 0x00, "\x89", 3, "\xFC", Register::RDI, Register::R12, 133],
             [Simulator::LONG_MODE, 0x4D, 0x00, "\x89", 4, "\xD1", Register::R10, Register::R9, 581],
+
+            [Simulator::LONG_MODE, 0x00, 0x00, "\x8A", 2, "\xD1", Register::CL, Register::DL, 432],
+            [Simulator::LONG_MODE, 0x40, 0x00, "\x8A", 2, "\xF7", Register::DIL, Register::SIL, 432],
+            [Simulator::LONG_MODE, 0x45, 0x00, "\x8A", 5, "\xD1", Register::R9B, Register::R10B, 691],
+
+            [Simulator::LONG_MODE, 0x48, 0x00, "\x8B", 7, "\xD1", Register::RCX, Register::RDX, 790],
+            [Simulator::LONG_MODE, 0x49, 0x00, "\x8B", 3, "\xFC", Register::R12, Register::RDI, 133],
+            [Simulator::LONG_MODE, 0x4D, 0x00, "\x8B", 4, "\xD1", Register::R9, Register::R10, 581],
         ];
     }
 
     /**
-     * @dataProvider movRegisterToRegisterWithEncodingMr
+     * @dataProvider movRegisterToRegister
      * @small
      *
      * @param RegisterObj $readRegister
      * @param RegisterObj $writeRegister
      */
-    public function testMovRegisterToRegisterWithEncodingMr(
+    public function testMovRegisterToRegister(
         int $simulatorMode,
         int $rexValue,
         int $prefixValue,
@@ -223,30 +231,71 @@ class MoveTest extends \PHPUnit\Framework\TestCase
     }
 
     /**
+     * @return array<int, array{string}>
+     */
+    public static function movRegisterToSibValue(): array
+    {
+        return [
+            [Simulator::LONG_MODE, 0x00, 0x67, "\x88", 3, "\x74", "\x24", Register::RSP, 0x00, Register::ESP, 123, "\x10"],
+            [Simulator::LONG_MODE, 0x00, 0x00, "\x88", 3, "\x74", "\x24", Register::RSP, 0x00, Register::RSP, 123, "\x10"],
+            [Simulator::LONG_MODE, 0x49, 0x67, "\x88", 3, "\x74", "\x24", Register::RSP, 0x00, Register::R12D, 123, "\x10"],
+            [Simulator::LONG_MODE, 0x49, 0x00, "\x88", 3, "\x74", "\x24", Register::RSP, 0x00, Register::R12, 123, "\x10"],
+
+            [Simulator::LONG_MODE, 0x00, 0x67, "\x89", 3, "\x74", "\x24", Register::RSP, 0x00, Register::ESP, 123, "\x10"],
+            [Simulator::LONG_MODE, 0x00, 0x00, "\x89", 3, "\x74", "\x24", Register::RSP, 0x00, Register::RSP, 123, "\x10"],
+            [Simulator::LONG_MODE, 0x49, 0x67, "\x89", 3, "\x74", "\x24", Register::RSP, 0x00, Register::R12D, 123, "\x10"],
+            [Simulator::LONG_MODE, 0x49, 0x00, "\x89", 3, "\x74", "\x24", Register::RSP, 0x00, Register::R12, 123, "\x10"],
+
+            [Simulator::LONG_MODE, 0x00, 0x67, "\x8A", 3, "\x74", "\x24", Register::RSP, 0x00, Register::ESP, 123, "\x10"],
+            [Simulator::LONG_MODE, 0x00, 0x00, "\x8A", 3, "\x74", "\x24", Register::RSP, 0x00, Register::RSP, 123, "\x10"],
+            [Simulator::LONG_MODE, 0x49, 0x67, "\x8A", 3, "\x74", "\x24", Register::RSP, 0x00, Register::R12D, 123, "\x10"],
+            [Simulator::LONG_MODE, 0x49, 0x00, "\x8A", 3, "\x74", "\x24", Register::RSP, 0x00, Register::R12, 123, "\x10"],
+
+            [Simulator::LONG_MODE, 0x00, 0x67, "\x8B", 3, "\x74", "\x24", Register::RSP, 0x00, Register::ESP, 123, "\x10"],
+            [Simulator::LONG_MODE, 0x00, 0x00, "\x8B", 3, "\x74", "\x24", Register::RSP, 0x00, Register::RSP, 123, "\x10"],
+            [Simulator::LONG_MODE, 0x49, 0x67, "\x8B", 3, "\x74", "\x24", Register::RSP, 0x00, Register::R12D, 123, "\x10"],
+            [Simulator::LONG_MODE, 0x49, 0x00, "\x8B", 3, "\x74", "\x24", Register::RSP, 0x00, Register::R12, 123, "\x10"],
+        ];
+    }
+
+    /**
      * We aren't looking for much here as we don't actually handle the value.
      * We just want to ensure we move past the SIB value without error and
      * return true.
      *
+     * @dataProvider movRegisterToSibValue
      * @small
      */
-    public function testMov88OnSibValue(): void
-    {
-        $simulator = $this->getMockSimulator(Simulator::LONG_MODE);
+     public function testMovRegisterToSibValue(
+        int $simulatorMode,
+        int $rexValue,
+        int $prefixValue,
+        string $opcode,
+        int $instructionPointer,
+        string $modRmByte,
+        string $sibByte,
+        array $indexRegister,
+        int $indexValue,
+        array $baseRegister,
+        int $baseValue,
+        string $displacementBytes,
+    ): void {
+        $simulator = $this->getMockSimulator($simulatorMode);
+        $this->mockInstructionPointer($simulator, $instructionPointer);
 
         // mov [esp+0x10],rsi
         // 0x88 0x74 0x24 0x10
         $simulator->method('getRex')
-                  ->willReturn(0);
+                  ->willReturn($rexValue);
 
-        $simulator->method('getPrefixes')
-                  ->willReturn([]);
-
-        $simulator->method('getInstructionPointer')
-                  ->willReturn(1);
+        $simulator->method('hasPrefix')
+                  ->willReturnCallback(function ($requested) use ($prefixValue): bool {
+                      return $requested === $prefixValue;
+                  });
 
         $values = [
-            "\x24",
-            "\x74",
+            $sibByte,
+            $modRmByte,
         ];
 
         $simulator->method('getCodeAtInstruction')
@@ -270,272 +319,50 @@ class MoveTest extends \PHPUnit\Framework\TestCase
                       return $value;
                   });
 
-        $simulator->method('getCodeBuffer')
-                  ->with(2, 1)
-                  ->willReturn("\x10");
+        $dispSize = strlen($displacementBytes);
+
+        if ($dispSize) {
+            $simulator->method('getCodeBuffer')
+                      ->willReturn($displacementBytes)
+                      ->with($instructionPointer + 3, $dispSize);
+        }
+
+        // If the index is *SP, we have no index.
+        if (4 === $indexRegister['offset']) {
+            $indexRegister = null;
+        }
 
         $simulator->method('readRegister')
-                  ->willReturnCallback(function ($register) {
+                  ->willReturnCallback(function ($register) use (
+                      $indexRegister,
+                      $indexValue,
+                      $baseRegister,
+                      $baseValue,
+                  ) {
                       switch ($register) {
-                          case Register::DH:
-                              return 690;
-                          case Register::RSP:
-                              return 0;
+                          case $indexRegister:
+                              return $indexValue;
+                          case $baseRegister:
+                              return $baseValue;
                       }
 
                       $this->fail(sprintf('Unexpected register %s.', $register['name']));
                   });
 
-        $simulator->expects($this->exactly(3))
-                  ->method('advanceInstructionPointer');
+        $expectedPointer = $instructionPointer + 4;
 
-        $move = new Move();
-        $move->setSimulator($simulator);
+        $instruction = new Move();
+        $instruction->setSimulator($simulator);
 
-        $this->assertTrue($move->executeOperand88());
-    }
+        $functionName = sprintf('executeOperand%02X', ord($opcode));
+        $callable = [$instruction, $functionName];
 
-    /**
-     * We aren't looking for much here as we don't actually handle the value.
-     * We just want to ensure we move past the SIB value without error and
-     * return true.
-     *
-     * @small
-     */
-    public function testMov89OnSibValue(): void
-    {
-        $simulator = $this->getMockSimulator(Simulator::LONG_MODE);
+        if (! is_callable($callable)) {
+            $this->fail("Method Move::{$functionName} does not exist.");
+        }
 
-        // mov [rsp+0x10],rsi
-        // 0x48 0x89 0x74 0x24 0x10
-        $simulator->method('getRex')
-                  ->willReturn(0x48);
-
-        $simulator->method('getPrefixes')
-                  ->willReturn([]);
-
-        $simulator->method('getInstructionPointer')
-                  ->willReturn(1);
-
-        $values = [
-            "\x24",
-            "\x74",
-        ];
-
-        $simulator->method('getCodeAtInstruction')
-                  ->willReturnCallback(function ($length) use (&$values) {
-                      $value = array_pop($values);
-
-                      if (is_null($value)) {
-                          $this->fail('Out of values.');
-                      }
-
-                      if ($length !== strlen($value)) {
-                          $message = sprintf(
-                              'Expected string of length %d, received "%s".',
-                              $length,
-                              $value,
-                          );
-
-                          $this->fail($message);
-                      }
-
-                      return $value;
-                  });
-
-        $simulator->method('getCodeBuffer')
-                  ->with(2, 1)
-                  ->willReturn("\x10");
-
-        $simulator->method('readRegister')
-                  ->willReturnCallback(function ($register) {
-                      switch ($register) {
-                          case Register::RSI:
-                              return 690;
-                          case Register::RSP:
-                              return 0;
-                      }
-
-                      $this->fail(sprintf('Unexpected register %s.', $register['name']));
-                  });
-
-        $simulator->expects($this->exactly(3))
-                  ->method('advanceInstructionPointer');
-
-        $move = new Move();
-        $move->setSimulator($simulator);
-
-        $this->assertTrue($move->executeOperand89());
-    }
-
-    /**
-     * @small
-     */
-    public function testMov8aOnRegisterValue(): void
-    {
-        $simulator = $this->getMockSimulator(Simulator::LONG_MODE);
-
-        // mov dl,cl
-        // 0x8A 0xD1
-        $simulator->method('getRex')
-                  ->willReturn(0);
-
-        $simulator->method('getPrefixes')
-                  ->willReturn([]);
-
-        $simulator->method('getCodeAtInstruction')
-                  ->willReturn("\xD1")
-                  ->with(1);
-
-        $simulator->method('readRegister')
-                  ->with(Register::CL)
-                  ->willReturn(693);
-
-        $simulator->expects($this->once())
-                  ->method('writeRegister')
-                  ->with(Register::DL, 693);
-
-        $move = new Move();
-        $move->setSimulator($simulator);
-
-        $this->assertTrue($move->executeOperand8a());
-    }
-
-    /**
-     * @small
-     */
-    public function testMov8aOnRexRegisterValue(): void
-    {
-        $simulator = $this->getMockSimulator(Simulator::LONG_MODE);
-
-        // mov r10b,r9b
-        // 0x45 0x88 0xD1
-        $simulator->method('getRex')
-                  ->willReturn(0x45);
-
-        $simulator->method('getPrefixes')
-                  ->willReturn([]);
-
-        $simulator->method('getCodeAtInstruction')
-                  ->willReturn("\xD1")
-                  ->with(1);
-
-        $simulator->method('readRegister')
-                  ->with(Register::R9B)
-                  ->willReturn(694);
-
-        $simulator->expects($this->once())
-                  ->method('writeRegister')
-                  ->with(Register::R10B, 694);
-
-        $move = new Move();
-        $move->setSimulator($simulator);
-
-        $this->assertTrue($move->executeOperand8a());
-    }
-
-    /**
-     * @small
-     */
-    public function testMov8bLoadsMemoryAddress(): void
-    {
-        $simulator = $this->getMockSimulator(Simulator::LONG_MODE);
-
-        // mov rdx,QWORD PTR [rip+0x2bbd62]
-        // 0x48 0x8B 0x15 0x62 0xBD 0x2B 0x00
-        $simulator->method('getRex')
-                  ->willReturn(0x48);
-
-        $simulator->method('getPrefixes')
-                  ->willReturn([]);
-
-        $simulator->method('getCodeAtInstruction')
-                  ->willReturnCallback(function ($length) {
-                      $values = [
-                          1 => "\x15",
-                          4 => "\x62\x8D\x2B\x00",
-                      ];
-
-                      return $values[$length];
-                  });
-
-        $simulator->method('getInstructionPointer')
-                  ->willReturn(3);
-
-        $simulator->expects($this->once())
-                  ->method('writeRegister')
-                  ->with(Register::RDX, 0x2B8D69);
-
-        $move = new Move();
-        $move->setSimulator($simulator);
-
-        $this->assertTrue($move->executeOperand8b());
-    }
-
-    /**
-     * @small
-     */
-    public function testMov8bOnRegisterValue(): void
-    {
-        $simulator = $this->getMockSimulator(Simulator::LONG_MODE);
-
-        // mov rdx,rcx
-        // 0x48 0x8B 0xD1
-        $simulator->method('getRex')
-                  ->willReturn(0x48);
-
-        $simulator->method('getPrefixes')
-                  ->willReturn([]);
-
-        $simulator->method('getCodeAtInstruction')
-                  ->willReturn("\xD1")
-                  ->with(1);
-
-        $simulator->method('readRegister')
-                  ->with(Register::RCX)
-                  ->willReturn(693);
-
-        $simulator->expects($this->once())
-                  ->method('writeRegister')
-                  ->with(Register::RDX, 693);
-
-        $move = new Move();
-        $move->setSimulator($simulator);
-
-        $this->assertTrue($move->executeOperand8b());
-    }
-
-    /**
-     * @small
-     */
-    public function testMov8bOnRexRegisterValue(): void
-    {
-        $simulator = $this->getMockSimulator(Simulator::LONG_MODE);
-
-        // mov r10,r9
-        // 0x4D 0x8B 0xD1
-        $simulator->method('getRex')
-                  ->willReturn(0x4D);
-
-        $simulator->method('getPrefixes')
-                  ->willReturn([]);
-
-        $simulator->method('getCodeAtInstruction')
-                  ->willReturn("\xD1")
-                  ->with(1);
-
-        $simulator->method('readRegister')
-                  ->with(Register::R9)
-                  ->willReturn(694);
-
-        $simulator->expects($this->once())
-                  ->method('writeRegister')
-                  ->with(Register::R10, 694);
-
-        $move = new Move();
-        $move->setSimulator($simulator);
-
-        $this->assertTrue($move->executeOperand8b());
+        $this->assertTrue(call_user_func($callable));
+        $this->assertEquals($expectedPointer, $instructionPointer);
     }
 
     /**
