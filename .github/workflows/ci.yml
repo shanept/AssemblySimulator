@@ -79,3 +79,24 @@ jobs:
         env:
           ACTION_PHP_VERSION: ${{ matrix.php_version }}
           ACTION_PHP_EXTENSIONS: pcntl
+
+  mutation-tests:
+    name: Mutation Testing
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Install Dependency Management
+        uses: php-actions/composer@v6
+
+      - name: Run PHP Infection Mutation tests
+        run: |
+            vendor/bin/infection \
+              --min-msi=100 \
+              --min-covered-msi=100
+              --log-verbosity=none
+              --no-interaction
+              --no-progress
