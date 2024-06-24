@@ -350,9 +350,9 @@ class SimulatorTest extends \PHPUnit\Framework\TestCase
     {
         $simulator = new Simulator(Simulator::REAL_MODE);
 
-        $simulator->setFlag(Flags::OF, 1);
+        $simulator->setFlag(Flags::OF, true);
 
-        $this->assertEquals(1, $simulator->getFlag(Flags::OF));
+        $this->assertTrue($simulator->getFlag(Flags::OF));
     }
 
     /**
@@ -363,8 +363,8 @@ class SimulatorTest extends \PHPUnit\Framework\TestCase
     {
         $simulator = new Simulator(Simulator::REAL_MODE);
 
-        $simulator->setFlag(Flags::CF, 1);
-        $simulator->setFlag(Flags::AF, 1);
+        $simulator->setFlag(Flags::CF, true);
+        $simulator->setFlag(Flags::AF, true);
 
         $this->assertEquals(0b10001, $simulator->getFlags());
         $this->assertTrue($simulator->getFlag(Flags::CF));

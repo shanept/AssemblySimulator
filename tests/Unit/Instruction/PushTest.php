@@ -186,7 +186,7 @@ class PushTest extends \PHPUnit\Framework\TestCase
         $callable = [$instruction, $functionName];
 
         if (! is_callable($callable)) {
-            $this->fail("Method Move::{$functionName} does not exist.");
+            $this->fail("Method Push::{$functionName} does not exist.");
         }
 
         $this->assertTrue(call_user_func($callable));

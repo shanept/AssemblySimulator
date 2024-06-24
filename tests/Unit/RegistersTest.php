@@ -161,18 +161,42 @@ class RegistersTest extends \PHPUnit\Framework\TestCase
     }
 
     /**
+     * @return array<int, array{int, RegisterObj, int, RegisterObj, int}>
+     */
+    public static function readSmallerRegister(): array
+    {
+        return [
+            [Simulator::REAL_MODE, Register::AX, 65535, Register::AL, 255],
+            [Simulator::PROTECTED_MODE, Register::EAX, 4294967295, Register::AX, 65535],
+            [Simulator::PROTECTED_MODE, Register::EAX, 4227858427, Register::AL, 251],
+            [Simulator::LONG_MODE, Register::RAX, PHP_INT_MAX, Register::EAX, 4294967295],
+            [Simulator::LONG_MODE, Register::R8, 4321, Register::R8B, 225],
+        ];
+    }
+
+    /**
+     * @dataProvider readSmallerRegister
      * @small
      *
      * @depends testWriteRegister
+     *
+     * @param RegisterObj $largerRegister
+     * @param RegisterObj $smallerRegister
      */
-    public function testReadingSmallerRegister(): void
-    {
-        $simulator = new Simulator(Simulator::PROTECTED_MODE);
+    public function testReadSmallerRegister(
+        int $simulatorMode,
+        array $largerRegister,
+        int $writeValue,
+        array $smallerRegister,
+        int $expected,
+    ): void {
+        $simulator = new Simulator($simulatorMode);
 
-        $simulator->writeRegister(Register::EAX, 0x55555555);
-        $readValue = $simulator->readRegister(Register::AL);
+        $simulator->writeRegister($largerRegister, $writeValue);
 
-        $this->assertEquals(0x55, $readValue);
+        $readValue = $simulator->readRegister($smallerRegister);
+
+        $this->assertEquals($expected, $readValue);
     }
 
     /**

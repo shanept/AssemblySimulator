@@ -133,8 +133,8 @@ class ExclusiveOr extends AssemblyInstruction
         $sim->writeRegister($modrm['rm'], $result);
         $this->operationResult($result);
 
-        $sim->setFlag(Flags::CF, 0);
-        $sim->setFlag(Flags::OF, 0);
+        $sim->setFlag(Flags::CF, false);
+        $sim->setFlag(Flags::OF, false);
 
         return true;
     }
@@ -153,8 +153,8 @@ class ExclusiveOr extends AssemblyInstruction
         $sim->writeRegister($modrm['reg'], $result);
         $this->operationResult($result);
 
-        $sim->setFlag(Flags::CF, 0);
-        $sim->setFlag(Flags::OF, 0);
+        $sim->setFlag(Flags::CF, false);
+        $sim->setFlag(Flags::OF, false);
 
         return true;
     }
@@ -165,23 +165,27 @@ class ExclusiveOr extends AssemblyInstruction
 
         /**
          * Parity Flag
+         *
          * If the number of set bits in the result is odd, the parity flag will
-         * be set to 1. Otherwise, if it were even, the parity flag will be 0.
+         * be set. Otherwise, if it were even, the parity flag will be unset.
          */
-        $numSetBits = substr_count(decbin($result), "1");
-        $sim->setFlag(Flags::PF, ~$numSetBits & 0x1);
+        $numSetBits = substr_count(decbin($result), '1');
+        $shouldSetParity = boolval(~$numSetBits & 0x1);
+        $sim->setFlag(Flags::PF, $shouldSetParity);
 
         /**
          * Sign Flag
-         * If the result of the last operation was negative, set this to 1.
-         * Otherwise, set it to 0.
+         *
+         * If the result of the last operation was negative, set this flag.
+         * Otherwise, unset it.
          */
-        $sim->setFlag(Flags::SF, $result < 0 ? 1 : 0);
+        $sim->setFlag(Flags::SF, $result < 0);
 
         /**
          * Zero Flag
-         * If the result is 0, this flag is set to 1. Otherwise it is set to 0.
+         *
+         * If the result is 0, set the flag, otherwise unset it.
          */
-        $sim->setFlag(Flags::ZF, $result === 0 ? 1 : 0);
+        $sim->setFlag(Flags::ZF, $result === 0);
     }
 }

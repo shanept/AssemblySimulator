@@ -313,10 +313,10 @@ class Simulator
     /**
      * Set the value of a flag.
      *
-     * @param int $flag  The flag to be set.
-     * @param int $value The value to set the flag to.
+     * @param int  $flag  The flag to be set.
+     * @param bool $value The value to set the flag to.
      */
-    public function setFlag(int $flag, int $value): void
+    public function setFlag(int $flag, bool $value): void
     {
         $factor = $flag & -$flag;
 
@@ -324,7 +324,7 @@ class Simulator
         $this->eFlags &= ~$flag;
 
         // Add the new flag.
-        $this->eFlags += $value * $factor;
+        $this->eFlags += ($value ? 1 : 0) * $factor;
     }
 
     /**

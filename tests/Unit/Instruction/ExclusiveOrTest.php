@@ -15,55 +15,24 @@ class ExclusiveOrTest extends \PHPUnit\Framework\TestCase
     use MockSimulatorTrait;
 
     /**
-     * @return array<int, array{int, int, int, RegisterObj, int, string}>
+     * @return array<string, array{int, int, int, string, int, RegisterObj, int, string}>
      */
     public static function xorRegisterAgainstItselfIsEmptyDataProvider(): array
     {
         return [
-            // REX.RB xor r9d,r9d
-            // 0x45 0x31 0xC9
-            [Simulator::LONG_MODE, 0x45, 0, Register::R9D, 1234, "\xC9"],
-
-            // REX.WRB xor r9,r9
-            // 0x4D 0x31 0xC9
-            [Simulator::LONG_MODE, 0x4D, 0, Register::R9, 1234, "\xC9"],
-
-            // 0x66 REX.RB xor r9w,r9w
-            // 0x66 0x45 0x31 0xC9
-            [Simulator::LONG_MODE, 0x45, 0x66, Register::R9W, 1234, "\xC9"],
+            'Xor(30) on Long Mode with Rex.RB)' => [Simulator::LONG_MODE, 0x45, 0, "\x30", 7, Register::R9B, 1234, "\xC9"],
+            'Xor(30) on Long Mode with Rex.WRB)' => [Simulator::LONG_MODE, 0x4D, 0, "\x30", 7, Register::R9B, 1234, "\xC9"],
+            'Xor(31) on Long Mode with Rex.RB)' => [Simulator::LONG_MODE, 0x45, 0, "\x31", 7, Register::R9D, 1234, "\xC9"],
+            'Xor(31) on Long Mode with Rex.WRB)' => [Simulator::LONG_MODE, 0x4D, 0, "\x31", 7, Register::R9, 1234, "\xC9"],
+            'Xor(31) on Long Mode with Operand Prefix, Rex.RB)' =>
+                [Simulator::LONG_MODE, 0x45, 0x66, "\x31", 7, Register::R9W, 1234, "\xC9"],
+            'Xor(32) on Long Mode with Rex.RB)' => [Simulator::LONG_MODE, 0x45, 0, "\x32", 7, Register::R9B, 1234, "\xC9"],
+            'Xor(32) on Long Mode with Rex.WRB)' => [Simulator::LONG_MODE, 0x4D, 0, "\x32", 7, Register::R9B, 1234, "\xC9"],
+            'Xor(33) on Long Mode with Rex.RB)' => [Simulator::LONG_MODE, 0x45, 0, "\x33", 7, Register::R9D, 1234, "\xC9"],
+            'Xor(33) on Long Mode with Rex.WRB)' => [Simulator::LONG_MODE, 0x4D, 0, "\x33", 7, Register::R9, 1234, "\xC9"],
+            'Xor(33) on Long Mode with Operand Prefix, Rex.RB)' =>
+                [Simulator::LONG_MODE, 0x45, 0x66, "\x33", 7, Register::R9W, 1234, "\xC9"],
         ];
-    }
-
-    /**
-     * @small
-     */
-    public function testXor30RegisterAgainstItselfIsEmpty(): void
-    {
-        $simulator = $this->getMockSimulator(Simulator::LONG_MODE);
-
-        $simulator->method('getRex')
-                  ->willReturn(0x45);
-
-        $simulator->method('hasPrefix')
-                  ->willReturn(false);
-
-        $simulator->expects($this->exactly(2))
-                  ->method('readRegister')
-                  ->with(Register::R9B)
-                  ->willReturn(1234);
-
-        $simulator->expects($this->once())
-                  ->method('writeRegister')
-                  ->with(Register::R9B, 0);
-
-        $simulator->method('getCodeAtInstruction')
-                  ->willReturn("\xC9")
-                  ->with(1);
-
-        $xor = new ExclusiveOr();
-        $xor->setSimulator($simulator);
-
-        $xor->executeOperand30();
     }
 
     /**
@@ -72,15 +41,18 @@ class ExclusiveOrTest extends \PHPUnit\Framework\TestCase
      *
      * @param RegisterObj $register
      */
-    public function testXor31RegisterAgainstItselfIsEmpty(
+    public function testXorRegisterAgainstItselfIsEmpty(
         int $simulatorMode,
         int $rexValue,
         int $prefixValue,
+        string $opcode,
+        int $instructionPointer,
         array $register,
         int $regValue,
         string $instruction,
     ): void {
         $simulator = $this->getMockSimulator($simulatorMode);
+        $this->mockInstructionPointer($simulator, $instructionPointer);
 
         $simulator->method('getRex')
                   ->willReturn($rexValue);
@@ -103,86 +75,20 @@ class ExclusiveOrTest extends \PHPUnit\Framework\TestCase
                   ->willReturn($instruction)
                   ->with(1);
 
-        $xor = new ExclusiveOr();
-        $xor->setSimulator($simulator);
+        $expectedPointer = $instructionPointer + 2;
 
-        $xor->executeOperand31();
-    }
+        $instruction = new ExclusiveOr();
+        $instruction->setSimulator($simulator);
 
-    /**
-     * @small
-     */
-    public function testXor32RegisterAgainstItselfIsEmpty(): void
-    {
-        $simulator = $this->getMockSimulator(Simulator::LONG_MODE);
+        $functionName = sprintf('executeOperand%02X', ord($opcode));
+        $callable = [$instruction, $functionName];
 
-        $simulator->method('getRex')
-                  ->willReturn(0x45);
+        if (! is_callable($callable)) {
+            $this->fail("Method ExclusiveOr::{$functionName} does not exist.");
+        }
 
-        $simulator->method('hasPrefix')
-                  ->willReturn(false);
-
-        $simulator->expects($this->exactly(2))
-                  ->method('readRegister')
-                  ->with(Register::R9B)
-                  ->willReturn(1234);
-
-        $simulator->expects($this->once())
-                  ->method('writeRegister')
-                  ->with(Register::R9B, 0);
-
-        $simulator->method('getCodeAtInstruction')
-                  ->willReturn("\xC9")
-                  ->with(1);
-
-        $xor = new ExclusiveOr();
-        $xor->setSimulator($simulator);
-
-        $xor->executeOperand32();
-    }
-
-    /**
-     * @dataProvider xorRegisterAgainstItselfIsEmptyDataProvider
-     * @small
-     *
-     * @param RegisterObj $register
-     */
-    public function testXor33RegisterAgainstItselfIsEmpty(
-        int $simulatorMode,
-        int $rexValue,
-        int $prefixValue,
-        array $register,
-        int $regValue,
-        string $instruction,
-    ): void {
-        $simulator = $this->getMockSimulator($simulatorMode);
-
-        $simulator->method('getRex')
-                  ->willReturn($rexValue);
-
-        $simulator->method('hasPrefix')
-                  ->willReturnCallback(function ($requested) use ($prefixValue) {
-                      return $requested === $prefixValue;
-                  });
-
-        $simulator->expects($this->exactly(2))
-                  ->method('readRegister')
-                  ->with($register)
-                  ->willReturn($regValue);
-
-        $simulator->expects($this->once())
-                  ->method('writeRegister')
-                  ->with($register, 0);
-
-        $simulator->expects($this->once())
-                  ->method('getCodeAtInstruction')
-                  ->willReturn($instruction)
-                  ->with(1);
-
-        $xor = new ExclusiveOr();
-        $xor->setSimulator($simulator);
-
-        $xor->executeOperand33();
+        $this->assertTrue(call_user_func($callable));
+        $this->assertEquals($expectedPointer, $instructionPointer);
     }
 
     /**
@@ -191,17 +97,23 @@ class ExclusiveOrTest extends \PHPUnit\Framework\TestCase
     public static function xorWithTwoRegistersDataProvider(): array
     {
         return [
-            // REX.RB xor r8d,r9d
-            // 0x45 0x31 0xC8
-            [Simulator::LONG_MODE, 0x45, 0, Register::R8D, 4321, Register::R9D, 1234, "\xC8"],
+            [Simulator::LONG_MODE, 0x40, 0, "\x30", 42, Register::AL, 225, Register::CL, 210, "\xC8", Register::AL, 51],
+            [Simulator::LONG_MODE, 0x40, 0, "\x30", 42, Register::AL, 158, Register::CL, 175, "\xC8", Register::AL, 49],
+            [Simulator::LONG_MODE, 0x45, 0, "\x30", 42, Register::R8B, 225, Register::R9B, 210, "\xC8", Register::R8B, 51],
+            [Simulator::LONG_MODE, 0x4D, 0, "\x30", 42, Register::R8B, 158, Register::R9B, 175, "\xC8", Register::R8B, 49],
 
-            // REX.WRB xor r8,r9
-            // 0x4D 0x31 0xC8
-            [Simulator::LONG_MODE, 0x4D, 0, Register::R8, 9374, Register::R9, 4527, "\xC8"],
+            [Simulator::LONG_MODE, 0x45, 0, "\x31", 42, Register::R8D, 4321, Register::R9D, 1234, "\xC8", Register::R8D, 5171],
+            [Simulator::LONG_MODE, 0x4D, 0, "\x31", 42, Register::R8, 9374, Register::R9, 4527, "\xC8", Register::R8, 13617],
+            [Simulator::LONG_MODE, 0x45, 0x66, "\x31", 42, Register::R8W, 9374, Register::R9W, 4527, "\xC8", Register::R8W, 13617],
 
-            // 0x66 REX.RB xor r8w,r9w
-            // 0x66 0x4D 0x31 0xC8
-            [Simulator::LONG_MODE, 0x45, 0x66, Register::R8W, 9374, Register::R9W, 4527, "\xC8"],
+            [Simulator::LONG_MODE, 0x40, 0, "\x32", 42, Register::CL, 225, Register::AL, 210, "\xC8", Register::CL, 51],
+            [Simulator::LONG_MODE, 0x40, 0, "\x32", 42, Register::CL, 158, Register::AL, 175, "\xC8", Register::CL, 49],
+            [Simulator::LONG_MODE, 0x45, 0, "\x32", 42, Register::R9B, 225, Register::R8B, 210, "\xC8", Register::R9B, 51],
+            [Simulator::LONG_MODE, 0x4D, 0, "\x32", 42, Register::R9B, 158, Register::R8B, 175, "\xC8", Register::R9B, 49],
+
+            [Simulator::LONG_MODE, 0x45, 0, "\x33", 42, Register::R9D, 4321, Register::R8D, 1234, "\xC8", Register::R9D, 5171],
+            [Simulator::LONG_MODE, 0x4D, 0, "\x33", 42, Register::R9, 9374, Register::R8, 4527, "\xC8", Register::R9, 13617],
+            [Simulator::LONG_MODE, 0x45, 0x66, "\x33", 42, Register::R9W, 9374, Register::R8W, 4527, "\xC8", Register::R9W, 13617],
         ];
     }
 
@@ -209,20 +121,26 @@ class ExclusiveOrTest extends \PHPUnit\Framework\TestCase
      * @dataProvider xorWithTwoRegistersDataProvider
      * @small
      *
-     * @param RegisterObj $firstRegister
-     * @param RegisterObj $secondRegister
+     * @param RegisterObj $readRegisterOne
+     * @param RegisterObj $readRegisterTwo
+     * @param RegisterObj $writeRegister
      */
-    public function testXor31WithTwoRegisters(
+    public function testXorWithTwoRegisters(
         int $simulatorMode,
         int $rexValue,
         int $prefixValue,
-        array $firstRegister,
-        int $firstRegValue,
-        array $secondRegister,
-        int $secondRegValue,
-        string $instruction,
+        string $opcode,
+        int $instructionPointer,
+        array $readRegisterOne,
+        int $readValueOne,
+        array $readRegisterTwo,
+        int $readValueTwo,
+        string $modRmByte,
+        array $writeRegister,
+        int $writeValue,
     ): void {
         $simulator = $this->getMockSimulator($simulatorMode);
+        $this->mockInstructionPointer($simulator, $instructionPointer);
 
         $simulator->method('getRex')
                   ->willReturn($rexValue);
@@ -235,131 +153,104 @@ class ExclusiveOrTest extends \PHPUnit\Framework\TestCase
         $simulator->expects($this->exactly(2))
                   ->method('readRegister')
                   ->willReturnCallback(function ($register) use (
-                      $firstRegister,
-                      $firstRegValue,
-                      $secondRegister,
-                      $secondRegValue
-                  ): int {
-                      if ($register === $firstRegister) {
-                          return $firstRegValue;
-                      } elseif ($register === $secondRegister) {
-                          return $secondRegValue;
+                      $readRegisterOne,
+                      $readValueOne,
+                      $readRegisterTwo,
+                      $readValueTwo,
+                  ) {
+                      if ($register === $readRegisterOne) {
+                          return $readValueOne;
+                      } elseif ($register === $readRegisterTwo) {
+                          return $readValueTwo;
                       }
 
-                      $message = sprintf(
-                          'Request made for incorrect register "%s".',
-                          $register['name'],
-                      );
-
-                      $this->fail($message);
+                      $this->fail('Unknown register ' . $register['name']);
                   });
 
-        $expected = $firstRegValue ^ $secondRegValue;
+        $expectedPointer = $instructionPointer + 2;
+
         $simulator->expects($this->once())
                   ->method('writeRegister')
-                  ->with($firstRegister, $expected);
+                  ->with($writeRegister, $writeValue);
 
         $simulator->expects($this->once())
                   ->method('getCodeAtInstruction')
-                  ->willReturn($instruction)
+                  ->willReturn($modRmByte)
                   ->with(1);
 
-        $xor = new ExclusiveOr();
-        $xor->setSimulator($simulator);
+        $instruction = new ExclusiveOr();
+        $instruction->setSimulator($simulator);
 
-        $xor->executeOperand31();
+        $functionName = sprintf('executeOperand%02X', ord($opcode));
+        $callable = [$instruction, $functionName];
+
+        if (! is_callable($callable)) {
+            $this->fail("Method ExclusiveOr::{$functionName} does not exist.");
+        }
+
+        $this->assertTrue(call_user_func($callable));
+        $this->assertEquals($expectedPointer, $instructionPointer);
     }
 
     /**
-     * @dataProvider xorWithTwoRegistersDataProvider
+     * @return array<int, array{int, int, int, string, string, RegisterObj, int, RegisterObj, int, bool, bool, bool, bool, bool}>
+     */
+    public static function xorSetsFlagsDataProvider(): array
+    {
+        $t = true;
+        $f = false;
+
+        return [
+            [Simulator::LONG_MODE, 0x45, 0x00, "\x30", "\xC9", Register::R9B, 0, Register::R9B, 0, $f, $t, $t, $f, $f],
+            [Simulator::LONG_MODE, 0x4D, 0x00, "\x31", "\xC9", Register::R9, 0, Register::R9, 0, $f, $t, $t, $f, $f],
+            [Simulator::LONG_MODE, 0x45, 0x00, "\x32", "\xC9", Register::R9B, 0, Register::R9B, 0, $f, $t, $t, $f, $f],
+            [Simulator::LONG_MODE, 0x4D, 0x00, "\x33", "\xC9", Register::R9, 0, Register::R9, 0, $f, $t, $t, $f, $f],
+
+            [Simulator::LONG_MODE, 0x45, 0x00, "\x30", "\xC8", Register::R9B, 1, Register::R8B, 0, $f, $f, $f, $f, $f],
+            [Simulator::LONG_MODE, 0x4D, 0x00, "\x31", "\xC8", Register::R9, 1, Register::R8, 0, $f, $f, $f, $f, $f],
+            [Simulator::LONG_MODE, 0x45, 0x00, "\x32", "\xC8", Register::R9B, 1, Register::R8B, 0, $f, $f, $f, $f, $f],
+            [Simulator::LONG_MODE, 0x4D, 0x00, "\x33", "\xC8", Register::R9, 1, Register::R8, 0, $f, $f, $f, $f, $f],
+        ];
+    }
+
+    /**
+     * @dataProvider xorSetsFlagsDataProvider
      * @small
      *
-     * @param RegisterObj $firstRegister
-     * @param RegisterObj $secondRegister
+     * @param RegisterObj $readRegisterOne
+     * @param RegisterObj $readRegisterTwo
      */
-    public function testXor33WithTwoRegisters(
+    public function testXorSetsFlagsAfterExecution(
         int $simulatorMode,
         int $rexValue,
         int $prefixValue,
-        array $firstRegister,
-        int $firstRegValue,
-        array $secondRegister,
-        int $secondRegValue,
-        string $instruction,
+        string $opcode,
+        string $modRmByte,
+        array $readRegisterOne,
+        int $readValueOne,
+        array $readRegisterTwo,
+        int $readValueTwo,
+        bool $carryFlag,
+        bool $parityFlag,
+        bool $zeroFlag,
+        bool $signFlag,
+        bool $overflowFlag,
     ): void {
-        $simulator = $this->getMockSimulator($simulatorMode);
-
-        $simulator->method('getRex')
-                  ->willReturn($rexValue);
-
-        $simulator->method('hasPrefix')
-                  ->willReturnCallback(function ($requested) use ($prefixValue) {
-                      return $requested === $prefixValue;
-                  });
-
-        $simulator->expects($this->exactly(2))
-                  ->method('readRegister')
-                  ->willReturnCallback(function ($register) use (
-                      $firstRegister,
-                      $firstRegValue,
-                      $secondRegister,
-                      $secondRegValue
-                  ): int {
-                      if ($register === $firstRegister) {
-                          return $firstRegValue;
-                      } elseif ($register === $secondRegister) {
-                          return $secondRegValue;
-                      }
-
-                      $message = sprintf(
-                          'Request made for incorrect register "%s".',
-                          $register['name'],
-                      );
-
-                      $this->fail($message);
-                  });
-
-        $expected = $secondRegValue ^ $firstRegValue;
-        $simulator->expects($this->once())
-                  ->method('writeRegister')
-                  ->with($secondRegister, $expected);
-
-        $simulator->expects($this->once())
-                  ->method('getCodeAtInstruction')
-                  ->willReturn($instruction)
-                  ->with(1);
-
-        $xor = new ExclusiveOr();
-        $xor->setSimulator($simulator);
-
-        $xor->executeOperand33();
-    }
-
-    /**
-     * @small
-     */
-    public function testXorClearsFlagsAfterExecution(): void
-    {
         $simulator = $this->getMockSimulator(Simulator::LONG_MODE);
 
-        /**
-         * The following function implements the verification logic for the
-         * parameter calls on the setFlags function. We expect the following
-         * calls:
-         *
-         * setFlags(Flags::OF, 0)
-         * setFlags(Flags::CF, 0)
-         * setFlags(Flags::SF, 0)
-         * setFlags(Flags::ZF, 1)
-         * setFlags(Flags::FF, 1)
-         */
-        $flagVerifier = function ($flag, $value) {
+        $flagVerifier = function ($flag, $value) use (
+            $carryFlag,
+            $parityFlag,
+            $zeroFlag,
+            $signFlag,
+            $overflowFlag,
+        ): void {
             $expected = [
-                Flags::OF => 0,
-                Flags::CF => 0,
-                Flags::SF => 0,
-                Flags::ZF => 1,
-                Flags::PF => 1,
+                Flags::OF => $overflowFlag,
+                Flags::CF => $carryFlag,
+                Flags::SF => $signFlag,
+                Flags::ZF => $zeroFlag,
+                Flags::PF => $parityFlag,
             ];
 
             $name = '<UNKNOWN>';
@@ -393,25 +284,65 @@ class ExclusiveOrTest extends \PHPUnit\Framework\TestCase
         // REX.RB xor r9 r9
         // 0x45 0x31 0xC9
         $simulator->method('getRex')
-                  ->willReturn(0x45);
+                  ->willReturn($rexValue);
 
         $simulator->method('hasPrefix')
-                  ->willReturn(false);
+                  ->willReturnCallback(function ($requested) use ($prefixValue): bool {
+                      return $requested === $prefixValue;
+                  });
+
+        $simulator->expects($this->exactly(2))
+                  ->method('readRegister')
+                  ->willReturnCallback(function ($register) use (
+                      $readRegisterOne,
+                      $readValueOne,
+                      $readRegisterTwo,
+                      $readValueTwo,
+                  ) {
+                      if ($register === $readRegisterOne) {
+                          return $readValueOne;
+                      } elseif ($register === $readRegisterTwo) {
+                          return $readValueTwo;
+                      }
+
+                      $this->fail('Unknown register ' . $register['name']);
+                  });
 
         $simulator->method('getCodeAtInstruction')
-                  ->willReturn("\xC9")
+                  ->willReturn($modRmByte)
                   ->with(1);
 
-        $xor = new ExclusiveOr();
-        $xor->setSimulator($simulator);
+        $instruction = new ExclusiveOr();
+        $instruction->setSimulator($simulator);
 
-        $xor->executeOperand31();
+        $functionName = sprintf('executeOperand%02X', ord($opcode));
+        $callable = [$instruction, $functionName];
+
+        if (! is_callable($callable)) {
+            $this->fail("Method ExclusiveOr::{$functionName} does not exist.");
+        }
+
+        $this->assertTrue(call_user_func($callable));
     }
 
     /**
+     * @return array<int, array{string}>
+     */
+    public static function xorOperandsDataProvider(): array
+    {
+        return [
+            ["\x30"],
+            ["\x31"],
+            ["\x32"],
+            ["\x33"],
+        ];
+    }
+
+    /**
+     * @dataProvider xorOperandsDataProvider
      * @small
      */
-    public function testXorWithIncorrectModByteFails(): void
+    public function testXorWithIncorrectModByteFails(string $opcode): void
     {
         $simulator = $this->getMockSimulator(Simulator::LONG_MODE);
 
@@ -428,10 +359,17 @@ class ExclusiveOrTest extends \PHPUnit\Framework\TestCase
                   ->willReturn("\x89")
                   ->with(1);
 
-        $xor = new ExclusiveOr();
-        $xor->setSimulator($simulator);
+        $instruction = new ExclusiveOr();
+        $instruction->setSimulator($simulator);
+
+        $functionName = sprintf('executeOperand%02X', ord($opcode));
+        $callable = [$instruction, $functionName];
+
+        if (! is_callable($callable)) {
+            $this->fail("Method ExclusiveOr::{$functionName} does not exist.");
+        }
 
         $this->expectException(\RuntimeException::class);
-        $xor->executeOperand31();
+        call_user_func($callable);
     }
 }
