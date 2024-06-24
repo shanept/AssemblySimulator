@@ -231,7 +231,7 @@ class MoveTest extends \PHPUnit\Framework\TestCase
     }
 
     /**
-     * @return array<int, array{string}>
+     * @return array<int, array{int, int, int, string, int, string, string, RegisterObj, int, RegisterObj, int, string}>
      */
     public static function movRegisterToSibValue(): array
     {
@@ -265,8 +265,11 @@ class MoveTest extends \PHPUnit\Framework\TestCase
      *
      * @dataProvider movRegisterToSibValue
      * @small
+     *
+     * @param RegisterObj $indexRegister
+     * @param RegisterObj $baseRegister
      */
-     public function testMovRegisterToSibValue(
+    public function testMovRegisterToSibValue(
         int $simulatorMode,
         int $rexValue,
         int $prefixValue,

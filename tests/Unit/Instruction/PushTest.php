@@ -119,7 +119,7 @@ class PushTest extends \PHPUnit\Framework\TestCase
     }
 
     /**
-     * @return array<int, array{int, int, int, RegisterObj, int, string}>
+     * @return array<int, array{int, int, int, string, int, RegisterObj, int, string}>
      */
     public static function pushImmediateOnStackDataProvider(): array
     {

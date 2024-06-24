@@ -25,8 +25,11 @@ trait MockSimulatorTrait
         return $mock;
     }
 
+    /**
+     * @param MockSimulator $simulator
+     */
     public function mockInstructionPointer(
-        Simulator $simulator,
+        $simulator,
         int &$instructionPointer,
     ): void {
         $simulator->method('getInstructionPointer')
