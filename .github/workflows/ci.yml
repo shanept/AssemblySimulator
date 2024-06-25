@@ -96,7 +96,9 @@ jobs:
         run: |
             vendor/bin/infection \
               --min-msi=100 \
-              --min-covered-msi=100
-              --log-verbosity=none
-              --no-interaction
-              --no-progress
+              --min-covered-msi=100 \
+              --log-verbosity=none \
+              --no-interaction \
+              --no-progress \
+              --logger-github=true
+
