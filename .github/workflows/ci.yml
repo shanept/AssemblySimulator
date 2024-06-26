@@ -44,19 +44,23 @@ jobs:
         include:
           - name: "PHP v7.4"
             php_version: 7.4
-            composer_args: ""
+            composer_args: "--ignore-platform-req=php"
+            composer_ignore_php_reqs: true
 
           - name: "PHP v7.4, lowest deps"
             php_version: 7.4
-            composer_args: "--prefer-lowest"
+            composer_args: "--ignore-platform-req=php --prefer-lowest"
+            composer_ignore_php_reqs: true
 
           - name: "PHP v8.3"
             php_version: 8.3
             composer_args: ""
+            composer_ignore_php_reqs: false
 
           - name: "PHP v8.3, lowest deps"
             php_version: 8.3
             composer_args: "--prefer-lowest"
+            composer_ignore_php_reqs: false
 
     name: Unit Tests on ${{ matrix.name }}
 
@@ -71,6 +75,14 @@ jobs:
         uses: php-actions/composer@v6
         with:
           command: "update"
+          php_version: ${{ matrix.php_version }}
+          args: ${{ matrix.composer_args }}
+
+      - name: Upgrade PHPUnit, not ignoring platform reqs
+        if: ${{ matrix.composer_ignore_php_reqs }}
+        uses: php-actions/composer@v6
+        with:
+          command: "update phpunit"
           php_version: ${{ matrix.php_version }}
           args: ${{ matrix.composer_args }}
 
@@ -101,4 +113,3 @@ jobs:
               --no-interaction \
               --no-progress \
               --logger-github=true
-
