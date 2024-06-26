@@ -49,7 +49,7 @@ class ExclusiveOrTest extends \PHPUnit\Framework\TestCase
         int $instructionPointer,
         array $register,
         int $regValue,
-        string $instruction,
+        string $instruction
     ): void {
         $simulator = $this->getMockSimulator($simulatorMode);
         $this->mockInstructionPointer($simulator, $instructionPointer);
@@ -137,7 +137,7 @@ class ExclusiveOrTest extends \PHPUnit\Framework\TestCase
         int $readValueTwo,
         string $modRmByte,
         array $writeRegister,
-        int $writeValue,
+        int $writeValue
     ): void {
         $simulator = $this->getMockSimulator($simulatorMode);
         $this->mockInstructionPointer($simulator, $instructionPointer);
@@ -156,7 +156,7 @@ class ExclusiveOrTest extends \PHPUnit\Framework\TestCase
                       $readRegisterOne,
                       $readValueOne,
                       $readRegisterTwo,
-                      $readValueTwo,
+                      $readValueTwo
                   ) {
                       if ($register === $readRegisterOne) {
                           return $readValueOne;
@@ -234,7 +234,7 @@ class ExclusiveOrTest extends \PHPUnit\Framework\TestCase
         bool $parityFlag,
         bool $zeroFlag,
         bool $signFlag,
-        bool $overflowFlag,
+        bool $overflowFlag
     ): void {
         $simulator = $this->getMockSimulator(Simulator::LONG_MODE);
 
@@ -243,7 +243,7 @@ class ExclusiveOrTest extends \PHPUnit\Framework\TestCase
             $parityFlag,
             $zeroFlag,
             $signFlag,
-            $overflowFlag,
+            $overflowFlag
         ): void {
             $expected = [
                 Flags::OF => $overflowFlag,
@@ -297,7 +297,7 @@ class ExclusiveOrTest extends \PHPUnit\Framework\TestCase
                       $readRegisterOne,
                       $readValueOne,
                       $readRegisterTwo,
-                      $readValueTwo,
+                      $readValueTwo
                   ) {
                       if ($register === $readRegisterOne) {
                           return $readValueOne;

@@ -149,7 +149,7 @@ class RegistersTest extends \PHPUnit\Framework\TestCase
         int $largerRegisterValue,
         array $smallerRegister,
         int $smallerRegisterValue,
-        int $expectedValue,
+        int $expectedValue
     ): void {
         $simulator = new Simulator($simulatorMode);
 
@@ -188,7 +188,7 @@ class RegistersTest extends \PHPUnit\Framework\TestCase
         array $largerRegister,
         int $writeValue,
         array $smallerRegister,
-        int $expected,
+        int $expected
     ): void {
         $simulator = new Simulator($simulatorMode);
 
@@ -263,7 +263,7 @@ class RegistersTest extends \PHPUnit\Framework\TestCase
         int $size,
         bool $rexPrefixSet,
         bool $rexExtendedRegisters,
-        string $expected,
+        string $expected
     ): void {
         $register = Register::getByCode(
             $code,

@@ -17,4 +17,5 @@ return (new PhpCsFixer\Config())
 		'linebreak_after_opening_tag' => true,
 		'phpdoc_order' => true,
 		'visibility_required' => ['elements' => ['property','method']],		// Disabes const for support with PHP 7.0
+        'trailing_comma_in_multiline' => ['elements' => ['arguments', 'arrays', 'match']]
 	])->setFinder($finder);

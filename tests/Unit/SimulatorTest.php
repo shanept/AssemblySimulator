@@ -77,7 +77,7 @@ class SimulatorTest extends \PHPUnit\Framework\TestCase
         int $unused1,
         int $unused2,
         int $unused3,
-        int $unused4,
+        int $unused4
     ): void {
         $simulator = new Simulator();
         $simulator->setMode($mode);
@@ -119,7 +119,7 @@ class SimulatorTest extends \PHPUnit\Framework\TestCase
         int $unused1,
         int $unused2,
         int $unused3,
-        int $expected,
+        int $expected
     ): void {
         $simulator = new Simulator($mode);
 
@@ -151,7 +151,7 @@ class SimulatorTest extends \PHPUnit\Framework\TestCase
         string $fullBuffer,
         ?int $start,
         ?int $length,
-        string $expected,
+        string $expected
     ): void {
         $simulator = new Simulator();
         $simulator->setCodeBuffer($fullBuffer);
@@ -261,7 +261,7 @@ class SimulatorTest extends \PHPUnit\Framework\TestCase
         int $unused1,
         int $unused2,
         int $numRegisters,
-        int $unused3,
+        int $unused3
     ): void {
         $simulator = new Simulator($mode);
 
@@ -496,7 +496,7 @@ class SimulatorTest extends \PHPUnit\Framework\TestCase
         int $expectedAddress,
         int $unused1,
         int $unused2,
-        int $unused3,
+        int $unused3
     ): void {
         $simulator = new Simulator($mode);
 
@@ -519,7 +519,7 @@ class SimulatorTest extends \PHPUnit\Framework\TestCase
         int $address,
         int $expectedSize,
         int $unused1,
-        int $unused2,
+        int $unused2
     ): void {
         $simulator = new Simulator($mode);
 
@@ -556,7 +556,7 @@ class SimulatorTest extends \PHPUnit\Framework\TestCase
      * @depends testWriteStackSize
      */
     public function testWriteStackPastMemoryLimitThrowsException(
-        int $stackSize,
+        int $stackSize
     ): void {
         $simulator = new Simulator(Simulator::REAL_MODE);
 
@@ -680,10 +680,8 @@ class SimulatorTest extends \PHPUnit\Framework\TestCase
      *
      * @param array<int, string> $writes
      */
-    public function testOverwriteStack(
-        array $writes,
-        string $expected,
-    ): void {
+    public function testOverwriteStack(array $writes, string $expected): void
+    {
         $simulator = new Simulator(Simulator::REAL_MODE);
 
         $stackAddress = 0x3FFF;
@@ -783,7 +781,7 @@ class SimulatorTest extends \PHPUnit\Framework\TestCase
     public function testClearStackAt(
         array $stack,
         int $clearIdx,
-        string $expected,
+        string $expected
     ): void {
         $simulator = new Simulator(Simulator::REAL_MODE);
 
@@ -1212,7 +1210,7 @@ class SimulatorTest extends \PHPUnit\Framework\TestCase
      *
      * @depends testGetAndSetAndAdvanceInstructionPointer
      */
-    public function testNewerRegisteredFunctionCanDelegateToOldFunction(): void
+    public function testNewerRegisteredFunctionCanDelegateToOlderFunction(): void
     {
         $simulator = new Simulator(Simulator::LONG_MODE);
 

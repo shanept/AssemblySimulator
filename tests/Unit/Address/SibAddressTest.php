@@ -93,7 +93,7 @@ class SibAddressTest extends \PHPUnit\Framework\TestCase
         int $displacement,
         int $dispSize,
         int $offset,
-        int $expected,
+        int $expected
     ): void {
         $sib = [
             's' => $scale,
@@ -117,7 +117,7 @@ class SibAddressTest extends \PHPUnit\Framework\TestCase
         int $displacement,
         int $dispSize,
         int $offset,
-        int $expected,
+        int $expected
     ): void {
         $sib = [
             's' => $scale,

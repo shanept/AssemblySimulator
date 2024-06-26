@@ -211,7 +211,7 @@ class Simulator
      */
     public function registerInstructions(
         AssemblyInstruction $reference,
-        array $mappings,
+        array $mappings
     ): void {
         $record = ['reference' => $reference, 'mappings' => $mappings];
         array_unshift($this->registeredInstructions, $record);

@@ -94,7 +94,7 @@ class LoadEffectiveAddressTest extends \PHPUnit\Framework\TestCase
         int $writeValue,
         string $modRmByte,
         ?string $displacement,
-        int $instructionPointer,
+        int $instructionPointer
     ): void {
         $simulator = $this->getMockSimulator($mode);
 

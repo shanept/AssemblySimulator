@@ -80,7 +80,7 @@ class ModRmAddressTest extends \PHPUnit\Framework\TestCase
         int $displacement,
         int $dispSize,
         int $offset,
-        int $expected,
+        int $expected
     ): void {
         $modrm = new ModRmAddress($baseAddress, $displacement, $dispSize);
 
@@ -96,7 +96,7 @@ class ModRmAddressTest extends \PHPUnit\Framework\TestCase
         int $displacement,
         int $dispSize,
         int $offset,
-        int $expected,
+        int $expected
     ): void {
         $modrm = new ModRmAddress($baseAddress, $displacement, $dispSize);
 

@@ -77,7 +77,7 @@ class MoveTest extends \PHPUnit\Framework\TestCase
         int $instructionPointer,
         string $address,
         array $register,
-        int $expected,
+        int $expected
     ): void {
         $simulator = $this->getMockSimulator($simulatorMode);
 
@@ -179,7 +179,7 @@ class MoveTest extends \PHPUnit\Framework\TestCase
         string $modRmByte,
         array $readRegister,
         array $writeRegister,
-        int $expectedValue,
+        int $expectedValue
     ): void {
         $simulator = $this->getMockSimulator($simulatorMode);
 
@@ -281,7 +281,7 @@ class MoveTest extends \PHPUnit\Framework\TestCase
         int $indexValue,
         array $baseRegister,
         int $baseValue,
-        string $displacementBytes,
+        string $displacementBytes
     ): void {
         $simulator = $this->getMockSimulator($simulatorMode);
         $this->mockInstructionPointer($simulator, $instructionPointer);
@@ -340,7 +340,7 @@ class MoveTest extends \PHPUnit\Framework\TestCase
                       $indexRegister,
                       $indexValue,
                       $baseRegister,
-                      $baseValue,
+                      $baseValue
                   ) {
                       switch ($register) {
                           case $indexRegister:
@@ -431,7 +431,7 @@ class MoveTest extends \PHPUnit\Framework\TestCase
         string $modRmByte,
         array $writeRegister,
         string $binImmediate,
-        int $intImmediate,
+        int $intImmediate
     ): void {
         $simulator = $this->getMockSimulator($simulatorMode);
 
@@ -539,7 +539,7 @@ class MoveTest extends \PHPUnit\Framework\TestCase
         int $instructionPointer,
         array $writeRegister,
         string $binImmediate,
-        int $intImmediate,
+        int $intImmediate
     ): void {
         $simulator = $this->getMockSimulator($simulatorMode);
 
@@ -621,7 +621,7 @@ class MoveTest extends \PHPUnit\Framework\TestCase
         int $instructionPointer,
         string $modRmByte,
         string $destinationAddress,
-        string $binImmediate,
+        string $binImmediate
     ): void {
         $simulator = $this->getMockSimulator($simulatorMode);
 

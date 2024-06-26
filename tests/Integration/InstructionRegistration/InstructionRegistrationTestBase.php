@@ -43,7 +43,7 @@ abstract class InstructionRegistrationTestBase extends \PHPUnit\Framework\TestCa
      */
     public function testRegistrationForOperand(
         string $fullyQualifiedClassName,
-        int $operand,
+        int $operand
     ): void {
         if (! array_key_exists($operand, self::$registrations)) {
             $classNameParts = explode('\\', $fullyQualifiedClassName);

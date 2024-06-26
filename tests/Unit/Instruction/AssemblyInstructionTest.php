@@ -44,6 +44,7 @@ class AssemblyInstructionTest extends \PHPUnit\Framework\TestCase
         $instruction->setSimulator($simulator);
 
         $getSimulator = new ReflectionMethod($instruction, 'getSimulator');
+        $getSimulator->setAccessible(true);
 
         $this->assertEquals($simulator, $getSimulator->invoke($instruction));
     }
@@ -73,7 +74,7 @@ class AssemblyInstructionTest extends \PHPUnit\Framework\TestCase
      * @small
      */
     public function testProtectedMethodsVisibility(
-        string $methodName,
+        string $methodName
     ): void {
         $instruction = new TestAssemblyInstruction();
 
@@ -145,7 +146,7 @@ class AssemblyInstructionTest extends \PHPUnit\Framework\TestCase
         string $functionName,
         int $rex,
         ?int $prefix,
-        int $expected,
+        int $expected
     ): void {
         $simulator = $this->getMockSimulator($simulatorMode);
 
@@ -173,6 +174,7 @@ class AssemblyInstructionTest extends \PHPUnit\Framework\TestCase
         $instruction->setSimulator($simulator);
 
         $fn = new ReflectionMethod($instruction, $functionName);
+        $fn->setAccessible(true);
 
         $this->assertEquals($expected, $fn->invoke($instruction));
     }
@@ -263,7 +265,7 @@ class AssemblyInstructionTest extends \PHPUnit\Framework\TestCase
         string $byte,
         int $mod,
         int $reg,
-        int $rm,
+        int $rm
     ): void {
         $expected = [
             'mod' => $mod,
@@ -273,6 +275,7 @@ class AssemblyInstructionTest extends \PHPUnit\Framework\TestCase
 
         $instruction = new TestAssemblyInstruction();
         $method = new ReflectionMethod($instruction, "parseModRmByte");
+        $method->setAccessible(true);
 
         $actualByte = $method->invoke($instruction, $byte);
 
@@ -428,7 +431,7 @@ class AssemblyInstructionTest extends \PHPUnit\Framework\TestCase
         int $mod,
         int $reg,
         int $rm,
-        int $expect,
+        int $expect
     ): void {
         $simulator = $this->getMockSimulator($simulatorMode);
 
@@ -463,6 +466,7 @@ class AssemblyInstructionTest extends \PHPUnit\Framework\TestCase
         $instruction->setSimulator($simulator);
 
         $method = new ReflectionMethod($instruction, "parseAddress");
+        $method->setAccessible(true);
 
         $byte = [
             'mod' => $mod,
@@ -498,7 +502,7 @@ class AssemblyInstructionTest extends \PHPUnit\Framework\TestCase
      */
     public function testParseAddressOnModRmDisp32AddressNotInLongMode(
         int $mode,
-        array $reg,
+        array $reg
     ): void {
         // mov edx, 0x10722a80
         // 0x8b 0x15 0x80 0x2a 0x72 0x10
@@ -523,6 +527,7 @@ class AssemblyInstructionTest extends \PHPUnit\Framework\TestCase
         $instruction->setSimulator($simulator);
 
         $method = new ReflectionMethod($instruction, "parseAddress");
+        $method->setAccessible(true);
 
         $byte = [
             'mod' => 0,
@@ -560,6 +565,7 @@ class AssemblyInstructionTest extends \PHPUnit\Framework\TestCase
         $instruction->setSimulator($simulator);
 
         $parseAddress = new ReflectionMethod($instruction, "parseAddress");
+        $parseAddress->setAccessible(true);
 
         $byte = [
             "mod" => 0,
@@ -599,6 +605,7 @@ class AssemblyInstructionTest extends \PHPUnit\Framework\TestCase
         $instruction->setSimulator($simulator);
 
         $parseAddress = new ReflectionMethod($instruction, "parseAddress");
+        $parseAddress->setAccessible(true);
 
         $byte = [
             "mod" => 0,
@@ -632,6 +639,7 @@ class AssemblyInstructionTest extends \PHPUnit\Framework\TestCase
         $instruction->setSimulator($simulator);
 
         $parseAddress = new ReflectionMethod($instruction, "parseAddress");
+        $parseAddress->setAccessible(true);
 
         $byte = [
             "mod" => 1,
@@ -694,7 +702,7 @@ class AssemblyInstructionTest extends \PHPUnit\Framework\TestCase
         int $rm,
         string $sibByte,
         ?string $dispByte,
-        int $expected,
+        int $expected
     ): void {
         $simulator = $this->getMockSimulator($simulatorMode);
 
@@ -719,7 +727,7 @@ class AssemblyInstructionTest extends \PHPUnit\Framework\TestCase
                       $baseReg,
                       $baseVal,
                       $indexReg,
-                      $indexVal,
+                      $indexVal
                   ) {
                       switch ($register) {
                           case $baseReg:
@@ -746,7 +754,6 @@ class AssemblyInstructionTest extends \PHPUnit\Framework\TestCase
         $instruction = new TestAssemblyInstruction();
         $instruction->setSimulator($simulator);
 
-
         $byte = [
             "mod" => $mod,
             "reg" => $reg,
@@ -754,6 +761,8 @@ class AssemblyInstructionTest extends \PHPUnit\Framework\TestCase
         ];
 
         $parseAddress = new ReflectionMethod($instruction, "parseAddress");
+        $parseAddress->setAccessible(true);
+
         $address = $parseAddress->invoke($instruction, $byte);
 
         $this->assertInstanceOf(SibAddress::class, $address);
@@ -800,6 +809,8 @@ class AssemblyInstructionTest extends \PHPUnit\Framework\TestCase
         ];
 
         $parseAddress = new ReflectionMethod($instruction, "parseAddress");
+        $parseAddress->setAccessible(true);
+
         $address = $parseAddress->invoke($instruction, $byte);
 
         $this->assertInstanceOf(SibAddress::class, $address);
@@ -833,11 +844,12 @@ class AssemblyInstructionTest extends \PHPUnit\Framework\TestCase
     public function testUnpackImmediate(
         int $operandSize,
         string $binaryString,
-        int $expected,
+        int $expected
     ): void {
         $instruction = new TestAssemblyInstruction();
 
         $unpackMethod = new ReflectionMethod($instruction, "unpackImmediate");
+        $unpackMethod->setAccessible(true);
 
         $actual = $unpackMethod->invoke($instruction, $binaryString, $operandSize);
         $this->assertEquals($expected, $actual);
@@ -853,6 +865,7 @@ class AssemblyInstructionTest extends \PHPUnit\Framework\TestCase
         $instruction = new TestAssemblyInstruction();
 
         $unpackMethod = new ReflectionMethod($instruction, "unpackImmediate");
+        $unpackMethod->setAccessible(true);
 
         $this->expectException(\UnexpectedValueException::class);
         $unpackMethod->invoke($instruction, "\x1", 64);
@@ -867,11 +880,12 @@ class AssemblyInstructionTest extends \PHPUnit\Framework\TestCase
     public function testPackImmediate(
         int $operandSize,
         string $expected,
-        int $immediateToPack,
+        int $immediateToPack
     ): void {
         $instruction = new TestAssemblyInstruction();
 
         $unpackMethod = new ReflectionMethod($instruction, "packImmediate");
+        $unpackMethod->setAccessible(true);
 
         $actual = $unpackMethod->invoke($instruction, $immediateToPack, $operandSize);
         $this->assertEquals($expected, $actual);
@@ -899,7 +913,7 @@ class AssemblyInstructionTest extends \PHPUnit\Framework\TestCase
      */
     public function testGetStackPointer(
         int $mode,
-        array $expectedStackPointer,
+        array $expectedStackPointer
     ): void {
         $simulator = $this->getMockSimulator($mode);
 
@@ -907,6 +921,7 @@ class AssemblyInstructionTest extends \PHPUnit\Framework\TestCase
         $instruction->setSimulator($simulator);
 
         $unpackMethod = new ReflectionMethod($instruction, "getStackPointerRegister");
+        $unpackMethod->setAccessible(true);
 
         $actual = $unpackMethod->invoke($instruction);
         $this->assertEquals($expectedStackPointer, $actual);

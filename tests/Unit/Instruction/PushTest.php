@@ -68,7 +68,7 @@ class PushTest extends \PHPUnit\Framework\TestCase
         int $stackPosition,
         array $expectedRegister,
         int $regValue,
-        string $stackValue,
+        string $stackValue
     ): void {
         $simulator = $this->getMockSimulator($simulatorMode);
         $this->mockInstructionPointer($simulator, $instructionPointer);
@@ -90,7 +90,7 @@ class PushTest extends \PHPUnit\Framework\TestCase
                       $stackPointer,
                       $stackPosition,
                       $expectedRegister,
-                      $regValue,
+                      $regValue
                   ) {
                       if (4 === $register['offset']) {
                           $this->assertEquals($stackPointer, $register);
@@ -148,7 +148,7 @@ class PushTest extends \PHPUnit\Framework\TestCase
         int $instructionPointer,
         array $stackPointer,
         int $stackPosition,
-        string $immediate,
+        string $immediate
     ): void {
         $simulator = $this->getMockSimulator($simulatorMode);
         $this->mockInstructionPointer($simulator, $instructionPointer);

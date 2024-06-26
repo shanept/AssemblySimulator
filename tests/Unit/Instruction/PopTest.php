@@ -64,7 +64,7 @@ class PopTest extends \PHPUnit\Framework\TestCase
         array $stackPointerRegister,
         array $destinationRegister,
         int $expectedInt,
-        string $expectedBin,
+        string $expectedBin
     ): void {
         $simulator = $this->getMockSimulator($simulatorMode);
 
@@ -105,7 +105,7 @@ class PopTest extends \PHPUnit\Framework\TestCase
                       $opSize,
                       $expectedInt,
                       $stackPointerRegister,
-                      $destinationRegister,
+                      $destinationRegister
                   ) {
                       if (4 === $register['offset']) {
                           // Ensure we are using the correct stack pointer

@@ -39,7 +39,7 @@ class SimulatorFactory
      */
     public static function createSimulator(
         int $simulatorMode = Simulator::REAL_MODE,
-        array $additionalInstructions = [],
+        array $additionalInstructions = []
     ): Simulator {
         /**
          * We will register additional instructions from lowest to highest

@@ -30,7 +30,7 @@ trait MockSimulatorTrait
      */
     public function mockInstructionPointer(
         $simulator,
-        int &$instructionPointer,
+        int &$instructionPointer
     ): void {
         $simulator->method('getInstructionPointer')
                   ->willReturnCallback(function () use (&$instructionPointer) {

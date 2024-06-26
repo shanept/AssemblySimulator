@@ -48,7 +48,7 @@ class RipAddressTest extends \PHPUnit\Framework\TestCase
         int $ripPointer,
         int $address,
         int $offset,
-        int $expected,
+        int $expected
     ): void {
         $rip = new RipAddress($ripPointer, $address);
 
@@ -63,7 +63,7 @@ class RipAddressTest extends \PHPUnit\Framework\TestCase
         int $ripPointer,
         int $address,
         int $offset,
-        int $expected,
+        int $expected
     ): void {
         $rip = new RipAddress($ripPointer, $address);
 
