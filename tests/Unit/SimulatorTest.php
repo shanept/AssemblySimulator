@@ -6,6 +6,7 @@ use shanept\AssemblySimulator\Flags;
 use shanept\AssemblySimulator\Register;
 use shanept\AssemblySimulator\Simulator;
 use shanept\AssemblySimulator\Exception;
+use shanept\AssemblySimulator\Stack\Stack;
 use shanept\AssemblySimulator\Instruction\AssemblyInstruction;
 use shanept\AssemblySimulatorTests\Fakes\TestVoidInstruction;
 use shanept\AssemblySimulatorTests\Fakes\TestAssemblyInstruction;
@@ -303,18 +304,16 @@ class SimulatorTest extends \PHPUnit\Framework\TestCase
 
     /**
      * @small
-     *
-     * @depends testGetStack
      */
     public function testStackIsClearedAfterReset(): void
     {
-        $simulator = new Simulator();
+        $mock = $this->createMock(Stack::class);
 
-        $simulator->writeStackAt(0x3FFF, "\x12");
+        $mock->expects($this->exactly(2))
+             ->method('clear');
 
+        $simulator = new Simulator(null, ['stack' => $mock]);
         $simulator->reset();
-
-        $this->assertEquals("", $simulator->getStack());
     }
 
     /**
@@ -427,7 +426,7 @@ class SimulatorTest extends \PHPUnit\Framework\TestCase
     /**
      * @small
      */
-    public function testWriteStackAddressChangesStackAddress(): void
+    public function testWriteStackAddressChangesStackPointer(): void
     {
         $simulator = new Simulator(Simulator::REAL_MODE);
 
@@ -440,6 +439,112 @@ class SimulatorTest extends \PHPUnit\Framework\TestCase
 
         $this->assertEquals(1, $newAddress);
         $this->assertNotEquals($stackAddress, $newAddress);
+    }
+
+    /**
+     * @return array<string, array{string, string, array<int, int|string>}>
+     */
+    public static function stackMethodsProxyToDataProvider(): array
+    {
+        return [
+            'Stack read proxy' => ['readStackAt', 'getOffset', [3, 2]],
+            'Stack write proxy' => ['writeStackAt', 'setOffset', [2, "s"]],
+            'Stack clear proxy' => ['clearStackAt', 'clearOffset', [8, 4]],
+        ];
+    }
+
+    /**
+     * @dataProvider stackMethodsProxyToDataProvider
+     * @small
+     *
+     * @param array<int, int|string> $parameters
+     */
+    public function testStackMethodsProxyToDataProvider(
+        string $simulatorMethodName,
+        string $stackMethodName,
+        array $parameters
+    ): void {
+        $mock = $this->createMock(Stack::class);
+
+        $called = 0;
+        $mock->expects($this->exactly(1))
+             ->method($stackMethodName)
+             ->with(...$parameters);
+
+        $simulator = new Simulator(null, ['stack' => $mock]);
+        $callback = [$simulator, $simulatorMethodName];
+
+        if (! is_callable($callback)) {
+            $this->fail('Invalid callback ' . $simulatorMethodName);
+        }
+
+        call_user_func_array($callback, $parameters);
+    }
+
+    /**
+     * @small
+     */
+    public function testSetStackAddressAfterConstruct(): void
+    {
+        $mock = $this->createMock(Stack::class);
+
+        $called = 0;
+        $mock->expects($this->exactly(2))
+             ->method('setAddress')
+             ->willReturnCallback(function ($address) use (&$called) {
+                 $called += 1;
+
+                 if (1 === $called) {
+                     return;
+                 } elseif (2 === $called) {
+                     if (10 === $address) {
+                         return;
+                     }
+
+                     $message = "setAddress#2 expected a value of 10, got $address.";
+                 } else {
+                     $message = 'setAddress called too many times';
+                 }
+
+                 throw new \LogicException($message);
+             });
+
+        $simulator = new Simulator(null, ['stack' => $mock]);
+
+        $simulator->setStackAddress(10);
+    }
+
+    /**
+     * @small
+     */
+    public function testSetStackSizeAfterConstruct(): void
+    {
+        $mock = $this->createMock(Stack::class);
+
+        $called = 0;
+        $mock->expects($this->exactly(2))
+             ->method('limitSize')
+             ->willReturnCallback(function ($limit) use (&$called) {
+                 $called += 1;
+
+                 if (1 === $called) {
+                     return;
+                 } elseif (2 === $called) {
+                     if (10 === $limit) {
+                         return;
+                     }
+
+                     $message = "limitSize#2 expected a value of 10, got $limit.";
+                 } else {
+                     $message = 'limitSize called too many times';
+                 }
+
+                 throw new \LogicException($message);
+             });
+
+        $simulator = new Simulator(null, ['stack' => $mock]);
+
+        $simulator->setStackSize(10);
     }
 
     /**
@@ -458,37 +563,8 @@ class SimulatorTest extends \PHPUnit\Framework\TestCase
     }
 
     /**
-     * @depends testWriteStackAddressTaintsSimulator
-     * @depends testWriteStackAddressChangesStackAddress
-     * @small
-     */
-    public function testWriteStackSize(): void
-    {
-        $simulator = new Simulator();
-        $simulator->setStackAddress(99);
-        $simulator->reset();
-
-        $simulator->writeStackAt(90, "\0");
-
-        $simulator->setStackSize(5);
-        $simulator->reset();
-
-        $this->expectException(\RangeException::class);
-        $this->expectExceptionMessage(sprintf(
-            'Exceeded maximum stack size. Attempted to allocate %d ' .
-            'new bytes to the stack, however it exceeds the maximum ' .
-            'stack size of %d.',
-            10,
-            5,
-        ));
-        $simulator->writeStackAt(90, "\0");
-    }
-
-    /**
      * @dataProvider getModeDefaultsDataProvider
      * @small
-     *
-     * @depends testWriteStackSize
      */
     public function testDefaultStackAddressForModes(
         string $modeName,
@@ -498,20 +574,18 @@ class SimulatorTest extends \PHPUnit\Framework\TestCase
         int $unused2,
         int $unused3
     ): void {
-        $simulator = new Simulator($mode);
+        $mock = $this->createMock(Stack::class);
 
-        $simulator->writeStackAt($expectedAddress, "\x00");
+        $mock->expects($this->once())
+             ->method('setAddress')
+             ->with($expectedAddress);
 
-        $this->expectException(Exception\StackUnderflow::class);
-        $simulator->writeStackAt($expectedAddress + 1, "\x00");
+        $simulator = new Simulator($mode, ['stack' => $mock]);
     }
 
     /**
      * @dataProvider getModeDefaultsDataProvider
      * @small
-     *
-     * @depends testWriteStackSize
-     * @depends testDefaultStackAddressForModes
      */
     public function testDefaultStackSizeForModes(
         string $modeName,
@@ -521,395 +595,13 @@ class SimulatorTest extends \PHPUnit\Framework\TestCase
         int $unused1,
         int $unused2
     ): void {
-        $simulator = new Simulator($mode);
+        $mock = $this->createMock(Stack::class);
 
-        $simulator->writeStackAt($address - $expectedSize + 1, "\x00");
+        $mock->expects($this->once())
+             ->method('limitSize')
+             ->with($expectedSize);
 
-        $this->expectException(\RangeException::class);
-        $simulator->writeStackAt($address - $expectedSize, "\x00");
-    }
-
-    /**
-     * @return array<int, array{int}>
-     */
-    public static function writeStackPastLimitsThrowsExceptionDataProvider(): array
-    {
-        return [
-            [127],
-            [0x3FFF],
-            [0x4001],
-            [0x5007],
-        ];
-    }
-
-    /**
-     * This unit test sets a stack of X bytes, then writes to X bytes into that
-     * stack. This fails because our stack size is 1-based, whereas our stack
-     * offset is 0-based. For example, a stack with a size of 1, will start at
-     * offset 0. Attempts to write to offset 1 would overflow.
-     *
-     * @dataProvider writeStackPastLimitsThrowsExceptionDataProvider
-     * @small
-     *
-     * @depends testWriteStackAddressTaintsSimulator
-     * @depends testWriteStackAddressChangesStackAddress
-     * @depends testWriteStackSize
-     */
-    public function testWriteStackPastMemoryLimitThrowsException(
-        int $stackSize
-    ): void {
-        $simulator = new Simulator(Simulator::REAL_MODE);
-
-        $simulator->setStackSize($stackSize);
-        $simulator->setStackAddress($stackSize);
-
-        $simulator->writeStackAt($stackSize - 3, "\x00\x00\x00\x00");
-
-        $this->expectException(\RangeException::class);
-        $this->expectExceptionMessage(sprintf(
-            'Exceeded maximum stack size. Attempted to allocate %d ' .
-            'new bytes to the stack, however it exceeds the maximum ' .
-            'stack size of %d.',
-            $stackSize - 3,
-            $stackSize,
-        ));
-        $simulator->writeStackAt(0, "fail");
-    }
-
-    /**
-     * @return array<int, array{array<int, string>, string}>
-     */
-    public static function writeStackDataProvider(): array
-    {
-        return [
-            [[0 => "\x3", 1 => "\x4"], "\x4\x3"],
-            [[0 => "\x3", 2 => "\x4"], "\x4\x0\x3"],
-            [[0 => "\x3", 4 => "\x2\x1"], "\x2\x1\x0\x0\x3"],
-            [[1 => "\x2"], "\x2\x0"],
-            [[126 => "\x34\x45"], "\x34\x45" . str_repeat("\x00", 125)],
-        ];
-    }
-
-    /**
-     * @dataProvider writeStackDataProvider
-     * @small
-     *
-     *
-     * @param array<int, string> $values
-     */
-    public function testGetStack(array $values, string $expected): void
-    {
-        $simulator = new Simulator(Simulator::REAL_MODE);
-
-        $stackAddress = 0x3FFF;
-        $simulator->setStackAddress($stackAddress);
-        $simulator->setStackSize(127);
-
-        foreach ($values as $position => $value) {
-            $simulator->writeStackAt($stackAddress - $position, $value);
-        }
-
-        $this->assertEquals($expected, $simulator->getStack());
-    }
-
-    /**
-     * @dataProvider writeStackDataProvider
-     * @small
-     *
-     * @depends testWriteStackAddressTaintsSimulator
-     * @depends testWriteStackAddressChangesStackAddress
-     * @depends testWriteStackSize
-     *
-     * @param array<int, string> $values
-     */
-    public function testReadStackAt(array $values, string $unused): void
-    {
-        $simulator = new Simulator(Simulator::REAL_MODE);
-
-        $stackAddress = 0x3FFF;
-        $simulator->setStackAddress($stackAddress);
-        $simulator->setStackSize(127);
-
-        foreach ($values as $position => $value) {
-            $simulator->writeStackAt($stackAddress - $position, $value);
-        }
-
-        foreach ($values as $position => $expected) {
-            $length = strlen($expected);
-            $actual = $simulator->readStackAt($stackAddress - $position, $length);
-
-            $message = sprintf(
-                'Assertion failure at position %d (0x%X).',
-                $position,
-                $stackAddress - $position,
-            );
-
-            $this->assertEquals($expected, $actual, $message);
-        }
-    }
-
-    /**
-     * @return array<int, array{array<int, string>, string}>
-     */
-    public static function overwriteStackDataProvider(): array
-    {
-        return [
-            [
-                [
-                    3 => "\x34\x65\x42\x12",
-                    5 => "\x60\x35",
-                    4 => "\x00\x00",
-                ],
-                "\x60\x00\x00\x65\x42\x12",
-            ],
-            [
-                [
-                    2 => "\x45\x9A\x4F",
-                    1 => "\x00",
-                ],
-                "\x45\x00\x4F",
-            ],
-        ];
-    }
-
-    /**
-     * Now, this one will be more tricky. We will set up the stack then
-     * overwrite part of it to see if it gives us the correct value.
-     *
-     * @dataProvider overwriteStackDataProvider
-     *
-     * @param array<int, string> $writes
-     */
-    public function testOverwriteStack(array $writes, string $expected): void
-    {
-        $simulator = new Simulator(Simulator::REAL_MODE);
-
-        $stackAddress = 0x3FFF;
-        $simulator->setStackAddress($stackAddress);
-
-        foreach ($writes as $position => $value) {
-            $simulator->writeStackAt($stackAddress - $position, $value);
-        }
-
-        $this->assertEquals($expected, $simulator->getStack());
-    }
-
-    public function testOverwriteStackWithIdenticalOffset(): void
-    {
-        $simulator = new Simulator(Simulator::REAL_MODE);
-
-        $stackAddress = 0x3FFF;
-        $simulator->setStackAddress($stackAddress);
-
-        $simulator->writeStackAt(0x3FFE, "\xC3\x01");
-        $simulator->writeStackAt(0x3FFE, "\x02");
-
-        $this->assertEquals("\x02\x01", $simulator->getStack());
-    }
-
-    /**
-     * @return array<int, array{array<int, string>, int, string}>
-     */
-    public static function clearStackAtDataProvider(): array
-    {
-        return [
-            [
-                [
-                    0 => "\x43",
-                    1 => "\x32",
-                    2 => "\x65",
-                    4 => "\x43\x42",
-                ],
-                4,
-                "\x65\x32\x43",
-            ],
-            [
-                [
-                    0 => "\x43",
-                    2 => "\x3\x4",
-                    3 => "\x78",
-                ],
-                1,
-                "\x78\x3\x0\x43",
-            ],
-            [
-                [
-                    0 => "\x32",
-                    1 => "\x21",
-                    2 => "\x54",
-                    3 => "\x89",
-                ],
-                1,
-                "\x89\x54\x0\x32",
-            ],
-            [
-                [
-                    0 => "\x42",
-                    1 => "\x31",
-                    2 => "\x64",
-                    3 => "\x79",
-                ],
-                0,
-                "\x79\x64\x31\x0",
-            ],
-            [
-                [
-                    2  => "\x12\x34\x56",
-                    4  => "\x43\x21",
-                    8  => "\x64\x68\x30\x66",
-                    10  => "\x42\x42",
-                    14 => "\xCC\xCC\xCC\xCC",
-                    19 => "\x12\x00\x33\x00\x55",
-                ],
-                8,
-                "\x12\x00\x33\x00\x55\xCC\xCC\xCC\xCC\x42\x42\x00\x00\x00\x00" .
-                    "\x43\x21\x12\x34\x56",
-            ],
-        ];
-    }
-
-    /**
-     * @dataProvider clearStackAtDataProvider
-     * @small
-     *
-     * @depends testWriteStackAddressTaintsSimulator
-     * @depends testWriteStackAddressChangesStackAddress
-     * @depends testWriteStackSize
-     *
-     * @param array<int, string> $stack
-     */
-    public function testClearStackAt(
-        array $stack,
-        int $clearIdx,
-        string $expected
-    ): void {
-        $simulator = new Simulator(Simulator::REAL_MODE);
-
-        $stackAddress = 0x3FFF;
-        $simulator->setStackAddress($stackAddress);
-        $simulator->setStackSize(127);
-
-        foreach ($stack as $position => $value) {
-            $simulator->writeStackAt($stackAddress - $position, $value);
-        }
-
-        $length = strlen($stack[$clearIdx] ?? " ");
-        $simulator->clearStackAt($stackAddress - $clearIdx, $length);
-
-        $this->assertEquals($expected, $simulator->getStack());
-    }
-
-    /**
-     * @small
-     *
-     * @depends testWriteStackAddressChangesStackAddress
-     */
-    public function testReadStackUnderflowThrowsException(): void
-    {
-        $simulator = new Simulator(Simulator::REAL_MODE);
-
-        $simulator->setStackAddress(0x10);
-
-        $this->expectException(Exception\StackUnderflow::class);
-        $this->expectExceptionMessage(sprintf(
-            'Stack underflow. Offset 0x%X requested. Stack starts at 0x%X.',
-            0x11,
-            0x10,
-        ));
-        $simulator->readStackAt(0x11, 1);
-    }
-
-    /**
-     * @small
-     *
-     * @depends testWriteStackAddressTaintsSimulator
-     * @depends testWriteStackAddressChangesStackAddress
-     * @depends testWriteStackSize
-     */
-    public function testReadStackAtInvalidOffsetThrowsException(): void
-    {
-        $simulator = new Simulator();
-
-        $simulator->setStackAddress(0x3FFF);
-        $simulator->setStackSize(127);
-
-        $simulator->writeStackAt(0x3FFA, "abcdef");
-
-        $this->expectException(Exception\StackIndex::class);
-        $this->expectExceptionMessage(sprintf(
-            'Stack offset 0x%X requested, but it exceeds the top of the ' .
-            'stack (0x%X)',
-            4560,
-            0x3FFA,
-        ));
-        $simulator->readStackAt(4560, 2);
-    }
-
-    /**
-     * @small
-     *
-     * @depends testWriteStackAddressChangesStackAddress
-     */
-    public function testWriteStackUnderflowThrowsException(): void
-    {
-        $simulator = new Simulator(Simulator::REAL_MODE);
-
-        $simulator->setStackAddress(0x10);
-
-        $this->expectException(Exception\StackUnderflow::class);
-        $this->expectExceptionMessage(sprintf(
-            'Stack underflow. Offset 0x%X requested. Stack starts at 0x%X.',
-            0x11,
-            0x10,
-        ));
-        $simulator->writeStackAt(0x11, " ");
-    }
-
-    /**
-     * @small
-     *
-     * @depends testWriteStackAddressChangesStackAddress
-     */
-    public function testClearStackUnderflowThrowsException(): void
-    {
-        $simulator = new Simulator(Simulator::REAL_MODE);
-
-        $simulator->setStackAddress(0x10);
-
-        $this->expectException(Exception\StackUnderflow::class);
-        $this->expectExceptionMessage(sprintf(
-            'Stack underflow. Offset 0x%X requested. Stack starts at 0x%X.',
-            0x11,
-            0x10,
-        ));
-        $simulator->clearStackAt(0x11, 2);
-    }
-
-    /**
-     * @small
-     *
-     * @depends testWriteStackAddressTaintsSimulator
-     * @depends testWriteStackAddressChangesStackAddress
-     * @depends testWriteStackSize
-     * @depends testGetStack
-     */
-    public function testClearStackAtInvalidOffsetThrowsException(): void
-    {
-        $simulator = new Simulator();
-
-        $simulator->setStackAddress(0x3FFF);
-        $simulator->setStackSize(127);
-
-        $simulator->writeStackAt(0x3FFF, "\x01");
-
-        $this->expectException(Exception\StackIndex::class);
-        $this->expectExceptionMessage(sprintf(
-            'Stack offset 0x%X requested, but it exceeds the top of the ' .
-            'stack (0x%X)',
-            4560,
-            0x3FFE,
-        ));
-        $simulator->clearStackAt(4560, 1);
+        $simulator = new Simulator($mode, ['stack' => $mock]);
     }
 
     /**

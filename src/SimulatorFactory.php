@@ -33,12 +33,14 @@ class SimulatorFactory
      * instruction set, plus any additional instructions, if specified.
      *
      * @param int $simulatorMode The mode for the simulator to be instantiated in.
+     * @param SimulatorOptions $simulatorOptions Options to be passed to the simulator on instantiation.
      * @param InstructionList $additionalInstructions A list of additional instruction
      *             FQCN to load into the simulator. These will take processing
      *             priority over the default instruction set.
      */
     public static function createSimulator(
         int $simulatorMode = Simulator::REAL_MODE,
+        array $simulatorOptions = [],
         array $additionalInstructions = []
     ): Simulator {
         /**
@@ -51,7 +53,7 @@ class SimulatorFactory
         $instructionSet = self::getDefaultInstructionSet();
         $instructionSet = array_merge($instructionSet, $additionalInstructions);
 
-        $simulator = new Simulator($simulatorMode);
+        $simulator = new Simulator($simulatorMode, $simulatorOptions);
 
         foreach ($instructionSet as $instructionClass) {
             $instructionInstance = new $instructionClass();

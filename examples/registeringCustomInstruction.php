@@ -13,8 +13,11 @@ include __DIR__ . "/../vendor/autoload.php";
 include __DIR__ . "/myCustomInstruction.php";
 
 use shanept\AssemblySimulator\Simulator;
+use shanept\AssemblySimulator\Stack\StrictStack;
 
-$simulator = new Simulator(Simulator::LONG_MODE);
+$simulator = new Simulator(Simulator::LONG_MODE, [
+    'stack' => new StrictStack(),
+]);
 
 // Instantiate and register our custom instruction.
 $instruction = new myCustomInstruction();
@@ -27,11 +30,5 @@ $simulator->simulate();
 $stack = $simulator->getStack();
 
 /**
- * The stack now looks like:
- *
- * Index 1 - The value we told the instruction to push onto the stack.
- *
- * array() {
- *     0 => 0x42
- * }
+ * The stack now looks like: "\x42".
  */

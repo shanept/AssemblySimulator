@@ -37,13 +37,6 @@ class Simulator
     private array $registers = [];
 
     /**
-     * A binary string representing the stack.
-     *
-     * @var string
-     */
-    private string $stack = '';
-
-    /**
      * Contains the address for the start of our stack.
      *
      * @var int
@@ -56,6 +49,13 @@ class Simulator
      * @var int
      */
     private int $stackSize = 0;
+
+    /**
+     * Stores our stack instance.
+     *
+     * @var \shanept\AssemblySimulator\Stack\Stack
+     */
+    private Stack\Stack $stack;
 
     /**
      * 32-bit register to store extended flags.
@@ -179,8 +179,9 @@ class Simulator
 
     /**
      * @param ?int $mode The machine mode to operate in.
+     * @param SimulatorOptions $options
      */
-    public function __construct(?int $mode = null)
+    public function __construct(int $mode = null, array $options = [])
     {
         $this->mode = $mode ?? self::REAL_MODE;
 
@@ -191,6 +192,10 @@ class Simulator
         // Limit the maximum size of our stack to a reasonable amount.
         // Max is approx 16MB
         $this->stackSize = min(0xFFFFFF, 2 ** ((4 << $this->mode) - 1) - 1);
+
+        $this->stack = $options['stack'] ?? new Stack\NullStack();
+        $this->stack->setAddress($this->stackAddress);
+        $this->stack->limitSize($this->stackSize);
 
         // Sets the simulator up to a known state.
         $this->reset();
@@ -229,7 +234,7 @@ class Simulator
         $this->buffer = "";
 
         $this->eFlags = 0;
-        $this->stack = "";
+        $this->stack->clear();
 
         // 16 and 32 bit use 8 registers, 64-bit uses 16.
         $numRegisters = max(8, 2 << $this->mode);
@@ -277,6 +282,7 @@ class Simulator
         $this->tainted = true;
 
         $this->stackAddress = $address;
+        $this->stack->setAddress($address);
     }
 
     /**
@@ -289,6 +295,7 @@ class Simulator
         $this->tainted = true;
 
         $this->stackSize = $size;
+        $this->stack->limitSize($size);
     }
 
     /**
@@ -515,7 +522,9 @@ class Simulator
      */
     public function getStack(): string
     {
-        return $this->stack;
+        $this->taintProtection();
+
+        return $this->stack->getStackContents();
     }
 
     /**
@@ -528,34 +537,9 @@ class Simulator
      */
     public function readStackAt(int $offset, int $length): string
     {
-        if ($offset > $this->stackAddress) {
-            $message = sprintf(
-                'Stack underflow. Offset 0x%X requested. Stack starts at 0x%X.',
-                $offset,
-                $this->stackAddress,
-            );
+        $this->taintProtection();
 
-            throw new Exception\StackUnderflow($message);
-        }
-
-        $stackLength = strlen($this->stack);
-
-        // This makes our offset relative to the start of the stack string.
-        $stackOffset = $offset - ($this->stackAddress - $stackLength) - 1;
-
-        if ($stackOffset < 0) {
-            $message = sprintf(
-                'Stack offset 0x%X requested, but it exceeds the top of the ' .
-                'stack (0x%X)',
-                $offset,
-                $this->stackAddress - $stackLength + 1,
-            );
-
-            throw new Exception\StackIndex($message);
-        }
-
-        // Our offset is relative to the end of the string.
-        return substr($this->stack, $stackOffset, $length);
+        return $this->stack->getOffset($offset, $length);
     }
 
     /**
@@ -566,60 +550,9 @@ class Simulator
      */
     public function writeStackAt(int $offset, string $value): void
     {
-        if ($offset > $this->stackAddress) {
-            $message = sprintf(
-                'Stack underflow. Offset 0x%X requested. Stack starts at 0x%X.',
-                $offset,
-                $this->stackAddress,
-            );
+        $this->taintProtection();
 
-            throw new Exception\StackUnderflow($message);
-        }
-
-        $valueLength = strlen($value);
-        $stackLength = strlen($this->stack);
-        $availableBytes = $this->stackSize - $stackLength;
-
-        // This makes our offset relative to the start of the stack string.
-        $stackOffset = $offset - ($this->stackAddress - $stackLength) - 1;
-
-        /**
-         * If the requested offset is further up the stack than the amount of
-         * bytes we have been provided with to write to the stack, we will
-         * zero-extend the value by the required amount.
-         */
-        if ($stackOffset < 0) {
-            $newBytesLength = ($stackOffset * -1);
-
-            if ($newBytesLength > $availableBytes) {
-                $message = sprintf(
-                    'Exceeded maximum stack size. Attempted to allocate %d ' .
-                    'new bytes to the stack, however it exceeds the maximum ' .
-                    'stack size of %d.',
-                    $newBytesLength,
-                    $this->stackSize,
-                );
-
-                throw new \RangeException($message);
-            }
-
-            $zeroPadAmount = $newBytesLength - $valueLength;
-
-            if ($zeroPadAmount > 0) {
-                $value .= str_repeat("\0", $zeroPadAmount);
-            }
-
-            // Prepend our value to the stack.
-            $this->stack = $value . $this->stack;
-        } else {
-            // We must overwrite the stack at the specified position.
-            $this->stack = substr_replace(
-                $this->stack,
-                $value,
-                $stackOffset,
-                $valueLength,
-            );
-        }
+        $this->stack->setOffset($offset, $value);
     }
 
     /**
@@ -627,46 +560,13 @@ class Simulator
      * the stack offset.
      *
      * @param int $offset The offset to clear.
-     * @param int $bytes  The amount of bytes to clear (between offset and stackAddress).
+     * @param int $length The amount of bytes to clear (between offset and stackAddress).
      */
-    public function clearStackAt(int $offset, int $bytes): void
+    public function clearStackAt(int $offset, int $length): void
     {
-        if ($offset > $this->stackAddress) {
-            $message = sprintf(
-                'Stack underflow. Offset 0x%X requested. Stack starts at 0x%X.',
-                $offset,
-                $this->stackAddress,
-            );
+        $this->taintProtection();
 
-            throw new Exception\StackUnderflow($message);
-        }
-
-        $stackLength = strlen($this->stack);
-        $clearString = str_repeat("\0", $bytes);
-
-        // This makes our offset relative to the start of the stack string.
-        $stackOffset = $offset - ($this->stackAddress - $stackLength) - 1;
-
-        if ($stackOffset < 0) {
-            $message = sprintf(
-                'Stack offset 0x%X requested, but it exceeds the top of the ' .
-                'stack (0x%X)',
-                $offset,
-                $this->stackAddress - $stackLength,
-            );
-
-            throw new Exception\StackIndex($message);
-        }
-
-        // Replace the offset with NUL bytes.
-        $stack = substr_replace(
-            $this->stack,
-            $clearString,
-            $stackOffset,
-            $bytes,
-        );
-
-        $this->stack = ltrim($stack, "\0");
+        $this->stack->clearOffset($offset, $length);
     }
 
     /**

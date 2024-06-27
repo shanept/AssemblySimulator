@@ -10,6 +10,7 @@ parameters:
   typeAliases:
     RegisterObj: 'array{"offset": int, "code": int, "name": string, "width": int, "mask": int}'
     MockSimulator: '\shanept\AssemblySimulator\Simulator&\PHPUnit\Framework\MockObject\MockObject'
+    SimulatorOptions: 'array{stack?: \shanept\AssemblySimulator\Stack\Stack}'
   treatPhpDocTypesAsCertain: false
   strictRules:
     booleansInConditions: false

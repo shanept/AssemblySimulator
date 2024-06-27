@@ -4,6 +4,7 @@ namespace shanept\AssemblySimulatorTests\Integration;
 
 use shanept\AssemblySimulator\Simulator;
 use shanept\AssemblySimulator\SimulatorFactory;
+use shanept\AssemblySimulator\Stack\Stack;
 use shanept\AssemblySimulatorTests\Fakes\ClosureMock;
 use shanept\AssemblySimulatorTests\Fakes\TestFactoryInstructionOne;
 use shanept\AssemblySimulatorTests\Fakes\TestFactoryInstructionTwo;
@@ -19,6 +20,12 @@ class SimulatorFactoryTest extends \PHPUnit\Framework\TestCase
      */
     public function testFactoryRegistersAdditionalInstructionsInOrder(): void
     {
+        // We will assert that the stack class is passed to the simulator by
+        // ensuring the setAddress method is called from the simulator constructor.
+        $mockStack = $this->createMock(Stack::class);
+        $mockStack->expects($this->once())
+                  ->method('setAddress');
+
         /**
          * We will register two *custom* factory instructions, 'TestFactoryInstructionOne'
          * and 'TestFactoryInstructionTwo'. The first will be registered first,
@@ -36,6 +43,8 @@ class SimulatorFactoryTest extends \PHPUnit\Framework\TestCase
         TestFactoryInstructionTwo::$callback = $cbTwo;
 
         $simulator = SimulatorFactory::createSimulator(Simulator::PROTECTED_MODE, [
+            'stack' => $mockStack,
+        ], [
             TestFactoryInstructionOne::class,
             TestFactoryInstructionTwo::class,
         ]);

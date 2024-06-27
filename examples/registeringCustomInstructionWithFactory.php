@@ -15,12 +15,15 @@ include __DIR__ . "/myCustomInstruction.php";
 
 use shanept\AssemblySimulator\Simulator;
 use shanept\AssemblySimulator\SimulatorFactory;
+use shanept\AssemblySimulator\Stack\ForgivingStack;
 
 /**
  * Creates the simulator with the default instruction set and registers the
  * myCustomInstruction instruction processor.
  */
 $simulator = SimulatorFactory::createSimulator(Simulator::LONG_MODE, [
+    'stack' => new ForgivingStack(),
+], [
     myCustomInstruction::class,
 ]);
 
@@ -31,11 +34,5 @@ $simulator->simulate();
 $stack = $simulator->getStack();
 
 /**
- * The stack now looks like:
- *
- * Index 1 - The value we told the instruction to push onto the stack.
- *
- * array() {
- *     0 => 0x42
- * }
+ * The stack now looks like: "\x42"
  */

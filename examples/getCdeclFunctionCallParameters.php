@@ -22,9 +22,23 @@ use shanept\AssemblySimulator\Instruction\{
     Pop,
     Push
 };
+use shanept\AssemblySimulator\Stack\StrictStack;
+
+/**
+ * Unless we want the simulator to use a black hole stack (NullStack), we will
+ * have to pass a specific implemenation to the constructor.
+ *
+ * Possible options are:
+ *   - StrictStack: Fully operational stack. Throws exceptions on invalid stack operations.
+ *   - ForgivingStack: Fully operational stack. Fails silently.
+ *   - NullStack: Black hole stack, nothing in, NUL bytes out.
+ */
+$stack = new StrictStack();
 
 // Our file is x86, so we will use PROTECTED_MODE.
-$simulator = new Simulator(Simulator::PROTECTED_MODE);
+$simulator = new Simulator(Simulator::PROTECTED_MODE, [
+    'stack' => $stack,
+]);
 
 /**
  * Instantiate our instruction set.
