@@ -5,7 +5,6 @@ namespace shanept\AssemblySimulatorTests\Unit\Stack;
 use shanept\AssemblySimulator\Stack\ForgivingStack;
 
 /**
- * @depends ForgivingStackTest
  * @covers shanept\AssemblySimulator\Stack\ForgivingStack
  */
 class ForgivingStackTest extends \PHPUnit\Framework\TestCase
@@ -31,6 +30,8 @@ class ForgivingStackTest extends \PHPUnit\Framework\TestCase
      *
      * @dataProvider writeStackPastLimitsThrowsNoExceptionDataProvider
      * @small
+     *
+     * @depends shanept\AssemblySimulatorTests\Unit\Stack\StrictStackTest::testWriteStackPastMemoryLimitThrowsException
      */
     public function testWriteStackPastMemoryLimitThrowsNoException(
         int $stackSize
@@ -65,6 +66,8 @@ class ForgivingStackTest extends \PHPUnit\Framework\TestCase
      * @small
      *
      * @param array<int, string> $values
+     *
+     * @depends shanept\AssemblySimulatorTests\Unit\Stack\StrictStackTest::testGetStackContents
      */
     public function testGetStackContents(array $values, string $expected): void
     {
@@ -86,6 +89,8 @@ class ForgivingStackTest extends \PHPUnit\Framework\TestCase
      * @small
      *
      * @param array<int, string> $values
+     *
+     * @depends shanept\AssemblySimulatorTests\Unit\Stack\StrictStackTest::testReadStackOffset
      */
     public function testReadStackOffset(array $values, string $unused): void
     {
@@ -145,6 +150,8 @@ class ForgivingStackTest extends \PHPUnit\Framework\TestCase
      * @small
      *
      * @param array<int, string> $writes
+     *
+     * @depends shanept\AssemblySimulatorTests\Unit\Stack\StrictStackTest::testOverwriteStack
      */
     public function testOverwriteStack(array $writes, string $expected): void
     {
@@ -161,6 +168,11 @@ class ForgivingStackTest extends \PHPUnit\Framework\TestCase
         $this->assertEquals($expected, $stack->getStackContents());
     }
 
+    /**
+     * @small
+     *
+     * @depends shanept\AssemblySimulatorTests\Unit\Stack\StrictStackTest::testOverwriteStackWithIdenticalOffset
+     */
     public function testOverwriteStackWithIdenticalOffset(): void
     {
         $stack = new ForgivingStack();
@@ -241,6 +253,8 @@ class ForgivingStackTest extends \PHPUnit\Framework\TestCase
      * @small
      *
      * @param array<int, string> $stackArray
+     *
+     * @depends shanept\AssemblySimulatorTests\Unit\Stack\StrictStackTest::testClearStackAt
      */
     public function testClearStackAt(
         array $stackArray,
@@ -265,6 +279,8 @@ class ForgivingStackTest extends \PHPUnit\Framework\TestCase
 
     /**
      * @small
+     *
+     * @depends shanept\AssemblySimulatorTests\Unit\Stack\StrictStackTest::testReadStackUnderflowThrowsException
      */
     public function testReadStackUnderflowThrowsNoException(): void
     {
@@ -278,6 +294,8 @@ class ForgivingStackTest extends \PHPUnit\Framework\TestCase
 
     /**
      * @small
+     *
+     * @depends shanept\AssemblySimulatorTests\Unit\Stack\StrictStackTest::testReadStackAtInvalidOffsetThrowsException
      */
     public function testReadStackAtInvalidOffsetThrowsNoException(): void
     {
@@ -293,6 +311,8 @@ class ForgivingStackTest extends \PHPUnit\Framework\TestCase
 
     /**
      * @small
+     *
+     * @depends shanept\AssemblySimulatorTests\Unit\Stack\StrictStackTest::testWriteStackUnderflowThrowsException
      */
     public function testWriteStackUnderflowThrowsNoException(): void
     {
@@ -308,6 +328,8 @@ class ForgivingStackTest extends \PHPUnit\Framework\TestCase
 
     /**
      * @small
+     *
+     * @depends shanept\AssemblySimulatorTests\Unit\Stack\StrictStackTest::testClearStackUnderflowThrowsException
      */
     public function testClearStackUnderflowThrowsNoException(): void
     {
@@ -325,6 +347,7 @@ class ForgivingStackTest extends \PHPUnit\Framework\TestCase
      * @small
      *
      * @depends testGetStackContents
+     * @depends shanept\AssemblySimulatorTests\Unit\Stack\StrictStackTest::testClearStackAtInvalidOffsetThrowsException
      */
     public function testClearStackAtInvalidOffsetThrowsNoException(): void
     {
@@ -367,6 +390,7 @@ class ForgivingStackTest extends \PHPUnit\Framework\TestCase
      * @small
      *
      * @depends testGetStackContents
+     * @depends shanept\AssemblySimulatorTests\Unit\Stack\StrictStackTest::testClearStack
      */
     public function testClearStack(): void
     {
