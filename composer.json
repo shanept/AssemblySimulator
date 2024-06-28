@@ -33,7 +33,7 @@
     ],
     "minimum-stability": "stable",
     "scripts": {
-        "test": "vendor/bin/phpunit",
+        "test": "vendor/bin/phpunit -c phpunit.dist.xml",
         "analyse": "vendor/bin/phpstan",
         "format": "vendor/bin/php-cs-fixer fix",
         "check-format": "vendor/bin/php-cs-fixer check",
