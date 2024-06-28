@@ -79,7 +79,7 @@ class myCustomInstruction extends AssemblyInstruction
          * The return value is a substring of the code buffer; a binary string.
          * The parameter '1' refers to the amount of bytes to read.
          */
-        $byte = $sim->getCodeAtInstruction(1);
+        $byte = $sim->getCodeAtInstructionPointer(1);
 
         /**
          * For demonstration, this instruction will refuse to process this

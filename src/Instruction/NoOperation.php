@@ -50,7 +50,7 @@ class NoOperation extends AssemblyInstruction
         $sim->advanceInstructionPointer(1);
 
         // First byte is a ModRM.
-        $byte = $this->parseModRmByte($sim->getCodeAtInstruction(1));
+        $byte = $this->parseModRmByte($sim->getCodeAtInstructionPointer(1));
         $sim->advanceInstructionPointer(1);
 
         // If we don't have to parse an address, we are done.

@@ -299,7 +299,7 @@ abstract class AssemblyInstruction
     {
         $sim = $this->simulator;
 
-        $sibByte = $sim->getCodeAtInstruction(1);
+        $sibByte = $sim->getCodeAtInstructionPointer(1);
         $sib = $this->parseSibByte($sibByte, $byte);
 
         $dispSize = $sib['displacement'];
@@ -331,7 +331,7 @@ abstract class AssemblyInstruction
      */
     private function parseRipAddress(array $byte): RipAddress
     {
-        $address = $this->simulator->getCodeAtInstruction(4);
+        $address = $this->simulator->getCodeAtInstructionPointer(4);
         $address = $this->unpackImmediate($address, Simulator::TYPE_DWRD);
 
         $instructionPointer = $this->simulator->getInstructionPointer();

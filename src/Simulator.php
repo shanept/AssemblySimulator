@@ -609,7 +609,7 @@ class Simulator
      *
      * @param int $length Optional. As per getCodeBuffer().
      */
-    public function getCodeAtInstruction($length = null): string
+    public function getCodeAtInstructionPointer($length = null): string
     {
         return $this->getCodeBuffer($this->iPointer, $length);
     }

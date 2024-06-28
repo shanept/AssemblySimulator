@@ -93,7 +93,7 @@ class MoveTest extends \PHPUnit\Framework\TestCase
 
         $values = [$address, $opcode];
 
-        $simulator->method('getCodeAtInstruction')
+        $simulator->method('getCodeAtInstructionPointer')
                   ->willReturnCallback(function ($length) use (&$values) {
                       $value = array_pop($values);
 
@@ -201,7 +201,7 @@ class MoveTest extends \PHPUnit\Framework\TestCase
                   ->with($writeRegister, $expectedValue);
 
         $simulator->expects($this->once())
-                  ->method('getCodeAtInstruction')
+                  ->method('getCodeAtInstructionPointer')
                   ->willReturn($modRmByte);
 
         $simulator->method('getInstructionPointer')
@@ -301,7 +301,7 @@ class MoveTest extends \PHPUnit\Framework\TestCase
             $modRmByte,
         ];
 
-        $simulator->method('getCodeAtInstruction')
+        $simulator->method('getCodeAtInstructionPointer')
                   ->willReturnCallback(function ($length) use (&$values) {
                       $value = array_pop($values);
 
@@ -452,7 +452,7 @@ class MoveTest extends \PHPUnit\Framework\TestCase
             $modRmByte,
         ];
 
-        $simulator->method('getCodeAtInstruction')
+        $simulator->method('getCodeAtInstructionPointer')
                   ->willReturnCallback(function ($length) use (&$values): string {
                       $value = array_pop($values);
 
@@ -560,7 +560,7 @@ class MoveTest extends \PHPUnit\Framework\TestCase
             $opcode,
         ];
 
-        $simulator->method('getCodeAtInstruction')
+        $simulator->method('getCodeAtInstructionPointer')
                   ->willReturnCallback(function ($length) use (&$values): string {
                       $value = array_pop($values);
 
@@ -639,7 +639,7 @@ class MoveTest extends \PHPUnit\Framework\TestCase
             $modRmByte,
         ];
 
-        $simulator->method('getCodeAtInstruction')
+        $simulator->method('getCodeAtInstructionPointer')
                   ->willReturnCallback(function ($length) use (&$values): string {
                       $value = array_pop($values);
 

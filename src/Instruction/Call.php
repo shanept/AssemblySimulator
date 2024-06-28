@@ -73,7 +73,7 @@ class Call extends AssemblyInstruction
         $sim = $this->getSimulator();
         $sim->advanceInstructionPointer(1);
 
-        $address = $sim->getCodeAtInstruction(4);
+        $address = $sim->getCodeAtInstructionPointer(4);
         $sim->advanceInstructionPointer(4);
         $address = $this->unpackImmediate($address, Simulator::TYPE_DWRD);
 

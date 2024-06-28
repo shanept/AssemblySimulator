@@ -81,7 +81,7 @@ class PushTest extends \PHPUnit\Framework\TestCase
                       return $requested === $prefixValue;
                   });
 
-        $simulator->method('getCodeAtInstruction')
+        $simulator->method('getCodeAtInstructionPointer')
                   ->willReturn($opcode)
                   ->with(1);
 
@@ -161,7 +161,7 @@ class PushTest extends \PHPUnit\Framework\TestCase
                       return $requested === $prefixValue;
                   });
 
-        $simulator->method('getCodeAtInstruction')
+        $simulator->method('getCodeAtInstructionPointer')
                   ->willReturn($immediate)
                   ->with(strlen($immediate));
 

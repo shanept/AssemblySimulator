@@ -147,7 +147,7 @@ class Move extends AssemblyInstruction
         $sim = $this->getSimulator();
         $sim->advanceInstructionPointer(1);
 
-        $byte = $this->parseModRmByte($sim->getCodeAtInstruction(1));
+        $byte = $this->parseModRmByte($sim->getCodeAtInstructionPointer(1));
         $sim->advanceInstructionPointer(1);
 
         /**
@@ -162,7 +162,7 @@ class Move extends AssemblyInstruction
         }
 
         // Now we load the Immediate value
-        $immediate = $sim->getCodeAtInstruction($opSize / 8);
+        $immediate = $sim->getCodeAtInstructionPointer($opSize / 8);
         $value = $this->unpackImmediate($immediate, $opSize);
 
         $sim->advanceInstructionPointer($opSize / 8);
@@ -188,7 +188,7 @@ class Move extends AssemblyInstruction
         $sim = $this->getSimulator();
         $sim->advanceInstructionPointer(1);
 
-        $byte = $this->parseModRmByte($sim->getCodeAtInstruction(1));
+        $byte = $this->parseModRmByte($sim->getCodeAtInstructionPointer(1));
         $sim->advanceInstructionPointer(1);
 
         $rex = $sim->getRex();
@@ -221,10 +221,10 @@ class Move extends AssemblyInstruction
         $sim = $this->getSimulator();
 
         // Get the last bit of the operand.
-        $opcode = ord($sim->getCodeAtInstruction(1)) & 0x7;
+        $opcode = ord($sim->getCodeAtInstructionPointer(1)) & 0x7;
         $sim->advanceInstructionPointer(1);
 
-        $value = $sim->getCodeAtInstruction($opSize / 8);
+        $value = $sim->getCodeAtInstructionPointer($opSize / 8);
         $value = $this->unpackImmediate($value, $opSize);
 
         $sim->advanceInstructionPointer($opSize / 8);
@@ -248,7 +248,7 @@ class Move extends AssemblyInstruction
         $sim = $this->getSimulator();
         $sim->advanceInstructionPointer(1);
 
-        $byte = $this->parseModRmByte($sim->getCodeAtInstruction(1));
+        $byte = $this->parseModRmByte($sim->getCodeAtInstructionPointer(1));
         $sim->advanceInstructionPointer(1);
 
         $rex = $sim->getRex();

@@ -75,7 +75,7 @@ class NoOperationTest extends \PHPUnit\Framework\TestCase
                   ->method('advanceInstructionPointer');
 
         $simulator->expects($this->once())
-                  ->method('getCodeAtInstruction')
+                  ->method('getCodeAtInstructionPointer')
                   ->willReturn("\xC0");
 
         $nop = new NoOperation();
@@ -120,7 +120,7 @@ class NoOperationTest extends \PHPUnit\Framework\TestCase
                   ->willReturn(3);
 
         $simulator->expects($this->once())
-                  ->method('getCodeAtInstruction')
+                  ->method('getCodeAtInstructionPointer')
                   ->willReturn("\x80")
                   ->with(1);
 

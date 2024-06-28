@@ -42,7 +42,7 @@ class LoadEffectiveAddress extends AssemblyInstruction
         $sim = $this->getSimulator();
         $sim->advanceInstructionPointer(1);
 
-        $byte = $this->parseModRmByte($sim->getCodeAtInstruction(1));
+        $byte = $this->parseModRmByte($sim->getCodeAtInstructionPointer(1));
         $sim->advanceInstructionPointer(1);
 
         $rex = $sim->getRex();

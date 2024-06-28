@@ -50,7 +50,7 @@ class Push extends AssemblyInstruction
     {
         $sim = $this->getSimulator();
 
-        $opcode = ord($sim->getCodeAtInstruction(1)) & 0x7;
+        $opcode = ord($sim->getCodeAtInstructionPointer(1)) & 0x7;
         $sim->advanceInstructionPointer(1);
 
         $opSize = $this->getOperandSize();
@@ -88,7 +88,7 @@ class Push extends AssemblyInstruction
 
         // Operand 68 is limited to 32-bit displacement max.
         $dispSize = min(4, $opSize / 8);
-        $value = $sim->getCodeAtInstruction($dispSize);
+        $value = $sim->getCodeAtInstructionPointer($dispSize);
 
         $sim->advanceInstructionPointer($dispSize);
 
@@ -111,7 +111,7 @@ class Push extends AssemblyInstruction
         $sim = $this->getSimulator();
         $sim->advanceInstructionPointer(1);
 
-        $value = $sim->getCodeAtInstruction(1);
+        $value = $sim->getCodeAtInstructionPointer(1);
         $sim->advanceInstructionPointer(1);
 
         $opSize = Simulator::TYPE_BYTE;

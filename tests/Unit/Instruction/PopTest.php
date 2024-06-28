@@ -85,7 +85,7 @@ class PopTest extends \PHPUnit\Framework\TestCase
                   ->with(2, $opSize);
 
         $simulator->expects($this->once())
-                  ->method('getCodeAtInstruction')
+                  ->method('getCodeAtInstructionPointer')
                   ->willReturn($opcode)
                   ->with(1);
 

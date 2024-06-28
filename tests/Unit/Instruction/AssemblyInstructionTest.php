@@ -551,7 +551,7 @@ class AssemblyInstructionTest extends \PHPUnit\Framework\TestCase
     {
         $simulator = $this->getMockSimulator(Simulator::LONG_MODE);
 
-        $simulator->method('getCodeAtInstruction')
+        $simulator->method('getCodeAtInstructionPointer')
                   ->willReturn("\xe0\x17\x19\x0F")
                   ->with(4);
 
@@ -739,7 +739,7 @@ class AssemblyInstructionTest extends \PHPUnit\Framework\TestCase
                       $this->fail('Incorrect register ' . $register['name']);
                   });
 
-        $simulator->method('getCodeAtInstruction')
+        $simulator->method('getCodeAtInstructionPointer')
                   ->willReturn($sibByte)
                   ->with(strlen($sibByte));
 
@@ -790,7 +790,7 @@ class AssemblyInstructionTest extends \PHPUnit\Framework\TestCase
         $simulator->method('getInstructionPointer')
                   ->willReturn(3);
 
-        $simulator->method('getCodeAtInstruction')
+        $simulator->method('getCodeAtInstructionPointer')
                   ->willReturn("\x25")
                   ->with(1);
 

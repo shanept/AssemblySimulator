@@ -71,7 +71,7 @@ class ExclusiveOrTest extends \PHPUnit\Framework\TestCase
                   ->method('writeRegister')
                   ->with($register, 0);
 
-        $simulator->method('getCodeAtInstruction')
+        $simulator->method('getCodeAtInstructionPointer')
                   ->willReturn($instruction)
                   ->with(1);
 
@@ -174,7 +174,7 @@ class ExclusiveOrTest extends \PHPUnit\Framework\TestCase
                   ->with($writeRegister, $writeValue);
 
         $simulator->expects($this->once())
-                  ->method('getCodeAtInstruction')
+                  ->method('getCodeAtInstructionPointer')
                   ->willReturn($modRmByte)
                   ->with(1);
 
@@ -308,7 +308,7 @@ class ExclusiveOrTest extends \PHPUnit\Framework\TestCase
                       $this->fail('Unknown register ' . $register['name']);
                   });
 
-        $simulator->method('getCodeAtInstruction')
+        $simulator->method('getCodeAtInstructionPointer')
                   ->willReturn($modRmByte)
                   ->with(1);
 
@@ -355,7 +355,7 @@ class ExclusiveOrTest extends \PHPUnit\Framework\TestCase
                   ->willReturn(false);
 
         $simulator->expects($this->once())
-                  ->method('getCodeAtInstruction')
+                  ->method('getCodeAtInstructionPointer')
                   ->willReturn("\x89")
                   ->with(1);
 

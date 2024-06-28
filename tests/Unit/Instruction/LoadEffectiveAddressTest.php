@@ -33,7 +33,7 @@ class LoadEffectiveAddressTest extends \PHPUnit\Framework\TestCase
                   ->with(Register::RDI, 0xF1917E7);
 
         $simulator->expects($this->atLeastOnce())
-                  ->method('getCodeAtInstruction')
+                  ->method('getCodeAtInstructionPointer')
                   ->willReturnCallback(function ($length) {
                       $values = [
                           1 => "\x3D",
@@ -116,7 +116,7 @@ class LoadEffectiveAddressTest extends \PHPUnit\Framework\TestCase
                   ->with($writeRegister, $writeValue);
 
         $simulator->expects($this->once())
-                  ->method('getCodeAtInstruction')
+                  ->method('getCodeAtInstructionPointer')
                   ->willReturn($modRmByte)
                   ->with(1);
 
@@ -166,7 +166,7 @@ class LoadEffectiveAddressTest extends \PHPUnit\Framework\TestCase
                   ->willReturn([]);
 
         $simulator->expects($this->once())
-                  ->method('getCodeAtInstruction')
+                  ->method('getCodeAtInstructionPointer')
                   ->willReturn("\xFD")
                   ->with(1);
 

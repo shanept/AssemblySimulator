@@ -30,7 +30,7 @@ class CallTest extends \PHPUnit\Framework\TestCase
         $simulator->method('hasPrefix')
                   ->willReturn(false);
 
-        $simulator->method('getCodeAtInstruction')
+        $simulator->method('getCodeAtInstructionPointer')
                   ->willReturn($stringPointer)
                   ->with(4);
 
@@ -91,7 +91,7 @@ class CallTest extends \PHPUnit\Framework\TestCase
         $simulator->method('hasPrefix')
                   ->willReturn(false);
 
-        $simulator->method('getCodeAtInstruction')
+        $simulator->method('getCodeAtInstructionPointer')
                   ->willReturn("\x10\x20\x30\x40")
                   ->with(4);
 
@@ -148,7 +148,7 @@ class CallTest extends \PHPUnit\Framework\TestCase
         $simulator->method('hasPrefix')
                   ->willReturn(false);
 
-        $simulator->method('getCodeAtInstruction')
+        $simulator->method('getCodeAtInstructionPointer')
                   ->willReturn("\x10\x20\x30\xC0")
                   ->with(4);
 

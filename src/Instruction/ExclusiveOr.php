@@ -92,7 +92,7 @@ class ExclusiveOr extends AssemblyInstruction
         $sim = $this->getSimulator();
         $sim->advanceInstructionPointer(1);
 
-        $byte = $sim->getCodeAtInstruction(1);
+        $byte = $sim->getCodeAtInstructionPointer(1);
         $sim->advanceInstructionPointer(1);
 
         $byte = $this->parseModRmByte($byte);
