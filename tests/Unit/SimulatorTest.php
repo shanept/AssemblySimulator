@@ -426,7 +426,7 @@ class SimulatorTest extends \PHPUnit\Framework\TestCase
     /**
      * @small
      */
-    public function testWriteStackAddressChangesStackPointer(): void
+    public function testChangeStackAddressChangesStackPointer(): void
     {
         $simulator = new Simulator(Simulator::REAL_MODE);
 
@@ -439,6 +439,52 @@ class SimulatorTest extends \PHPUnit\Framework\TestCase
 
         $this->assertEquals(1, $newAddress);
         $this->assertNotEquals($stackAddress, $newAddress);
+    }
+
+    /**
+     * @small
+     */
+    public function testWriteToStackChangesStackPointer(): void
+    {
+        $mock = $this->createMock(Stack::class);
+        $simulator = new Simulator(Simulator::REAL_MODE, [
+            'stack' => $mock,
+        ]);
+
+        $simulator->setStackAddress(10);
+        $simulator->reset();
+
+        $simulator->writeStackAt(8, "ab");
+
+        $pointer = $simulator->readRegister(Register::SP);
+
+        $this->assertEquals(8, $pointer);
+    }
+
+    /**
+     * @small
+     */
+    public function testClearStackAtChangesStackPointer(): void
+    {
+        $mock = $this->createMock(Stack::class);
+
+        // This is the length AFTER the clear operation has been performed.
+        $mock->method('getLength')
+             ->willReturn(1);
+
+        $simulator = new Simulator(Simulator::REAL_MODE, [
+            'stack' => $mock,
+        ]);
+
+        $simulator->setStackAddress(10);
+        $simulator->reset();
+
+        $simulator->writeStackAt(8, "ab");
+        $simulator->clearStackAt(8, 1);
+
+        $pointer = $simulator->readRegister(Register::SP);
+
+        $this->assertEquals(9, $pointer);
     }
 
     /**

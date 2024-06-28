@@ -177,7 +177,7 @@ class ForgivingStackTest extends \PHPUnit\Framework\TestCase
     /**
      * @return array<int, array{array<int, string>, int, string}>
      */
-    public static function clearStackAtDataProvider(): array
+    public static function clearOffsetDataProvider(): array
     {
         return [
             [
@@ -197,7 +197,7 @@ class ForgivingStackTest extends \PHPUnit\Framework\TestCase
                     3 => "\x78",
                 ],
                 1,
-                "\x78\x3\x0\x43",
+                "\x78\x3\x00\x43",
             ],
             [
                 [
@@ -207,7 +207,7 @@ class ForgivingStackTest extends \PHPUnit\Framework\TestCase
                     3 => "\x89",
                 ],
                 1,
-                "\x89\x54\x0\x32",
+                "\x89\x54\x00\x32",
             ],
             [
                 [
@@ -217,7 +217,7 @@ class ForgivingStackTest extends \PHPUnit\Framework\TestCase
                     3 => "\x79",
                 ],
                 0,
-                "\x79\x64\x31\x0",
+                "\x79\x64\x31\x00",
             ],
             [
                 [
@@ -232,16 +232,25 @@ class ForgivingStackTest extends \PHPUnit\Framework\TestCase
                 "\x12\x00\x33\x00\x55\xCC\xCC\xCC\xCC\x42\x42\x00\x00\x00\x00" .
                     "\x43\x21\x12\x34\x56",
             ],
+            [
+                [
+                    0 => "\x00\x43",
+                    2 => "\x41\x00",
+                    4 => "\x00\x00",
+                ],
+                2,
+                "\x00\x00\x41\x00\x00\x43",
+            ],
         ];
     }
 
     /**
-     * @dataProvider clearStackAtDataProvider
+     * @dataProvider clearOffsetDataProvider
      * @small
      *
      * @param array<int, string> $stackArray
      */
-    public function testClearStackAt(
+    public function testClearOffset(
         array $stackArray,
         int $clearIdx,
         string $expected

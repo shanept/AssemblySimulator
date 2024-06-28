@@ -553,6 +553,9 @@ class Simulator
         $this->taintProtection();
 
         $this->stack->setOffset($offset, $value);
+
+        $sp_offset = Register::SP['offset'];
+        $this->registers[$sp_offset] = $offset;
     }
 
     /**
@@ -567,6 +570,12 @@ class Simulator
         $this->taintProtection();
 
         $this->stack->clearOffset($offset, $length);
+
+        $stackLength = $this->stack->getLength();
+        $pointer = $this->stackAddress - $stackLength;
+
+        $sp_offset = Register::SP['offset'];
+        $this->registers[$sp_offset] = $pointer;
     }
 
     /**

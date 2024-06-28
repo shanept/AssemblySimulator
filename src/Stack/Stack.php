@@ -50,6 +50,18 @@ abstract class Stack
     }
 
     /**
+     * Returns the length of data pushed onto the stack.
+     *
+     * @final
+     *
+     * @return int
+     */
+    public function getLength(): int
+    {
+        return strlen($this->stack);
+    }
+
+    /**
      * Completely empties the stack.
      *
      * @final

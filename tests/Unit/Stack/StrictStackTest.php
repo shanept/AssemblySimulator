@@ -117,6 +117,42 @@ class StrictStackTest extends \PHPUnit\Framework\TestCase
     }
 
     /**
+     * @return array<int, array{array<int, string>, int}>
+     */
+    public static function getLengthDataProvider(): array
+    {
+        return [
+            [[], 0],
+            [[0 => "\x3", 1 => "\x4"], 2],
+            [[0 => "\x3", 2 => "\x4"], 3],
+            [[0 => "\x3", 4 => "\x2\x1"], 5],
+            [[1 => "\x2"], 2],
+            [[126 => "\x34\x45"], 127],
+        ];
+    }
+
+    /**
+     * @dataProvider getLengthDataProvider
+     * @small
+     *
+     * @param array<int, string> $values
+     */
+    public function testGetLength(array $values, int $expected): void
+    {
+        $stack = new StrictStack();
+
+        $stackAddress = 0x3FFF;
+        $stack->setAddress($stackAddress);
+        $stack->limitSize(127);
+
+        foreach ($values as $position => $value) {
+            $stack->setOffset($stackAddress - $position, $value);
+        }
+
+        $this->assertEquals($expected, $stack->getLength());
+    }
+
+    /**
      * @dataProvider writeStackDataProvider
      * @small
      *
@@ -213,7 +249,7 @@ class StrictStackTest extends \PHPUnit\Framework\TestCase
     /**
      * @return array<int, array{array<int, string>, int, string}>
      */
-    public static function clearStackAtDataProvider(): array
+    public static function clearOffsetDataProvider(): array
     {
         return [
             [
@@ -233,7 +269,7 @@ class StrictStackTest extends \PHPUnit\Framework\TestCase
                     3 => "\x78",
                 ],
                 1,
-                "\x78\x3\x0\x43",
+                "\x78\x3\x00\x43",
             ],
             [
                 [
@@ -243,7 +279,7 @@ class StrictStackTest extends \PHPUnit\Framework\TestCase
                     3 => "\x89",
                 ],
                 1,
-                "\x89\x54\x0\x32",
+                "\x89\x54\x00\x32",
             ],
             [
                 [
@@ -253,7 +289,7 @@ class StrictStackTest extends \PHPUnit\Framework\TestCase
                     3 => "\x79",
                 ],
                 0,
-                "\x79\x64\x31\x0",
+                "\x79\x64\x31\x00",
             ],
             [
                 [
@@ -268,16 +304,32 @@ class StrictStackTest extends \PHPUnit\Framework\TestCase
                 "\x12\x00\x33\x00\x55\xCC\xCC\xCC\xCC\x42\x42\x00\x00\x00\x00" .
                     "\x43\x21\x12\x34\x56",
             ],
+            [
+                [
+                    0 => "\x00\x43",
+                    2 => "\x41\x00",
+                    4 => "\x00\x00",
+                ],
+                2,
+                "\x00\x00\x41\x00\x00\x43",
+            ],
+            [
+                [
+                    5 => "\x00\x00\x00\x00\x00\x00",
+                ],
+                3,
+                "\x00\x00\x00\x00\x00\x00",
+            ],
         ];
     }
 
     /**
-     * @dataProvider clearStackAtDataProvider
+     * @dataProvider clearOffsetDataProvider
      * @small
      *
      * @param array<int, string> $stackArray
      */
-    public function testClearStackAt(
+    public function testClearOffset(
         array $stackArray,
         int $clearIdx,
         string $expected

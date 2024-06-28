@@ -133,7 +133,6 @@ class StrictStack extends Stack
         }
 
         $stackLength = strlen($this->stack);
-        $clearString = str_repeat("\0", $length);
 
         // This makes our offset relative to the start of the stack string.
         $stackOffset = $offset - ($this->stackAddress - $stackLength) - 1;
@@ -147,16 +146,18 @@ class StrictStack extends Stack
             );
 
             throw new Exception\StackIndex($message);
+        } elseif ($stackOffset === 0) {
+            $this->stack = substr($this->stack, $length);
+        } else {
+            $clearString = str_repeat("\0", $length);
+
+            // Replace the offset with NUL bytes.
+            $this->stack = substr_replace(
+                $this->stack,
+                $clearString,
+                $stackOffset,
+                $length,
+            );
         }
-
-        // Replace the offset with NUL bytes.
-        $stack = substr_replace(
-            $this->stack,
-            $clearString,
-            $stackOffset,
-            $length,
-        );
-
-        $this->stack = ltrim($stack, "\0");
     }
 }
