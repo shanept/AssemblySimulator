@@ -10,6 +10,7 @@ declare(strict_types=1);
 
 namespace shanept\AssemblySimulator\Stack;
 
+use RangeException;
 use shanept\AssemblySimulator\Exception;
 
 /**
@@ -23,6 +24,11 @@ class StrictStack extends Stack
 {
     /**
      * {@inheritDoc}
+     *
+     * @throws \shanept\AssemblySimulator\Exception\StackUnderflow
+     *              If the requested address is higher than the start of the stack.
+     * @throws \shanept\AssemblySimulator\Exception\StackIndex
+     *              If the requested address is lower than the end of the stack.
      */
     public function getOffset(int $offset, int $length): string
     {
@@ -58,6 +64,10 @@ class StrictStack extends Stack
 
     /**
      * {@inheritDoc}
+     *
+     * @throws \shanept\AssemblySimulator\Exception\StackUnderflow
+     *              If the requested address is higher than the start of the stack.
+     * @throws \RangeException If the operation would exceed the maximum stack size.
      */
     public function setOffset(int $offset, string $value): void
     {
@@ -95,7 +105,7 @@ class StrictStack extends Stack
                     $this->maximumSize,
                 );
 
-                throw new \RangeException($message);
+                throw new RangeException($message);
             }
 
             $zeroPadAmount = $newBytesLength - $valueLength;
@@ -119,6 +129,11 @@ class StrictStack extends Stack
 
     /**
      * {@inheritDoc}
+     *
+     * @throws \shanept\AssemblySimulator\Exception\StackUnderflow
+     *              If the requested address is higher than the start of the stack.
+     * @throws \shanept\AssemblySimulator\Exception\StackIndex
+     *              If the requested address is lower than the end of the stack.
      */
     public function clearOffset(int $offset, int $length): void
     {

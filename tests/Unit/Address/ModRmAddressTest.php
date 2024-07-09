@@ -2,13 +2,14 @@
 
 namespace shanept\AssemblySimulatorTests\Unit\Address;
 
+use PHPUnit\Framework\TestCase;
 use shanept\AssemblySimulator\Address\ModRmAddress;
 use shanept\AssemblySimulator\Address\AddressInterface;
 
 /**
  * @covers shanept\AssemblySimulator\Address\ModRmAddress
  */
-class ModRmAddressTest extends \PHPUnit\Framework\TestCase
+class ModRmAddressTest extends TestCase
 {
     /**
      * @small

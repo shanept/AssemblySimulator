@@ -9,6 +9,7 @@ declare(strict_types=1);
 
 namespace shanept\AssemblySimulator\Instruction;
 
+use UnexpectedValueException;
 use shanept\AssemblySimulator\Register;
 use shanept\AssemblySimulator\Simulator;
 use shanept\AssemblySimulator\Address\SibAddress;
@@ -233,7 +234,15 @@ abstract class AssemblyInstruction
      */
     protected function unpackImmediate(string $immediate, int $size): int
     {
-        $result = @unpack(self::IMM_PACK_FMT[$size], $immediate);
+        /**
+         * If there is an incompatibility between the $immediate and the format
+         * for the $size specified, unpack will report an error which we can not
+         * catch. It will also return NULL. We will silence this error and throw
+         * an exception in that case.
+         */
+        $errorLevel = error_reporting(0);
+        $result = unpack(self::IMM_PACK_FMT[$size], $immediate);
+        error_reporting($errorLevel);
 
         if (is_array($result)) {
             return $result['imm'];
@@ -245,7 +254,7 @@ abstract class AssemblyInstruction
             $size,
         );
 
-        throw new \UnexpectedValueException($message);
+        throw new UnexpectedValueException($message);
     }
 
     /**
@@ -282,7 +291,7 @@ abstract class AssemblyInstruction
         if (0x4 === $byte['rm']) {
             return $this->parseSibAddress($byte);
         } elseif (0x5 === $byte['rm'] && 0 === $byte['mod'] && $isLong) {
-            return $this->parseRipAddress($byte);
+            return $this->parseRipAddress();
         } else {
             return $this->parseMemoryOffset($byte);
         }
@@ -326,10 +335,8 @@ abstract class AssemblyInstruction
      * Parses the RIP address at the current position.
      *
      * @internal
-     *
-     * @param int[] $byte The ModRM byte.
      */
-    private function parseRipAddress(array $byte): RipAddress
+    private function parseRipAddress(): RipAddress
     {
         $address = $this->simulator->getCodeAtInstructionPointer(4);
         $address = $this->unpackImmediate($address, Simulator::TYPE_DWRD);

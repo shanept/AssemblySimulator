@@ -9,6 +9,7 @@ declare(strict_types=1);
 
 namespace shanept\AssemblySimulator\Instruction;
 
+use RuntimeException;
 use shanept\AssemblySimulator\Register;
 use shanept\AssemblySimulator\Simulator;
 
@@ -60,7 +61,7 @@ class LoadEffectiveAddress extends AssemblyInstruction
                 $byte["mod"],
             );
 
-            throw new \RuntimeException($message);
+            throw new RuntimeException($message);
         }
 
         $effectiveAddress = $this->parseAddress($byte);

@@ -2,6 +2,7 @@
 
 namespace shanept\AssemblySimulatorTests\Integration;
 
+use PHPUnit\Framework\TestCase;
 use shanept\AssemblySimulator\Simulator;
 use shanept\AssemblySimulator\SimulatorFactory;
 use shanept\AssemblySimulator\Stack\Stack;
@@ -12,7 +13,7 @@ use shanept\AssemblySimulatorTests\Fakes\TestFactoryInstructionTwo;
 /**
  * @covers shanept\AssemblySimulator\SimulatorFactory
  */
-class SimulatorFactoryTest extends \PHPUnit\Framework\TestCase
+class SimulatorFactoryTest extends TestCase
 {
     /**
      * @depends shanept\AssemblySimulatorTests\Unit\SimulatorFactoryTest::testFactoryReturnsSimulatorInstance

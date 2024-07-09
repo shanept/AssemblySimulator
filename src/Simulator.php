@@ -9,6 +9,8 @@ declare(strict_types=1);
 
 namespace shanept\AssemblySimulator;
 
+use LogicException;
+use RuntimeException;
 use shanept\AssemblySimulator\Instruction\AssemblyInstruction;
 
 /**
@@ -413,10 +415,10 @@ class Simulator
 
         for ($i = 0; $i < $numRegisters; $i++) {
             // If we are past register 8, we are into our extended registers.
-            $id = $i % 8;
+            $registerId = $i % 8;
             $rex = $i > 7;
 
-            $register = Register::getByCode($id, $size, $rex, $rex);
+            $register = Register::getByCode($registerId, $size, $rex, $rex);
 
             $indexedRegisters[$register["name"]] = $this->registers[$i];
         }
@@ -446,7 +448,7 @@ class Simulator
                 $this->getModeName(),
             );
 
-            throw new \RuntimeException($message);
+            throw new RuntimeException($message);
         }
 
         $value = $this->registers[$offset];
@@ -485,7 +487,7 @@ class Simulator
                 $this->getModeName(),
             );
 
-            throw new \LogicException($message);
+            throw new LogicException($message);
         }
 
         /**
@@ -554,8 +556,8 @@ class Simulator
 
         $this->stack->setOffset($offset, $value);
 
-        $sp_offset = Register::SP['offset'];
-        $this->registers[$sp_offset] = $offset;
+        $spOffset = Register::SP['offset'];
+        $this->registers[$spOffset] = $offset;
     }
 
     /**
@@ -574,8 +576,8 @@ class Simulator
         $stackLength = $this->stack->getLength();
         $pointer = $this->stackAddress - $stackLength;
 
-        $sp_offset = Register::SP['offset'];
-        $this->registers[$sp_offset] = $pointer;
+        $spOffset = Register::SP['offset'];
+        $this->registers[$spOffset] = $pointer;
     }
 
     /**
@@ -759,7 +761,7 @@ class Simulator
             var_export($response, true),
         );
 
-        throw new \LogicException($message);
+        throw new LogicException($message);
     }
 
     /**
@@ -769,42 +771,42 @@ class Simulator
     {
         $this->taintProtection();
 
-        $assembly_length = strlen($this->buffer);
+        $assemblyLength = strlen($this->buffer);
 
         // Set up our instruction pointer then loop through until the end.
-        for (; $this->iPointer < $assembly_length;) {
-            $op = ord($this->buffer[$this->iPointer]);
+        for (; $this->iPointer < $assemblyLength;) {
+            $code = ord($this->buffer[$this->iPointer]);
 
             $isTwoByteOp = $this->hasPrefix(0x0F);
 
             // Go through our supported instructions.
             switch (true) {
                 // 0F: Two-byte Instructions
-                case $op == 0x0F && $this->mode !== self::REAL_MODE:
+                case $code == 0x0F && $this->mode !== self::REAL_MODE:
 
-                case $op == 0x66 && $this->mode !== self::REAL_MODE && ! $isTwoByteOp:
-                case $op == 0x67 && $this->mode !== self::REAL_MODE && ! $isTwoByteOp:
-                    $this->prefixes[] = $op;
+                case $code == 0x66 && $this->mode !== self::REAL_MODE && ! $isTwoByteOp:
+                case $code == 0x67 && $this->mode !== self::REAL_MODE && ! $isTwoByteOp:
+                    $this->prefixes[] = $code;
                     $this->iPointer++;
 
                     // If we don't continue to the outer loop, we will clear our
                     // prefix, REX bit and two byte instruction prefix.
                     continue 2;
 
-                case ($op >= 0x40 &&
-                      $op <= 0x4f
+                case ($code >= 0x40 &&
+                      $code <= 0x4f
                       && ! $isTwoByteOp
                       && $this->mode === self::LONG_MODE):
 
-                    $this->prefixes[] = $op;
-                    $this->rex = $op;
+                    $this->prefixes[] = $code;
+                    $this->rex = $code;
                     $this->iPointer++;
 
                     // If we don't continue to the outer loop, we will clear our
                     // prefix, REX bit and two byte instruction prefix.
                     continue 2;
 
-                case $this->processOpcodeWithRegisteredInstructions($op):
+                case $this->processOpcodeWithRegisteredInstructions($code):
                     /**
                      * We have identified that we are passing a registered
                      * instruction. If the instruction processor returns true,
@@ -824,9 +826,9 @@ class Simulator
                     }
 
                     $address = $this->addressBase + $iPointer;
-                    $message = sprintf($format, $op, $iPointer, $address);
+                    $message = sprintf($format, $code, $iPointer, $address);
 
-                    throw new Exception\InvalidOpcode($message, $op);
+                    throw new Exception\InvalidOpcode($message, $code);
             }
 
             // Reset our REX bit.

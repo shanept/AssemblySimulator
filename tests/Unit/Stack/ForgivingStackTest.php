@@ -2,12 +2,13 @@
 
 namespace shanept\AssemblySimulatorTests\Unit\Stack;
 
+use PHPUnit\Framework\TestCase;
 use shanept\AssemblySimulator\Stack\ForgivingStack;
 
 /**
  * @covers shanept\AssemblySimulator\Stack\ForgivingStack
  */
-class ForgivingStackTest extends \PHPUnit\Framework\TestCase
+class ForgivingStackTest extends TestCase
 {
     /**
      * @return array<int, array{int}>
@@ -83,6 +84,8 @@ class ForgivingStackTest extends \PHPUnit\Framework\TestCase
     /**
      * @dataProvider writeStackDataProvider
      * @small
+     *
+     * @SuppressWarnings(PHPMD.UnusedFormalParameter)
      *
      * @param array<int, string> $values
      */

@@ -2,6 +2,7 @@
 
 namespace shanept\AssemblySimulatorTests\Unit\Instruction;
 
+use PHPUnit\Framework\TestCase;
 use shanept\AssemblySimulator\Register;
 use shanept\AssemblySimulator\Simulator;
 use shanept\AssemblySimulator\Instruction\LoadEffectiveAddress;
@@ -9,7 +10,7 @@ use shanept\AssemblySimulator\Instruction\LoadEffectiveAddress;
 /**
  * @covers shanept\AssemblySimulator\Instruction\LoadEffectiveAddress
  */
-class LoadEffectiveAddressTest extends \PHPUnit\Framework\TestCase
+class LoadEffectiveAddressTest extends TestCase
 {
     use MockSimulatorTrait;
 

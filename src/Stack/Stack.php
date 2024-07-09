@@ -9,6 +9,8 @@ declare(strict_types=1);
 
 namespace shanept\AssemblySimulator\Stack;
 
+use RuntimeException;
+
 /**
  * Provides a base class for stack implementations to build upon.
  *
@@ -106,7 +108,7 @@ abstract class Stack
                 $currentSize,
             );
 
-            throw new \RuntimeException($message);
+            throw new RuntimeException($message);
         }
 
         $this->maximumSize = $limit;

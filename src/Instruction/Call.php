@@ -10,6 +10,7 @@ declare(strict_types=1);
 
 namespace shanept\AssemblySimulator\Instruction;
 
+use LogicException;
 use shanept\AssemblySimulator\Simulator;
 
 /**
@@ -43,7 +44,7 @@ class Call extends AssemblyInstruction
                 var_export($onAddress, true),
             );
 
-            throw new \LogicException($message);
+            throw new LogicException($message);
         }
 
         $this->handleAddressCb = $onAddress;

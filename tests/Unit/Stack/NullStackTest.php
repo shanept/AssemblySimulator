@@ -2,12 +2,13 @@
 
 namespace shanept\AssemblySimulatorTests\Unit\Stack;
 
+use PHPUnit\Framework\TestCase;
 use shanept\AssemblySimulator\Stack\NullStack;
 
 /**
 * @covers shanept\AssemblySimulator\Stack\NullStack
 */
-class NullStackTest extends \PHPUnit\Framework\TestCase
+class NullStackTest extends TestCase
 {
     public function testGetStackReturnsNulString(): void
     {

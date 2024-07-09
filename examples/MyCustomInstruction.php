@@ -21,7 +21,7 @@ use shanept\AssemblySimulator\Instruction\AssemblyInstruction;
  * All instructions must extend the AssemblyInstruction base class, and define
  * a public function "register".
  */
-class myCustomInstruction extends AssemblyInstruction
+class MyCustomInstruction extends AssemblyInstruction
 {
     /**
      * All instructions must implement the "register" method. It must return an

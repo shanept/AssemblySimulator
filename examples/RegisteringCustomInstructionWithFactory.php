@@ -11,7 +11,7 @@
 declare(strict_types=1);
 
 include __DIR__ . "/../vendor/autoload.php";
-include __DIR__ . "/myCustomInstruction.php";
+include __DIR__ . "/MyCustomInstruction.php";
 
 use shanept\AssemblySimulator\Simulator;
 use shanept\AssemblySimulator\SimulatorFactory;
@@ -24,7 +24,7 @@ use shanept\AssemblySimulator\Stack\ForgivingStack;
 $simulator = SimulatorFactory::createSimulator(Simulator::LONG_MODE, [
     'stack' => new ForgivingStack(),
 ], [
-    myCustomInstruction::class,
+    MyCustomInstruction::class,
 ]);
 
 // My custom instruction will push 0x42 onto the stack.

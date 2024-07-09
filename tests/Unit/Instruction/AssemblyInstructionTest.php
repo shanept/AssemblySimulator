@@ -2,7 +2,9 @@
 
 namespace shanept\AssemblySimulatorTests\Unit\Instruction;
 
+use ReflectionClass;
 use ReflectionMethod;
+use PHPUnit\Framework\TestCase;
 use shanept\AssemblySimulator\Register;
 use shanept\AssemblySimulator\Simulator;
 use shanept\AssemblySimulator\Address\RipAddress;
@@ -10,7 +12,7 @@ use shanept\AssemblySimulator\Address\SibAddress;
 use shanept\AssemblySimulator\Address\ModRmAddress;
 use shanept\AssemblySimulatorTests\Fakes\TestAssemblyInstruction;
 
-class AssemblyInstructionTest extends \PHPUnit\Framework\TestCase
+class AssemblyInstructionTest extends TestCase
 {
     use MockSimulatorTrait;
 
@@ -92,8 +94,8 @@ class AssemblyInstructionTest extends \PHPUnit\Framework\TestCase
 
         $instruction = new TestAssemblyInstruction();
 
-        $class = new \ReflectionClass($instruction);
-        $protectedMethods = $class->getMethods(\ReflectionMethod::IS_PROTECTED);
+        $class = new ReflectionClass($instruction);
+        $protectedMethods = $class->getMethods(ReflectionMethod::IS_PROTECTED);
 
         $protectedMethods = array_map(function ($method) {
             return $method->getName();
@@ -173,10 +175,10 @@ class AssemblyInstructionTest extends \PHPUnit\Framework\TestCase
         $instruction = new TestAssemblyInstruction();
         $instruction->setSimulator($simulator);
 
-        $fn = new ReflectionMethod($instruction, $functionName);
-        $fn->setAccessible(true);
+        $func = new ReflectionMethod($instruction, $functionName);
+        $func->setAccessible(true);
 
-        $this->assertEquals($expected, $fn->invoke($instruction));
+        $this->assertEquals($expected, $func->invoke($instruction));
     }
 
     /**
@@ -263,14 +265,14 @@ class AssemblyInstructionTest extends \PHPUnit\Framework\TestCase
      */
     public function testParseModRmByte(
         string $byte,
-        int $mod,
-        int $reg,
-        int $rm
+        int $modVal,
+        int $regVal,
+        int $rmVal
     ): void {
         $expected = [
-            'mod' => $mod,
-            'reg' => $reg,
-            'rm' => $rm,
+            'mod' => $modVal,
+            'reg' => $regVal,
+            'rm' => $rmVal,
         ];
 
         $instruction = new TestAssemblyInstruction();
@@ -428,9 +430,9 @@ class AssemblyInstructionTest extends \PHPUnit\Framework\TestCase
         array $register,
         int $regValue,
         string $addressBytes,
-        int $mod,
-        int $reg,
-        int $rm,
+        int $modVal,
+        int $regVal,
+        int $rmVal,
         int $expect
     ): void {
         $simulator = $this->getMockSimulator($simulatorMode);
@@ -450,12 +452,12 @@ class AssemblyInstructionTest extends \PHPUnit\Framework\TestCase
         $simulator->method('getInstructionPointer')
                   ->willReturn(1);
 
-        if (1 === $mod) {
+        $dispSize = 0;
+
+        if (1 === $modVal) {
             $dispSize = 1;
-        } elseif (2 === $mod) {
+        } elseif (2 === $modVal) {
             $dispSize = 4;
-        } else {
-            $dispSize = 0;
         }
 
         $simulator->method('getCodeBuffer')
@@ -469,9 +471,9 @@ class AssemblyInstructionTest extends \PHPUnit\Framework\TestCase
         $method->setAccessible(true);
 
         $byte = [
-            'mod' => $mod,
-            'reg' => $reg,
-            'rm' => $rm,
+            'mod' => $modVal,
+            'reg' => $regVal,
+            'rm' => $rmVal,
         ];
         $address = $method->invoke($instruction, $byte);
 
@@ -697,9 +699,9 @@ class AssemblyInstructionTest extends \PHPUnit\Framework\TestCase
         int $indexVal,
         array $baseReg,
         int $baseVal,
-        int $mod,
-        int $reg,
-        int $rm,
+        int $modVal,
+        int $regVal,
+        int $rmVal,
         string $sibByte,
         ?string $dispByte,
         int $expected
@@ -755,9 +757,9 @@ class AssemblyInstructionTest extends \PHPUnit\Framework\TestCase
         $instruction->setSimulator($simulator);
 
         $byte = [
-            "mod" => $mod,
-            "reg" => $reg,
-            "rm" => $rm,
+            "mod" => $modVal,
+            "reg" => $regVal,
+            "rm" => $rmVal,
         ];
 
         $parseAddress = new ReflectionMethod($instruction, "parseAddress");
@@ -853,6 +855,37 @@ class AssemblyInstructionTest extends \PHPUnit\Framework\TestCase
 
         $actual = $unpackMethod->invoke($instruction, $binaryString, $operandSize);
         $this->assertEquals($expected, $actual);
+    }
+
+    /**
+     * @dataProvider unpackImmediateDataProvider
+     * @small
+     *
+     * @covers shanept\AssemblySimulator\Instruction\AssemblyInstruction::unpackImmediate
+     */
+    public function testUnpackImmediateDoesNotOverrideErrorReporting(
+        int $operandSize,
+        string $binaryString,
+        int $expected
+    ): void {
+        $instruction = new TestAssemblyInstruction();
+
+        $unpackMethod = new ReflectionMethod($instruction, "unpackImmediate");
+        $unpackMethod->setAccessible(true);
+
+        $originalErrorLevel = error_reporting();
+        try {
+            $actual = $unpackMethod->invoke($instruction, $binaryString, $operandSize);
+            $this->assertEquals($expected, $actual);
+            $this->assertEquals($originalErrorLevel, error_reporting());
+
+            // Now we will test again to check our error level is retained.
+            error_reporting(3);
+            $unpackMethod->invoke($instruction, $binaryString, $operandSize);
+            $this->assertEquals(3, error_reporting());
+        } finally {
+            error_reporting($originalErrorLevel);
+        }
     }
 
     /**

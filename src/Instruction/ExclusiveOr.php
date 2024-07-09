@@ -9,6 +9,7 @@ declare(strict_types=1);
 
 namespace shanept\AssemblySimulator\Instruction;
 
+use RuntimeException;
 use shanept\AssemblySimulator\Flags;
 use shanept\AssemblySimulator\Register;
 use shanept\AssemblySimulator\Simulator;
@@ -53,9 +54,7 @@ class ExclusiveOr extends AssemblyInstruction
      */
     public function executeOperand31(): bool
     {
-        $sim = $this->getSimulator();
         $opSize = $this->getOperandSize();
-
         return $this->executeXorWithEncodingMr($opSize);
     }
 
@@ -76,9 +75,7 @@ class ExclusiveOr extends AssemblyInstruction
      */
     public function executeOperand33(): bool
     {
-        $sim = $this->getSimulator();
         $opSize = $this->getOperandSize();
-
         return $this->executeXorWithEncodingRm($opSize);
     }
 
@@ -102,7 +99,7 @@ class ExclusiveOr extends AssemblyInstruction
                 $byte["mod"],
             );
 
-            throw new \RuntimeException($message);
+            throw new RuntimeException($message);
         }
 
         $rex = $sim->getRex();
@@ -111,11 +108,11 @@ class ExclusiveOr extends AssemblyInstruction
         $rmExt = (bool) ($rex & Simulator::REX_B);
 
         $reg = Register::getByCode($byte["reg"], $opSize, $rexSet, $regExt);
-        $rm = Register::getByCode($byte["rm"], $opSize, $rexSet, $rmExt);
+        $rmReg = Register::getByCode($byte["rm"], $opSize, $rexSet, $rmExt);
 
         return [
             'reg' => $reg,
-            'rm' => $rm,
+            'rm' => $rmReg,
         ];
     }
 

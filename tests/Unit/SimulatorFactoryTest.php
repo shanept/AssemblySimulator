@@ -2,13 +2,14 @@
 
 namespace shanept\AssemblySimulatorTests\Unit;
 
+use PHPUnit\Framework\TestCase;
 use shanept\AssemblySimulator\Simulator;
 use shanept\AssemblySimulator\SimulatorFactory;
 
 /**
  * @covers shanept\AssemblySimulator\SimulatorFactory
  */
-class SimulatorFactoryTest extends \PHPUnit\Framework\TestCase
+class SimulatorFactoryTest extends TestCase
 {
     /**
      * @small

@@ -10,7 +10,7 @@
 declare(strict_types=1);
 
 include __DIR__ . "/../vendor/autoload.php";
-include __DIR__ . "/myCustomInstruction.php";
+include __DIR__ . "/MyCustomInstruction.php";
 
 use shanept\AssemblySimulator\Simulator;
 use shanept\AssemblySimulator\Stack\StrictStack;
@@ -20,7 +20,7 @@ $simulator = new Simulator(Simulator::LONG_MODE, [
 ]);
 
 // Instantiate and register our custom instruction.
-$instruction = new myCustomInstruction();
+$instruction = new MyCustomInstruction();
 $instruction->setSimulator($simulator);
 
 // My custom instruction will push 0x42 onto the stack.

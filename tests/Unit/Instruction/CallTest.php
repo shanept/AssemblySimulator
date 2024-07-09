@@ -2,6 +2,7 @@
 
 namespace shanept\AssemblySimulatorTests\Unit\Instruction;
 
+use PHPUnit\Framework\TestCase;
 use shanept\AssemblySimulator\Register;
 use shanept\AssemblySimulator\Simulator;
 use shanept\AssemblySimulator\Instruction\Call;
@@ -10,7 +11,7 @@ use shanept\AssemblySimulatorTests\Fakes\TestAssemblyInstruction;
 /**
  * @covers shanept\AssemblySimulator\Instruction\Call
  */
-class CallTest extends \PHPUnit\Framework\TestCase
+class CallTest extends TestCase
 {
     use MockSimulatorTrait;
 
@@ -75,7 +76,7 @@ class CallTest extends \PHPUnit\Framework\TestCase
                  });
 
         $this->expectException(\LogicException::class);
-        $call = new Call([null, 'mockableCallback']);
+        new Call([null, 'mockableCallback']);
     }
 
     /**

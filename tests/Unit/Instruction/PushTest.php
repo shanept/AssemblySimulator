@@ -2,6 +2,7 @@
 
 namespace shanept\AssemblySimulatorTests\Unit\Instruction;
 
+use PHPUnit\Framework\TestCase;
 use shanept\AssemblySimulator\Register;
 use shanept\AssemblySimulator\Simulator;
 use shanept\AssemblySimulator\Instruction\Push;
@@ -9,7 +10,7 @@ use shanept\AssemblySimulator\Instruction\Push;
 /**
  * @covers shanept\AssemblySimulator\Instruction\Push
  */
-class PushTest extends \PHPUnit\Framework\TestCase
+class PushTest extends TestCase
 {
     use MockSimulatorTrait;
 

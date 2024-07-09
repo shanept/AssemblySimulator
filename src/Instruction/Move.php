@@ -172,8 +172,8 @@ class Move extends AssemblyInstruction
             $rexSet = (bool) ($rex & Simulator::REX);
             $rmExt = (bool) ($rex & Simulator::REX_B);
 
-            $rm = Register::getByCode($byte["rm"], $opSize, $rexSet, $rmExt);
-            $sim->writeRegister($rm, $value);
+            $rmReg = Register::getByCode($byte["rm"], $opSize, $rexSet, $rmExt);
+            $sim->writeRegister($rmReg, $value);
         }
         // This is where we *should* save to a memory location. We won't.
 
@@ -204,10 +204,10 @@ class Move extends AssemblyInstruction
             $sim->advanceInstructionPointer($address->getDisplacement());
             // This would write to a memory location. We will not be doing that.
         } else {
-            $rm = Register::getByCode($byte["rm"], $opSize, $rexSet, $rmExt);
+            $rmReg = Register::getByCode($byte["rm"], $opSize, $rexSet, $rmExt);
 
             $value = $sim->readRegister($reg);
-            $sim->writeRegister($rm, $value);
+            $sim->writeRegister($rmReg, $value);
         }
 
         return true;
@@ -265,8 +265,8 @@ class Move extends AssemblyInstruction
          */
         if (0b11 === $byte["mod"]) {
             $rmExt = (bool) ($rex & Simulator::REX_B);
-            $rm = Register::getByCode($byte["rm"], $opSize, $rexSet, $rmExt);
-            $value = $sim->readRegister($rm);
+            $rmReg = Register::getByCode($byte["rm"], $opSize, $rexSet, $rmExt);
+            $value = $sim->readRegister($rmReg);
         } else {
             $address = $this->parseAddress($byte);
             $sim->advanceInstructionPointer($address->getDisplacement());

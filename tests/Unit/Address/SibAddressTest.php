@@ -2,13 +2,14 @@
 
 namespace shanept\AssemblySimulatorTests\Unit\Address;
 
+use PHPUnit\Framework\TestCase;
 use shanept\AssemblySimulator\Address\SibAddress;
 use shanept\AssemblySimulator\Address\AddressInterface;
 
 /**
  * @covers shanept\AssemblySimulator\Address\SibAddress
  */
-class SibAddressTest extends \PHPUnit\Framework\TestCase
+class SibAddressTest extends TestCase
 {
     /**
      * @small
@@ -168,7 +169,7 @@ class SibAddressTest extends \PHPUnit\Framework\TestCase
             '2 (8-bit displacement) or 5 (32-bit displacement).',
             $displacementSize,
         ));
-        $sib0 = new SibAddress($sibByte, 0, $displacementSize);
+        new SibAddress($sibByte, 0, $displacementSize);
     }
 
     /**
@@ -192,6 +193,6 @@ class SibAddressTest extends \PHPUnit\Framework\TestCase
             'Invalid SIB scale value %d. Expected 1, 2, 4 or 8.',
             $scale,
         ));
-        $sib0 = new SibAddress($sibByte, 0, 1);
+        new SibAddress($sibByte, 0, 1);
     }
 }

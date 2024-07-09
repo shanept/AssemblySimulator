@@ -2,6 +2,7 @@
 
 namespace shanept\AssemblySimulatorTests\Unit\Instruction;
 
+use PHPUnit\Framework\TestCase;
 use shanept\AssemblySimulator\Flags;
 use shanept\AssemblySimulator\Register;
 use shanept\AssemblySimulator\Simulator;
@@ -10,7 +11,7 @@ use shanept\AssemblySimulator\Instruction\ExclusiveOr;
 /**
  * @covers shanept\AssemblySimulator\Instruction\ExclusiveOr
  */
-class ExclusiveOrTest extends \PHPUnit\Framework\TestCase
+class ExclusiveOrTest extends TestCase
 {
     use MockSimulatorTrait;
 
@@ -197,19 +198,16 @@ class ExclusiveOrTest extends \PHPUnit\Framework\TestCase
      */
     public static function xorSetsFlagsDataProvider(): array
     {
-        $t = true;
-        $f = false;
-
         return [
-            [Simulator::LONG_MODE, 0x45, 0x00, "\x30", "\xC9", Register::R9B, 0, Register::R9B, 0, $f, $t, $t, $f, $f],
-            [Simulator::LONG_MODE, 0x4D, 0x00, "\x31", "\xC9", Register::R9, 0, Register::R9, 0, $f, $t, $t, $f, $f],
-            [Simulator::LONG_MODE, 0x45, 0x00, "\x32", "\xC9", Register::R9B, 0, Register::R9B, 0, $f, $t, $t, $f, $f],
-            [Simulator::LONG_MODE, 0x4D, 0x00, "\x33", "\xC9", Register::R9, 0, Register::R9, 0, $f, $t, $t, $f, $f],
+            [Simulator::LONG_MODE, 0x45, 0x00, "\x30", "\xC9", Register::R9B, 0, Register::R9B, 0, false, true, true, false, false],
+            [Simulator::LONG_MODE, 0x4D, 0x00, "\x31", "\xC9", Register::R9, 0, Register::R9, 0, false, true, true, false, false],
+            [Simulator::LONG_MODE, 0x45, 0x00, "\x32", "\xC9", Register::R9B, 0, Register::R9B, 0, false, true, true, false, false],
+            [Simulator::LONG_MODE, 0x4D, 0x00, "\x33", "\xC9", Register::R9, 0, Register::R9, 0, false, true, true, false, false],
 
-            [Simulator::LONG_MODE, 0x45, 0x00, "\x30", "\xC8", Register::R9B, 1, Register::R8B, 0, $f, $f, $f, $f, $f],
-            [Simulator::LONG_MODE, 0x4D, 0x00, "\x31", "\xC8", Register::R9, 1, Register::R8, 0, $f, $f, $f, $f, $f],
-            [Simulator::LONG_MODE, 0x45, 0x00, "\x32", "\xC8", Register::R9B, 1, Register::R8B, 0, $f, $f, $f, $f, $f],
-            [Simulator::LONG_MODE, 0x4D, 0x00, "\x33", "\xC8", Register::R9, 1, Register::R8, 0, $f, $f, $f, $f, $f],
+            [Simulator::LONG_MODE, 0x45, 0x00, "\x30", "\xC8", Register::R9B, 1, Register::R8B, 0, false, false, false, false, false],
+            [Simulator::LONG_MODE, 0x4D, 0x00, "\x31", "\xC8", Register::R9, 1, Register::R8, 0, false, false, false, false, false],
+            [Simulator::LONG_MODE, 0x45, 0x00, "\x32", "\xC8", Register::R9B, 1, Register::R8B, 0, false, false, false, false, false],
+            [Simulator::LONG_MODE, 0x4D, 0x00, "\x33", "\xC8", Register::R9, 1, Register::R8, 0, false, false, false, false, false],
         ];
     }
 
@@ -236,7 +234,7 @@ class ExclusiveOrTest extends \PHPUnit\Framework\TestCase
         bool $signFlag,
         bool $overflowFlag
     ): void {
-        $simulator = $this->getMockSimulator(Simulator::LONG_MODE);
+        $simulator = $this->getMockSimulator($simulatorMode);
 
         $flagVerifier = function ($flag, $value) use (
             $carryFlag,

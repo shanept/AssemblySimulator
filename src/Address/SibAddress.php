@@ -8,6 +8,8 @@ declare(strict_types=1);
 
 namespace shanept\AssemblySimulator\Address;
 
+use UnexpectedValueException;
+
 /**
  * Resolves SIB addresses.
  *
@@ -52,7 +54,7 @@ class SibAddress implements AddressInterface
                 $sib['s'],
             );
 
-            throw new \UnexpectedValueException($message);
+            throw new UnexpectedValueException($message);
         }
 
         if (! in_array($sibSize, [1, 2, 5], true)) {
@@ -62,7 +64,7 @@ class SibAddress implements AddressInterface
                 $sibSize,
             );
 
-            throw new \UnexpectedValueException($message);
+            throw new UnexpectedValueException($message);
         }
 
         $this->sib = $sib;

@@ -2,6 +2,8 @@
 
 namespace shanept\AssemblySimulatorTests\Unit;
 
+use LogicException;
+use PHPUnit\Framework\TestCase;
 use shanept\AssemblySimulator\Flags;
 use shanept\AssemblySimulator\Register;
 use shanept\AssemblySimulator\Simulator;
@@ -15,7 +17,7 @@ use shanept\AssemblySimulatorTests\Fakes\TestAssemblyInstruction;
  * @covers shanept\AssemblySimulator\Simulator
  * @small
  */
-class SimulatorTest extends \PHPUnit\Framework\TestCase
+class SimulatorTest extends TestCase
 {
     /**
      * Index:
@@ -71,6 +73,8 @@ class SimulatorTest extends \PHPUnit\Framework\TestCase
     /**
      * @dataProvider getModeDefaultsDataProvider
      * @small
+     *
+     * @SuppressWarnings(PHPMD.UnusedFormalParameter)
      */
     public function testGetAndSetModes(
         string $modeName,
@@ -113,13 +117,15 @@ class SimulatorTest extends \PHPUnit\Framework\TestCase
     /**
      * @dataProvider getModeDefaultsDataProvider
      * @small
+     *
+     * @SuppressWarnings(PHPMD.UnusedFormalParameter)
      */
     public function testGetLargestInstructionWidth(
-        string $modeName,
+        string $unused1,
         int $mode,
-        int $unused1,
         int $unused2,
         int $unused3,
+        int $unused4,
         int $expected
     ): void {
         $simulator = new Simulator($mode);
@@ -255,14 +261,16 @@ class SimulatorTest extends \PHPUnit\Framework\TestCase
     /**
      * @dataProvider getModeDefaultsDataProvider
      * @small
+     *
+     * @SuppressWarnings(PHPMD.UnusedFormalParameter)
      */
     public function testRegistersAreClearAfterReset(
-        string $modeName,
+        string $unused1,
         int $mode,
-        int $unused1,
         int $unused2,
+        int $unused3,
         int $numRegisters,
-        int $unused3
+        int $unused4
     ): void {
         $simulator = new Simulator($mode);
 
@@ -512,7 +520,6 @@ class SimulatorTest extends \PHPUnit\Framework\TestCase
     ): void {
         $mock = $this->createMock(Stack::class);
 
-        $called = 0;
         $mock->expects($this->exactly(1))
              ->method($stackMethodName)
              ->with(...$parameters);
@@ -552,7 +559,7 @@ class SimulatorTest extends \PHPUnit\Framework\TestCase
                      $message = 'setAddress called too many times';
                  }
 
-                 throw new \LogicException($message);
+                 throw new LogicException($message);
              });
 
         $simulator = new Simulator(null, ['stack' => $mock]);
@@ -585,7 +592,7 @@ class SimulatorTest extends \PHPUnit\Framework\TestCase
                      $message = 'limitSize called too many times';
                  }
 
-                 throw new \LogicException($message);
+                 throw new LogicException($message);
              });
 
         $simulator = new Simulator(null, ['stack' => $mock]);
@@ -611,14 +618,16 @@ class SimulatorTest extends \PHPUnit\Framework\TestCase
     /**
      * @dataProvider getModeDefaultsDataProvider
      * @small
+     *
+     * @SuppressWarnings(PHPMD.UnusedFormalParameter)
      */
     public function testDefaultStackAddressForModes(
-        string $modeName,
+        string $unused1,
         int $mode,
         int $expectedAddress,
-        int $unused1,
         int $unused2,
-        int $unused3
+        int $unused3,
+        int $unused4
     ): void {
         $mock = $this->createMock(Stack::class);
 
@@ -626,20 +635,22 @@ class SimulatorTest extends \PHPUnit\Framework\TestCase
              ->method('setAddress')
              ->with($expectedAddress);
 
-        $simulator = new Simulator($mode, ['stack' => $mock]);
+        new Simulator($mode, ['stack' => $mock]);
     }
 
     /**
      * @dataProvider getModeDefaultsDataProvider
      * @small
+     *
+     * @SuppressWarnings(PHPMD.UnusedFormalParameter)
      */
     public function testDefaultStackSizeForModes(
-        string $modeName,
+        string $unused1,
         int $mode,
-        int $address,
+        int $unused2,
         int $expectedSize,
-        int $unused1,
-        int $unused2
+        int $unused3,
+        int $unused4
     ): void {
         $mock = $this->createMock(Stack::class);
 
@@ -647,7 +658,7 @@ class SimulatorTest extends \PHPUnit\Framework\TestCase
              ->method('limitSize')
              ->with($expectedSize);
 
-        $simulator = new Simulator($mode, ['stack' => $mock]);
+        new Simulator($mode, ['stack' => $mock]);
     }
 
     /**

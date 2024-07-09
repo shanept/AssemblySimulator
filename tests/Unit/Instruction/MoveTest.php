@@ -2,6 +2,7 @@
 
 namespace shanept\AssemblySimulatorTests\Unit\Instruction;
 
+use PHPUnit\Framework\TestCase;
 use shanept\AssemblySimulator\Register;
 use shanept\AssemblySimulator\Simulator;
 use shanept\AssemblySimulator\Instruction\Move;
@@ -9,7 +10,7 @@ use shanept\AssemblySimulator\Instruction\Move;
 /**
  * @covers shanept\AssemblySimulator\Instruction\Move
  */
-class MoveTest extends \PHPUnit\Framework\TestCase
+class MoveTest extends TestCase
 {
     use MockSimulatorTrait;
 
@@ -566,6 +567,8 @@ class MoveTest extends \PHPUnit\Framework\TestCase
 
                       if (is_null($value)) {
                           $this->fail('Ran out of values to return.');
+                      } elseif (strlen($value) !== $length) {
+                          $this->fail('Incorrect $length requested.');
                       }
 
                       return $value;

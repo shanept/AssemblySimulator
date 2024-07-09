@@ -2,6 +2,7 @@
 
 namespace shanept\AssemblySimulatorTests\Unit\Stack;
 
+use PHPUnit\Framework\TestCase;
 use shanept\AssemblySimulator\Exception;
 use shanept\AssemblySimulator\Stack\StrictStack;
 
@@ -9,7 +10,7 @@ use shanept\AssemblySimulator\Stack\StrictStack;
  * @covers shanept\AssemblySimulator\Stack\Stack
  * @covers shanept\AssemblySimulator\Stack\StrictStack
  */
-class StrictStackTest extends \PHPUnit\Framework\TestCase
+class StrictStackTest extends TestCase
 {
     /**
      * @return array<int, array{int}>
@@ -157,6 +158,8 @@ class StrictStackTest extends \PHPUnit\Framework\TestCase
      * @small
      *
      * @param array<int, string> $values
+     *
+     * @SuppressWarnings(PHPMD.UnusedFormalParameter)
      */
     public function testReadStackOffset(array $values, string $unused): void
     {

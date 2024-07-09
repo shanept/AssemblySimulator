@@ -2,12 +2,13 @@
 
 namespace shanept\AssemblySimulatorTests\Unit\Instruction;
 
+use PHPUnit\Framework\TestCase;
 use shanept\AssemblySimulator\Instruction\NoOperation;
 
 /**
  * @covers shanept\AssemblySimulator\Instruction\NoOperation
  */
-class NoOperationTest extends \PHPUnit\Framework\TestCase
+class NoOperationTest extends TestCase
 {
     use MockSimulatorTrait;
 

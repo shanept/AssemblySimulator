@@ -114,7 +114,6 @@ class Push extends AssemblyInstruction
         $value = $sim->getCodeAtInstructionPointer(1);
         $sim->advanceInstructionPointer(1);
 
-        $opSize = Simulator::TYPE_BYTE;
         $stackPointer = $this->getStackPointerRegister();
         $stackPosition = $sim->readRegister($stackPointer) - 1;
 

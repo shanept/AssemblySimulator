@@ -705,7 +705,7 @@ class Register
     /**
      * Translates a request for an opcode into a register object.
      *
-     * @param int  $id      The opcode for this register.
+     * @param int  $regId   The opcode for this register.
      * @param int  $size    The width of the register to return.
      * @param bool $rexSet  Is REX set for this operation? Default: false
      * @param bool $rExtend Is this opcode field being extended? Default: false
@@ -713,13 +713,13 @@ class Register
      * @return RegisterObj An array representing the requested register.
      */
     public static function getByCode(
-        int $id,
+        int $regId,
         int $size,
         bool $rexSet = false,
         bool $rExtend = false
     ): array {
         if ($rexSet && $rExtend) {
-            return self::REX_ID_MAP[$id][$size];
+            return self::REX_ID_MAP[$regId][$size];
         }
 
         // If we have a rex value, but REX_R is not set...
@@ -727,6 +727,6 @@ class Register
             $size = 80;
         }
 
-        return self::ID_MAP[$id][$size];
+        return self::ID_MAP[$regId][$size];
     }
 }

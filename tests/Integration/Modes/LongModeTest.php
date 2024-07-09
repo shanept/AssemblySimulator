@@ -2,6 +2,7 @@
 
 namespace shanept\AssemblySimulatorTests\Integration\Modes;
 
+use PHPUnit\Framework\TestCase;
 use shanept\AssemblySimulator\Register;
 use shanept\AssemblySimulator\Simulator;
 use shanept\AssemblySimulator\Instruction\ExclusiveOr;
@@ -9,7 +10,7 @@ use shanept\AssemblySimulator\Instruction\ExclusiveOr;
 /**
  * @covers shanept\AssemblySimulator\Simulator
  */
-class LongModeTest extends \PHPUnit\Framework\TestCase
+class LongModeTest extends TestCase
 {
     public function testOp66Uses16bitRegister(): void
     {

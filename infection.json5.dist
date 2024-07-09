@@ -42,6 +42,7 @@
             "ignore": [
                 "shanept\\AssemblySimulator\\Instruction\\AssemblyInstruction::parseModRmByte",
                 "shanept\\AssemblySimulator\\Instruction\\AssemblyInstruction::parseSibByte",
+                "shanept\\AssemblySimulator\\Instruction\\AssemblyInstruction::unpackImmediate",
             ]
         },
     },

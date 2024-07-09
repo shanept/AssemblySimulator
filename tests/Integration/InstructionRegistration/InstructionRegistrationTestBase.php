@@ -2,12 +2,14 @@
 
 namespace shanept\AssemblySimulatorTests\Integration\InstructionRegistration;
 
+use CompileError;
+use PHPUnit\Framework\TestCase;
 use shanept\AssemblySimulator\Simulator;
 
 /**
  * @phpstan-type InstructionClassString class-string<\shanept\AssemblySimulator\Instruction\AssemblyInstruction>
  */
-abstract class InstructionRegistrationTestBase extends \PHPUnit\Framework\TestCase
+abstract class InstructionRegistrationTestBase extends TestCase
 {
     /**
      * @var callable[]
@@ -82,7 +84,7 @@ abstract class InstructionRegistrationTestBase extends \PHPUnit\Framework\TestCa
                  ->willReturnCallback(function () {
                      // We are using a compile error because it's almost guaranteed
                      // that we would never actually encounter this during this context.
-                     throw new \CompileError();
+                     throw new CompileError();
                  });
 
         $simulator = new Simulator(Simulator::PROTECTED_MODE);
